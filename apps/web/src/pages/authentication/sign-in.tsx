@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@usertour-packages/card';
-import { Link } from 'react-router-dom';
 import {
   SignInSocialProviders,
   SignInDivider,
@@ -10,16 +9,7 @@ import {
 } from './components/sign-in-form';
 
 // Footer component
-const SignInFooter = () => (
-  <CardFooter>
-    <div className="text-center text-sm text-muted-foreground">
-      No account yet?{' '}
-      <Link to="/auth/signup" className="underline underline-offset-4 hover:text-primary">
-        Sign up for a free trial
-      </Link>
-    </div>
-  </CardFooter>
-);
+const SignInFooter = () => <CardFooter></CardFooter>;
 
 SignInFooter.displayName = 'SignInFooter';
 

@@ -2,8 +2,6 @@ import { ParamsError, TeamMemberLimitError } from '@/common/errors';
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
-import { createTransport } from 'nodemailer';
-import compileEmailTemplate from '@/common/email/compile-email-template';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -167,45 +165,21 @@ export class TeamService {
         userId: sender.id,
       },
     });
-    await this.sendInviteEmail(result.code, email, sender.name, project.name, name);
+    await this.sendInviteEmail(result.code, email, sender.name);
   }
 
   async sendEmail(data: unknown) {
-    const transporter = createTransport({
-      host: this.configService.get('email.host'),
-      port: this.configService.get('email.port'),
-      secure: true,
-      auth: {
-        user: this.configService.get('email.user'),
-        pass: this.configService.get('email.pass'),
-      },
-    });
-    return await transporter.sendMail(data);
+    console.log(data);
   }
 
-  async sendInviteEmail(
-    code: string,
-    email: string,
-    fromUserName: string,
-    teamName: string,
-    toUserName: string,
-  ) {
+  async sendInviteEmail(code: string, email: string, fromUserName: string) {
     const url = `${this.configService.get('app.homepageUrl')}/auth/invite/${code}`;
-    const template = await compileEmailTemplate({
-      fileName: 'inviteTeamMember.mjml',
-      data: {
-        inviterName: fromUserName,
-        name: toUserName,
-        teamName,
-        url,
-      },
-    });
 
     return await this.sendEmail({
       from: this.configService.get('auth.email.sender'), // sender address
       to: email, // list of receivers
       subject: `${fromUserName} invited you to Usertour`, // Subject line
-      html: template, // html body
+      data: { url: url }, // html body
     });
   }
 
