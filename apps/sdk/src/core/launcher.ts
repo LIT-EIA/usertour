@@ -7,6 +7,7 @@ import { AppEvents } from '../utils/event';
 import { document } from '../utils/globals';
 import { BaseContent } from './base-content';
 import { ElementWatcher } from './element-watcher';
+import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
 
 export class Launcher extends BaseContent<LauncherStore> {
   private watcher: ElementWatcher | null = null;
@@ -139,7 +140,20 @@ export class Launcher extends BaseContent<LauncherStore> {
 
     // Set up element found handler
     this.watcher.once(AppEvents.ELEMENT_FOUND, (el) => {
-      this.setStore({ ...store, triggerRef: el as HTMLElement });
+      // Check if element is in iframe
+      const iframeElementInfo = this.watcher?.getIframeElementInfo();
+      let triggerRef: HTMLElement = el as HTMLElement;
+
+      if (iframeElementInfo) {
+        // For iframe elements, create a virtual element for positioning
+        triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
+      }
+
+      this.setStore({ 
+        ...store, 
+        triggerRef,
+        iframeElementInfo,
+      });
     });
 
     // Set up timeout handler
@@ -149,6 +163,36 @@ export class Launcher extends BaseContent<LauncherStore> {
 
     // Start element search
     this.watcher.findElement();
+  }
+
+  /**
+   * Creates a virtual element for iframe positioning
+   * @private
+   */
+  private createVirtualElementForIframe(iframeElementInfo: IframeElementInfo): HTMLElement {
+    if (!document) {
+      throw new Error('Document is not available');
+    }
+    
+    // Create a virtual element that represents the iframe's position
+    // This is used for positioning the launcher relative to the iframe
+    const virtualElement = document.createElement('div');
+    virtualElement.style.position = 'absolute';
+    virtualElement.style.left = `${iframeElementInfo.iframeRect.left}px`;
+    virtualElement.style.top = `${iframeElementInfo.iframeRect.top}px`;
+    virtualElement.style.width = `${iframeElementInfo.iframeRect.width}px`;
+    virtualElement.style.height = `${iframeElementInfo.iframeRect.height}px`;
+    virtualElement.style.pointerEvents = 'none';
+    virtualElement.style.visibility = 'hidden';
+    
+    // Add to DOM temporarily for positioning calculations
+    document.body.appendChild(virtualElement);
+    
+    // Store reference for cleanup
+    (virtualElement as any).__usertour_virtual_iframe = true;
+    (virtualElement as any).__usertour_iframe_info = iframeElementInfo;
+    
+    return virtualElement;
   }
 
   /**

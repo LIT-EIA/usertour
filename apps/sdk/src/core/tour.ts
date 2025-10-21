@@ -25,11 +25,15 @@ import { BaseContent } from './base-content';
 import { ElementWatcher } from './element-watcher';
 import { logger } from '../utils/logger';
 import { getStepByCvid } from '../utils/content-utils';
+import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
 
 export class Tour extends BaseContent<TourStore> {
   private watcher: ElementWatcher | null = null;
   private triggerTimeouts: NodeJS.Timeout[] = []; // Store timeout IDs
   private flowCompletedReported = false; // Track if FLOW_COMPLETED has been reported
+  private isUpdatingStore = false; // Prevent infinite loops
+  private isProcessingElementFound = false; // Prevent duplicate element found processing
+  private isNavigatingToStep = false; // Track if we're navigating to a step via STEP_GOTO
 
   /**
    * Monitors and updates the tour state
@@ -86,6 +90,9 @@ export class Tour extends BaseContent<TourStore> {
     }
 
     // Reset tour state and set new step
+    console.log('[Tour] === STARTING TOUR ===');
+    console.log('[Tour] Step:', step.cvid);
+    console.log('[Tour] Resetting tour state...');
     this.reset();
     this.setCurrentStep(step);
 
@@ -256,13 +263,11 @@ export class Tour extends BaseContent<TourStore> {
     await this.activeTriggerConditions();
 
     // Set up element watcher
+    // NOTE: We do NOT report flow completion here, even if it's the last step,
+    // because we need to wait until the element is actually found.
+    // Completion will be reported in handleElementFound() after the element is successfully located.
     const store = await this.buildStoreData();
     this.setupElementWatcher(currentStep, store);
-
-    const { isComplete } = this.getCurrentStepInfo(currentStep);
-    if (isComplete) {
-      await this.reportStepEvents(currentStep, BizEvents.FLOW_COMPLETED);
-    }
   }
 
   /**
@@ -278,14 +283,27 @@ export class Tour extends BaseContent<TourStore> {
    * @private
    */
   private setupElementWatcher(step: Step, store: TourStore): void {
-    // Clean up existing watcher
+    console.log('[Tour] Setting up element watcher for step:', step.cvid, 'Target:', step.target);
+    
+    // Clean up existing watcher and iframe listeners
     if (this.watcher) {
+      // Get the current step's iframe info before destroying the watcher
+      const currentIframeInfo = this.watcher.getIframeElementInfo();
+      if (currentIframeInfo) {
+        console.log('[Tour] Cleaning up iframe listeners for previous step');
+        const currentStepId = this.getCurrentStep()?.cvid;
+        if (currentStepId) {
+          iframeUtils.sendCleanupMessageToIframe(currentIframeInfo.iframe, currentStepId);
+        }
+      }
+      
       this.watcher.destroy();
       this.watcher = null;
     }
 
     // Create new watcher
     if (!step.target) {
+      console.log('[Tour] No target for step, closing tour');
       this.close(contentEndReason.TOOLTIP_TARGET_MISSING);
       return;
     }
@@ -293,24 +311,38 @@ export class Tour extends BaseContent<TourStore> {
     this.watcher.setTargetMissingSeconds(this.getTargetMissingSeconds());
 
     // Handle element found
-    this.watcher.once(AppEvents.ELEMENT_FOUND, (el) => {
-      if (el instanceof Element) {
-        this.handleElementFound(el, step, store);
+    this.watcher.once(AppEvents.ELEMENT_FOUND, async (el: any) => {
+      console.log('[Tour] ElementWatcher found element:', el);
+      console.log('[Tour] Element type check:', el instanceof Element);
+      console.log('[Tour] Element nodeType:', el?.nodeType);
+      console.log('[Tour] Element tagName:', el?.tagName);
+      console.log('[Tour] Step:', step.cvid);
+      console.log('[Tour] Store:', store);
+      
+      // Check if element is a DOM element (works for both main document and iframe elements)
+      if (el && typeof el === 'object' && el.nodeType === Node.ELEMENT_NODE) {
+        console.log('[Tour] Element is valid DOM element, calling handleElementFound...');
+        await this.handleElementFound(el as Element, step, store);
+      } else {
+        console.log('[Tour] Element is not a valid DOM element, skipping handleElementFound');
       }
     });
 
     // Handle element not found
     this.watcher.once(AppEvents.ELEMENT_FOUND_TIMEOUT, async () => {
+      console.log('[Tour] ElementWatcher timeout for step:', step.cvid);
       await this.handleElementNotFound(step);
     });
 
-    // Handle element changed
-    this.watcher.on(AppEvents.ELEMENT_CHANGED, (el) => {
-      if (el instanceof Element) {
-        this.handleElementChanged(el, step, store);
-      }
-    });
+    // Handle element changed - DISABLED to prevent infinite loops
+    // this.watcher.on(AppEvents.ELEMENT_CHANGED, (el: any) => {
+    //   console.log('[Tour] ElementWatcher element changed:', el);
+    //   if (el && typeof el === 'object' && el.nodeType === Node.ELEMENT_NODE) {
+    //     this.handleElementChanged(el as Element, step, store);
+    //   }
+    // });
     // Start watching
+    console.log('[Tour] Starting element watcher...');
     this.watcher.findElement();
   }
 
@@ -318,46 +350,154 @@ export class Tour extends BaseContent<TourStore> {
    * Handles when the target element is found
    * @private
    */
-  private handleElementFound(el: Element, step: Step, store: TourStore): void {
+  private async handleElementFound(el: Element, step: Step, store: TourStore): Promise<void> {
+    // Prevent duplicate processing
+    if (this.isProcessingElementFound) {
+      console.log('[Tour] Already processing element found, skipping');
+      return;
+    }
+    this.isProcessingElementFound = true;
+    
+    console.log('[Tour] === handleElementFound CALLED ===');
+    console.log('[Tour] Element found for step:', step.cvid, 'Element:', el);
+    console.log('[Tour] Current step check - isActiveTour:', this.isActiveTour());
+    console.log('[Tour] Current step check - getCurrentStep:', this.getCurrentStep()?.cvid);
     const openState = !this.isTemporarilyHidden();
     const currentStep = this.getCurrentStep();
     if (currentStep?.cvid !== step.cvid) {
+      console.log('[Tour] Step mismatch, ignoring element found event');
+      console.log('[Tour] Expected step:', step.cvid, 'Current step:', currentStep?.cvid);
+      this.isProcessingElementFound = false;
       return;
     }
     const { progress, index, total } = this.getCurrentStepInfo(step);
 
+    // Check if element is in iframe
+    const iframeElementInfo = this.watcher?.getIframeElementInfo();
+    let triggerRef: Element = el;
+
+    if (iframeElementInfo) {
+      console.log('[Tour] Element is in iframe, creating virtual element:', iframeElementInfo);
+      // For iframe elements, we need to create a virtual element that represents
+      // the target element's position for positioning purposes
+      triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
+      
+      // Set up iframe communication for step progression
+      this.setupIframeCommunication(step, iframeElementInfo);
+    } else {
+      console.log('[Tour] Element is in main document');
+    }
+
     // Scroll element into view if tour is visible
     if (openState) {
-      smoothScroll(el, { block: 'center' });
+      if (iframeElementInfo) {
+        // Scroll iframe into view instead of the element inside it
+        console.log('[Tour] Scrolling iframe into view');
+        smoothScroll(iframeElementInfo.iframe, { block: 'center' });
+      } else {
+        console.log('[Tour] Scrolling element into view');
+        smoothScroll(el, { block: 'center' });
+      }
     }
 
     // Update store
+    this.isUpdatingStore = true;
     this.setStore({
       ...store,
       progress,
       currentStepIndex: index,
       totalSteps: total,
-      triggerRef: el,
+      triggerRef,
       openState,
+      iframeElementInfo, // Store iframe info for component use
     });
+    this.isUpdatingStore = false;
+
+    console.log('[Tour] Store updated with triggerRef:', triggerRef);
+
+    // Check if this is the last step and if it has triggers
+    // If it has triggers, we should wait for them to complete before reporting flow completion
+    // Only report completion here (after element is found) if there are no triggers
+    // IMPORTANT: When navigating via STEP_GOTO, don't report completion immediately - 
+    // the step might have triggers that navigate elsewhere, or might be closed/dismissed
+    const wasNavigatingToStep = this.isNavigatingToStep; // Remember if we were navigating
+    const { isComplete } = this.getCurrentStepInfo(step);
+    const hasTriggers = step.trigger && step.trigger.length > 0 && 
+                        step.trigger.some(t => t.conditions && t.conditions.length > 0);
+    const hasStepNavigationActions = step.target?.actions?.some(
+      (action: RulesCondition) => action.type === ContentActionsItemType.STEP_GOTO
+    );
+    
+    // Only reset navigation flag AFTER we've checked it for completion logic
+    // But add a small delay to ensure the step is fully set up before allowing completion
+    if (wasNavigatingToStep) {
+      // When navigating to a step, always defer completion check - wait for user interaction
+      // or step dismissal. This prevents premature completion when triggers navigate to steps.
+      console.log('[Tour] Step was navigated to via STEP_GOTO - deferring completion check');
+      setTimeout(() => {
+        this.isNavigatingToStep = false;
+      }, 100);
+    } else {
+      this.isNavigatingToStep = false;
+    }
+    
+    if (isComplete && !hasTriggers && !hasStepNavigationActions && !wasNavigatingToStep) {
+      // Only report completion immediately if:
+      // 1. It's the last step
+      // 2. There are no triggers that might navigate elsewhere
+      // 3. There are no step navigation actions that might navigate elsewhere
+      // 4. We didn't just navigate to this step via STEP_GOTO (always defer in that case)
+      // Otherwise, completion will be reported when the step is closed or all navigation is complete
+      await this.reportStepEvents(step, BizEvents.FLOW_COMPLETED);
+    }
 
     // If the tour is temporarily hidden, unset the active tour
     if (!openState) {
       this.unsetActiveTour();
     }
+    
+    // Reset the processing flag
+    this.isProcessingElementFound = false;
+    console.log('[Tour] === handleElementFound COMPLETED ===');
   }
 
   private handleElementChanged(el: Element, step: Step, store: TourStore): void {
+    // Prevent infinite loops
+    if (this.isUpdatingStore) {
+      console.log('[Tour] Already updating store, skipping handleElementChanged');
+      return;
+    }
+    
+    console.log('[Tour] === handleElementChanged CALLED ===');
     const currentStep = this.getCurrentStep();
     if (currentStep?.cvid !== step.cvid) {
+      console.log('[Tour] Step mismatch in handleElementChanged, ignoring');
       return;
     }
 
-    // Update store
+    console.log('[Tour] Element changed for step:', step.cvid, 'Element:', el);
+    // Check if element is in iframe
+    const iframeElementInfo = this.watcher?.getIframeElementInfo();
+    let triggerRef: Element = el;
+
+    if (iframeElementInfo) {
+      console.log('[Tour] Element is in iframe, updating virtual element:', iframeElementInfo);
+      // For iframe elements, we need to create a virtual element that represents
+      // the target element's position for positioning purposes
+      triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
+    } else {
+      console.log('[Tour] Element is in main document');
+    }
+
+    // Update store with guard
+    this.isUpdatingStore = true;
     this.setStore({
       ...store,
-      triggerRef: el,
+      triggerRef,
+      iframeElementInfo, // Store iframe info for component use
     });
+    this.isUpdatingStore = false;
+    console.log('[Tour] Store updated in handleElementChanged with triggerRef:', triggerRef);
   }
 
   /**
@@ -371,6 +511,245 @@ export class Tour extends BaseContent<TourStore> {
     }
     await this.reportTooltipTargetMissingEvent(step);
     await this.close(contentEndReason.TOOLTIP_TARGET_MISSING);
+  }
+
+  /**
+   * Creates a virtual element for iframe positioning
+   * @private
+   */
+  private createVirtualElementForIframe(iframeElementInfo: IframeElementInfo): Element {
+    if (!document) {
+      throw new Error('Document is not available');
+    }
+    
+    // Get the target element's position within the iframe
+    const targetElement = iframeElementInfo.element;
+    const targetRect = targetElement.getBoundingClientRect();
+    
+    // Calculate the target element's position relative to the main document
+    const iframeRect = iframeElementInfo.iframeRect;
+    const targetLeft = iframeRect.left + targetRect.left;
+    const targetTop = iframeRect.top + targetRect.top;
+    
+    // Create a virtual element that represents the target element's position
+    // This is used for positioning the tour step relative to the actual target element
+    const virtualElement = document.createElement('div');
+    virtualElement.style.position = 'absolute';
+    virtualElement.style.left = `${targetLeft}px`;
+    virtualElement.style.top = `${targetTop}px`;
+    virtualElement.style.width = `${targetRect.width}px`;
+    virtualElement.style.height = `${targetRect.height}px`;
+    virtualElement.style.pointerEvents = 'none';
+    virtualElement.style.visibility = 'hidden';
+    
+    // Add to DOM temporarily for positioning calculations
+    document.body.appendChild(virtualElement);
+    
+    // Store reference for cleanup
+    (virtualElement as any).__usertour_virtual_iframe = true;
+    (virtualElement as any).__usertour_iframe_info = iframeElementInfo;
+    
+    console.log('[Tour] Created virtual element for target element:', {
+      targetRect,
+      iframeRect,
+      virtualPosition: { left: targetLeft, top: targetTop, width: targetRect.width, height: targetRect.height }
+    });
+    
+    return virtualElement;
+  }
+
+  /**
+   * Sets up iframe communication for step progression
+   * @private
+   */
+  private setupIframeCommunication(step: Step, iframeElementInfo: IframeElementInfo): void {
+    console.log('[Tour] Setting up iframe communication for step:', step.cvid);
+    
+    // Use step ID as unique handler identifier
+    const handlerId = `tour-step-${step.cvid}`;
+    
+    // Set up communication handler with unique ID
+    iframeUtils.setCommunicationHandler(handlerId, {
+      onStepComplete: (stepId: string, data?: any) => {
+        console.log('[Tour] Received step complete from iframe:', stepId, data);
+        if (stepId === step.cvid) {
+          this.handleIframeStepComplete(step, data);
+        }
+      },
+      onStepAction: (stepId: string, action: string, data?: any) => {
+        console.log('[Tour] Received step action from iframe:', stepId, action, data);
+        if (stepId === step.cvid) {
+          this.handleIframeStepAction(step, action, data);
+        }
+      },
+      onElementFound: (element: IframeElementInfo) => {
+        console.log('[Tour] Received element found from iframe:', element);
+        // Element found in iframe, update positioning
+        this.updateIframeElementPosition(element);
+      },
+      onElementNotFound: (_selector: any) => {
+        console.log('[Tour] Received element not found from iframe');
+        // Element not found in iframe, handle timeout
+        this.handleElementNotFound(step);
+      },
+    });
+
+    // Try to inject SDK into iframe if it's same-origin
+    if (iframeUtils.isIframeAccessible(iframeElementInfo.iframe)) {
+      console.log('[Tour] Injecting SDK into iframe');
+      iframeUtils.injectSDKIntoIframe(iframeElementInfo.iframe).then(() => {
+        // After SDK injection, wait a bit for SDK to initialize, then send message
+        console.log('[Tour] SDK injected, waiting for initialization...');
+        setTimeout(() => {
+          console.log('[Tour] Setting up element interaction for step:', step.cvid);
+          console.log('[Tour] Step target:', step.target);
+          console.log('[Tour] Step actions:', step.target?.actions);
+          
+          const message = {
+            type: 'usertour-find-element' as const,
+            element: step.target,
+            stepId: step.cvid,
+            actions: step.target?.actions,
+            triggers: step.trigger // Include triggers for iframe evaluation
+          };
+          
+          console.log('[Tour] Sending message to iframe:', message);
+          console.log('[Tour] Step triggers:', step.trigger);
+          iframeUtils.sendMessageToIframe(iframeElementInfo.iframe, message);
+        }, 100); // Wait 100ms for SDK to initialize
+      });
+    } else {
+      console.log('[Tour] Iframe is cross-origin, cannot inject SDK');
+    }
+  }
+
+  /**
+   * Handles step completion from iframe
+   * @private
+   */
+  private async handleIframeStepComplete(step: Step, _data?: any): Promise<void> {
+    // Report step completion
+    await this.reportStepEvents(step, BizEvents.FLOW_STEP_COMPLETED);
+    
+    // Move to next step
+    await this.moveToNextStep();
+  }
+
+  /**
+   * Moves to the next step in the tour
+   * @private
+   */
+  private async moveToNextStep(): Promise<void> {
+    const content = this.getContent();
+    const currentStep = this.getCurrentStep();
+    
+    if (!currentStep || !content.steps) {
+      return;
+    }
+    
+    // Clean up iframe listeners for current step before moving to next
+    console.log('[Tour] === MOVING TO NEXT STEP ===');
+    console.log('[Tour] Current step:', currentStep.cvid);
+    
+    const currentIndex = content.steps.findIndex(step => step.cvid === currentStep.cvid);
+    const nextIndex = currentIndex + 1;
+    
+    console.log('[Tour] Current step index:', currentIndex);
+    console.log('[Tour] Next step index:', nextIndex);
+    console.log('[Tour] Total steps:', content.steps.length);
+    console.log('[Tour] Is this the last step?', nextIndex >= content.steps.length);
+    
+    if (nextIndex < content.steps.length) {
+      // Move to next step - clean up current step before moving
+      console.log('[Tour] Moving to next step, cleaning up current step');
+      const iframeInfo = this.watcher?.getIframeElementInfo();
+      if (iframeInfo && currentStep.cvid) {
+        console.log('[Tour] Cleaning up iframe listeners before moving to next step');
+        iframeUtils.sendCleanupMessageToIframe(iframeInfo.iframe, currentStep.cvid);
+      }
+      
+      const nextStep = content.steps[nextIndex];
+      await this.show(nextStep.cvid);
+    } else {
+      // Tour completed - cleanup will happen in close() method
+      console.log('[Tour] === TOUR COMPLETED ===');
+      console.log('[Tour] No more steps, closing tour');
+      await this.close(contentEndReason.USER_CLOSED);
+    }
+  }
+
+  /**
+   * Handles step action from iframe
+   * @private
+   */
+  private async handleIframeStepAction(step: Step, action: string, data?: any): Promise<void> {
+    console.log('[Tour] === HANDLE IFRAME STEP ACTION ===');
+    console.log('[Tour] Action:', action);
+    console.log('[Tour] Step ID:', step.cvid);
+    console.log('[Tour] Data:', data);
+    console.log('[Tour] Step target actions:', step.target?.actions);
+    
+    if (action === 'handleActions' && data?.actions) {
+      // Handle the actions sent from iframe
+      console.log('[Tour] Processing actions from iframe:', data.actions);
+      console.log('[Tour] Actions count:', data.actions.length);
+      await this.handleActions(data.actions);
+    } else {
+      // Handle specific actions based on step configuration
+      const actions = step.target?.actions || [];
+      const matchingAction = actions.find(a => (a as any).action === action);
+      
+      if (matchingAction) {
+        console.log('[Tour] Found matching action:', matchingAction);
+        await this.handleActions([matchingAction]);
+      } else {
+        console.log('[Tour] No matching action found for:', action);
+      }
+    }
+  }
+
+  /**
+   * Cleans up iframe communication handler for a step
+   * @private
+   */
+  private cleanupIframeCommunication(step: Step): void {
+    const handlerId = `tour-step-${step.cvid}`;
+    console.log('[Tour] Cleaning up iframe communication for step:', step.cvid);
+    iframeUtils.removeCommunicationHandler(handlerId);
+  }
+
+  /**
+   * Updates iframe element position
+   * @private
+   */
+  private updateIframeElementPosition(iframeElementInfo: IframeElementInfo): void {
+    const store = this.getStore().getSnapshot();
+    if (store?.iframeElementInfo) {
+      // Update the virtual element position to match the target element's position
+      const virtualElement = store.triggerRef as HTMLElement;
+      if (virtualElement && (virtualElement as any).__usertour_virtual_iframe) {
+        // Get the target element's position within the iframe
+        const targetElement = iframeElementInfo.element;
+        const targetRect = targetElement.getBoundingClientRect();
+        
+        // Calculate the target element's position relative to the main document
+        const iframeRect = iframeElementInfo.iframeRect;
+        const targetLeft = iframeRect.left + targetRect.left;
+        const targetTop = iframeRect.top + targetRect.top;
+        
+        // Update virtual element to match target element's position and size
+        virtualElement.style.left = `${targetLeft}px`;
+        virtualElement.style.top = `${targetTop}px`;
+        virtualElement.style.width = `${targetRect.width}px`;
+        virtualElement.style.height = `${targetRect.height}px`;
+        
+        console.log('[Tour] Updated virtual element position to match target element:', {
+          targetRect,
+          iframeRect,
+          virtualPosition: { left: targetLeft, top: targetTop, width: targetRect.width, height: targetRect.height }
+        });
+      }
+    }
   }
 
   /**
@@ -404,8 +783,14 @@ export class Tour extends BaseContent<TourStore> {
       totalSteps: total,
     });
 
-    // If this is the last step, report completion
-    if (isComplete) {
+    // Check if this is the last step and if it has triggers
+    // If it has triggers, we should wait for them to complete before reporting flow completion
+    const hasTriggers = currentStep.trigger && currentStep.trigger.length > 0 && 
+                        currentStep.trigger.some(t => t.conditions && t.conditions.length > 0);
+    
+    if (isComplete && !hasTriggers) {
+      // Only report completion immediately if there are no triggers
+      // If triggers exist, completion will be reported when the step is closed or triggers execute
       await this.reportStepEvents(currentStep, BizEvents.FLOW_COMPLETED);
     }
 
@@ -428,8 +813,14 @@ export class Tour extends BaseContent<TourStore> {
     // Report that the step has been seen
     await this.reportStepEvents(currentStep, BizEvents.FLOW_STEP_SEEN);
 
-    // If this is the last step, report completion
-    if (isComplete) {
+    // Check if this is the last step and if it has triggers
+    // If it has triggers, we should wait for them to complete before reporting flow completion
+    const hasTriggers = currentStep.trigger && currentStep.trigger.length > 0 && 
+                        currentStep.trigger.some(t => t.conditions && t.conditions.length > 0);
+    
+    if (isComplete && !hasTriggers) {
+      // Only report completion immediately if there are no triggers
+      // If triggers exist, completion will be reported when the step is closed or triggers execute
       await this.reportStepEvents(currentStep, BizEvents.FLOW_COMPLETED);
     }
   }
@@ -445,6 +836,51 @@ export class Tour extends BaseContent<TourStore> {
    * @param reason - The reason for closing the tour, defaults to USER_CLOSED
    */
   async close(reason: contentEndReason = contentEndReason.USER_CLOSED) {
+    console.log('[Tour] === CLOSING TOUR ===');
+    console.log('[Tour] Close reason:', reason);
+    
+    // Hide the tooltip UI first
+    this.hide();
+    
+    // Clean up iframe listeners before closing
+    if (this.watcher) {
+      const iframeInfo = this.watcher.getIframeElementInfo();
+      if (iframeInfo) {
+        console.log('[Tour] Cleaning up iframe listeners before closing tour');
+        const currentStep = this.getCurrentStep();
+        if (currentStep?.cvid) {
+          iframeUtils.sendCleanupMessageToIframe(iframeInfo.iframe, currentStep.cvid);
+        }
+      }
+    }
+    
+    // If this is the last step and flow completion hasn't been reported yet, report it now
+    // BUT: Don't report completion if the step was closed due to missing target
+    // (step was never successfully shown, so it shouldn't count as completion)
+    const currentStep = this.getCurrentStep();
+    if (currentStep && reason !== contentEndReason.TOOLTIP_TARGET_MISSING) {
+      const { isComplete } = this.getCurrentStepInfo(currentStep);
+      // Check if this step has triggers that might navigate elsewhere
+      const hasTriggers = currentStep.trigger && currentStep.trigger.length > 0 && 
+                          currentStep.trigger.some(t => t.conditions && t.conditions.length > 0);
+      const hasStepNavigationActions = currentStep.target?.actions?.some(
+        (action: RulesCondition) => action.type === ContentActionsItemType.STEP_GOTO
+      );
+      
+      // Only report completion if:
+      // 1. It's the last step
+      // 2. It hasn't been reported yet
+      // 3. There are no active triggers that might navigate elsewhere
+      // 4. There are no step navigation actions that might navigate elsewhere
+      if (isComplete && !this.flowCompletedReported && !hasTriggers && !hasStepNavigationActions) {
+        console.log('[Tour] Last step is being closed - reporting flow completion');
+        await this.reportStepEvents(currentStep, BizEvents.FLOW_COMPLETED);
+      }
+    }
+    
+    // Always clear navigation flag when closing
+    this.isNavigatingToStep = false;
+    
     // Report close event
     await this.reportCloseEvent(reason);
     // Set the tour as dismissed
@@ -466,6 +902,10 @@ export class Tour extends BaseContent<TourStore> {
    * @param actions - The actions to be handled
    */
   async handleActions(actions: RulesCondition[]) {
+    console.log('[Tour] === HANDLE ACTIONS ===');
+    console.log('[Tour] Actions received:', actions);
+    console.log('[Tour] Actions count:', actions.length);
+    
     // Split actions into two groups
     const pageNavigateActions = actions.filter(
       (action) => action.type === ContentActionsItemType.PAGE_NAVIGATE,
@@ -473,22 +913,40 @@ export class Tour extends BaseContent<TourStore> {
     const otherActions = actions.filter(
       (action) => action.type !== ContentActionsItemType.PAGE_NAVIGATE,
     );
+    
+    console.log('[Tour] Page navigate actions:', pageNavigateActions);
+    console.log('[Tour] Other actions:', otherActions);
 
     // Execute non-PAGE_NAVIGATE actions first
     for (const action of otherActions) {
+      console.log('[Tour] Processing action:', action);
       if (action.type === ContentActionsItemType.STEP_GOTO) {
+        console.log('[Tour] Executing STEP_GOTO to:', action.data.stepCvid);
+        this.isNavigatingToStep = true; // Mark that we're navigating to prevent premature completion
         await this.show(action.data.stepCvid);
+        // Note: isNavigatingToStep will be cleared in handleElementFound after the element is found
+        // or after a timeout if element is not found (handled in displayStep/close)
       } else if (action.type === ContentActionsItemType.FLOW_START) {
+        console.log('[Tour] Executing FLOW_START:', action.data);
         await this.startNewContent(action.data.contentId, action.data.stepCvid);
       } else if (action.type === ContentActionsItemType.FLOW_DISMIS) {
+        console.log('[Tour] Executing FLOW_DISMIS');
+        // When flow is dismissed via action, report completion if not already reported
+        const currentStep = this.getCurrentStep();
+        if (currentStep && !this.flowCompletedReported) {
+          console.log('[Tour] FLOW_DISMIS - reporting flow completion');
+          await this.reportStepEvents(currentStep, BizEvents.FLOW_COMPLETED);
+        }
         await this.handleClose(contentEndReason.USER_CLOSED);
       } else if (action.type === ContentActionsItemType.JAVASCRIPT_EVALUATE) {
+        console.log('[Tour] Executing JAVASCRIPT_EVALUATE:', action.data.value);
         evalCode(action.data.value);
       }
     }
 
     // Execute PAGE_NAVIGATE actions last
     for (const action of pageNavigateActions) {
+      console.log('[Tour] Executing PAGE_NAVIGATE:', action.data);
       this.handleNavigate(action.data);
     }
   }
@@ -749,8 +1207,50 @@ export class Tour extends BaseContent<TourStore> {
    * Resets the tour
    */
   reset() {
+    console.log('[Tour] === RESETTING TOUR ===');
+    
+    // Clean up iframe listeners before reset
+    if (this.watcher) {
+      const iframeInfo = this.watcher.getIframeElementInfo();
+      if (iframeInfo) {
+        console.log('[Tour] Cleaning up iframe listeners on reset');
+        const currentStep = this.getCurrentStep();
+        if (currentStep?.cvid) {
+          iframeUtils.sendCleanupMessageToIframe(iframeInfo.iframe, currentStep.cvid);
+        }
+      }
+    }
+    
+    // Clean up all iframe communication handlers
+    iframeUtils.removeAllCommunicationHandlers();
+    
+    // Clean up all iframe SDK instances across all iframes
+    iframeUtils.sendCleanupAllStepsToAllIframes();
+    
+    // Clear all pending timeouts
+    for (const timeoutId of this.triggerTimeouts) {
+      clearTimeout(timeoutId);
+    }
+    this.triggerTimeouts = [];
+    
+    // Destroy the element watcher
+    if (this.watcher) {
+      this.watcher.destroy();
+      this.watcher = null;
+    }
+    
+    // Reset flags
+    this.isUpdatingStore = false;
+    this.isProcessingElementFound = false;
+    this.flowCompletedReported = false;
+    // Don't reset isNavigatingToStep here - it should persist through reset
+    // when navigating via STEP_GOTO, and will be cleared in handleElementFound
+    
+    // Reset state
     this.setCurrentStep(null);
     this.setStore(undefined);
+    
+    console.log('[Tour] Tour reset completed');
   }
 
   /**
@@ -762,6 +1262,18 @@ export class Tour extends BaseContent<TourStore> {
       clearTimeout(timeoutId);
     }
     this.triggerTimeouts = [];
+
+    // Clean up iframe listeners for current step
+    if (this.watcher) {
+      const currentIframeInfo = this.watcher.getIframeElementInfo();
+      if (currentIframeInfo) {
+        console.log('[Tour] Cleaning up iframe listeners on destroy');
+        iframeUtils.sendCleanupMessageToIframe(currentIframeInfo.iframe, this.getCurrentStep()?.cvid || '');
+      }
+    }
+
+    // Clean up all iframe communication handlers
+    iframeUtils.removeAllCommunicationHandlers();
 
     // Unset the active tour reference
     if (this.isActiveTour()) {
