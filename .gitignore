@@ -32,8 +32,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 .env.production
+**/**/.env
 .cursor-settings.json
 
+# cache
+apps/server/node-compile-cache/**/**/**
 # turbo
 .turbo
 

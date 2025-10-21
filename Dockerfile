@@ -14,7 +14,8 @@ COPY apps/server/.env.example ./apps/server/.env
 RUN pnpm install 
 
 # Install system dependencies
-RUN apk add --no-cache nginx openssl openssl-dev libc6-compat gettext
+RUN apk add --no-cache nginx openssl openssl-dev libc6-compat gettext git
+
 
 # Copy nginx configuration
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
