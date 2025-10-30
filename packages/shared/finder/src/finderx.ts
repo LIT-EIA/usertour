@@ -353,6 +353,24 @@ export function finderV2(target: Target, root: Element | Document) {
     customSelector = '',
     type = 'auto',
   } = target;
+
+  // Normalize and text matching helpers
+  const normalizeText = (text: string): string =>
+    (text ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+  const textMatches = (el: HTMLElement, expected: string): boolean => {
+    if (!expected) {
+      return true;
+    }
+    const elText = normalizeText(el.innerText ?? el.textContent ?? '');
+    const expText = normalizeText(expected);
+    // Default behavior: contains match
+    return elText.includes(expText);
+  };
+
   if (type === 'auto') {
     const mapping: any = {
       looser: 1,
@@ -364,10 +382,12 @@ export function finderV2(target: Target, root: Element | Document) {
     };
     const el = finderX(selectors, root, mapping[precision]) as HTMLElement;
     if (el) {
-      if (isDynamicContent && content && el.innerText !== content) {
-        return null;
+      // If dynamic text, skip text comparison entirely
+      if (isDynamicContent) {
+        return el;
       }
-      return el;
+      // If content provided, require a contains match after normalization
+      return content ? (textMatches(el, content) ? el : null) : el;
     }
   } else {
     const sequenceMapping: any = {
@@ -378,14 +398,19 @@ export function finderV2(target: Target, root: Element | Document) {
       '5st': 4,
     };
     if (customSelector) {
-      const selector = customSelector.replace(/\\\\/g, '\\');
-      const els = root.querySelectorAll(selector);
-      if (els.length > 0) {
-        const el = (els[sequenceMapping[sequence]] as HTMLElement) || els[0];
-        if (content && el.innerText.trim() !== content) {
+      const selector = customSelector.replace(/\\/g, '\\');
+      const nodeList = root.querySelectorAll(selector);
+      if (nodeList.length > 0) {
+        const allEls = Array.from(nodeList) as HTMLElement[];
+        // If dynamic, do not filter by text; else filter using normalized contains
+        const filtered = isDynamicContent || !content
+          ? allEls
+          : allEls.filter((e) => textMatches(e, content));
+        if (filtered.length === 0) {
           return null;
         }
-        return el;
+        const index = sequenceMapping[sequence] ?? 0;
+        return filtered[index] || filtered[0];
       }
     }
   }
