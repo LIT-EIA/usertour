@@ -39,6 +39,7 @@ export type Target = {
   isDynamicContent?: boolean;
   customSelector?: string;
   type?: string;
+  textMatchMode?: 'contains' | 'exact';
 };
 
 const finderAttrs = [
@@ -352,6 +353,7 @@ export function finderV2(target: Target, root: Element | Document) {
     isDynamicContent = false,
     customSelector = '',
     type = 'auto',
+    textMatchMode = 'exact',
   } = target;
 
   // Normalize and text matching helpers
@@ -367,8 +369,9 @@ export function finderV2(target: Target, root: Element | Document) {
     }
     const elText = normalizeText(el.innerText ?? el.textContent ?? '');
     const expText = normalizeText(expected);
-    // Default behavior: contains match
-    return elText.includes(expText);
+    // Exact matching with relaxed whitespace handling
+    // Normalization already collapses all whitespace sequences to single spaces
+    return textMatchMode === 'exact' ? elText === expText : elText.includes(expText);
   };
 
   if (type === 'auto') {
