@@ -11,6 +11,7 @@ import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
 
 export class Launcher extends BaseContent<LauncherStore> {
   private watcher: ElementWatcher | null = null;
+  private iframePositionUpdateCleanup: (() => void) | null = null; // Cleanup function for iframe position update listeners
 
   /**
    * Monitors the launcher's visibility state and ensures it's properly handled
@@ -139,7 +140,7 @@ export class Launcher extends BaseContent<LauncherStore> {
     this.watcher.setTargetMissingSeconds(this.getTargetMissingSeconds());
 
     // Set up element found handler
-    this.watcher.once(AppEvents.ELEMENT_FOUND, (el) => {
+    this.watcher.once(AppEvents.ELEMENT_FOUND, async (el) => {
       // Check if element is in iframe
       const iframeElementInfo = this.watcher?.getIframeElementInfo();
       let triggerRef: HTMLElement = el as HTMLElement;
@@ -147,6 +148,44 @@ export class Launcher extends BaseContent<LauncherStore> {
       if (iframeElementInfo) {
         // For iframe elements, create a virtual element for positioning
         triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
+        
+        // Set up scroll/resize listeners to keep position updated
+        this.setupIframePositionUpdate(iframeElementInfo);
+        
+        // Scroll iframe and element into view
+        const { smoothScroll } = await import('@usertour-packages/dom');
+        // First scroll the iframe itself into view on the main page
+        console.log('[Launcher] Scrolling iframe into view');
+        await smoothScroll(iframeElementInfo.iframe, { block: 'center' });
+        
+        // Then scroll the element inside the iframe into view and wait for it to complete
+        try {
+          const targetElement = iframeElementInfo.element;
+          if (targetElement && targetElement.isConnected) {
+            console.log('[Launcher] Scrolling element inside iframe into view');
+            await this.waitForIframeElementScroll(targetElement, iframeElementInfo, {
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            console.log('[Launcher] Element inside iframe finished scrolling');
+            
+            // Update the virtual element position after scrolling completes
+            // The element's position relative to the iframe has changed, so we need to recalculate
+            // Pass the virtual element directly since store hasn't been updated yet
+            this.updateIframeElementPosition(iframeElementInfo, triggerRef);
+            
+            // Small delay to ensure position update is processed by the browser
+            await new Promise(resolve => requestAnimationFrame(resolve));
+          }
+        } catch (error) {
+          console.log('[Launcher] Error scrolling element inside iframe:', error);
+          // Element might be in cross-origin iframe, which is fine - we already scrolled the iframe
+        }
+      } else {
+        // For main page elements, scroll into view and wait
+        const { smoothScroll } = await import('@usertour-packages/dom');
+        await smoothScroll(el as Element, { block: 'center' });
       }
 
       this.setStore({ 
@@ -176,8 +215,9 @@ export class Launcher extends BaseContent<LauncherStore> {
     
     // Create a virtual element that represents the iframe's position
     // This is used for positioning the launcher relative to the iframe
+    // Use 'fixed' position to match floating-ui's 'fixed' strategy (viewport-relative)
     const virtualElement = document.createElement('div');
-    virtualElement.style.position = 'absolute';
+    virtualElement.style.position = 'fixed';
     virtualElement.style.left = `${iframeElementInfo.iframeRect.left}px`;
     virtualElement.style.top = `${iframeElementInfo.iframeRect.top}px`;
     virtualElement.style.width = `${iframeElementInfo.iframeRect.width}px`;
@@ -272,10 +312,338 @@ export class Launcher extends BaseContent<LauncherStore> {
    * 3. Triggers dismissal events
    */
   async close() {
+    // Clean up position update listeners
+    this.cleanupIframePositionUpdate();
+    
     this.setDismissed(true);
     this.setStarted(false);
     this.hide();
     await this.reportDismissEvent();
+  }
+
+  /**
+   * Waits for element scroll inside iframe to complete
+   * Similar to smoothScroll but works for elements inside iframes
+   * @private
+   */
+  private async waitForIframeElementScroll(element: Element, iframeElementInfo?: IframeElementInfo, options: ScrollIntoViewOptions = {}): Promise<void> {
+    return new Promise((resolve) => {
+      if (!element || !element.isConnected) {
+        resolve();
+        return;
+      }
+
+      const scrollOptions = {
+        behavior: 'smooth' as ScrollBehavior,
+        block: 'center' as ScrollLogicalPosition,
+        inline: 'nearest' as ScrollLogicalPosition,
+        ...options,
+      };
+
+      // Get iframe's window and document for scroll position checking
+      let iframeWindow: Window | null = null;
+      let iframeDoc: Document | null = null;
+      
+      if (iframeElementInfo) {
+        try {
+          iframeWindow = iframeElementInfo.iframe.contentWindow;
+          iframeDoc = iframeElementInfo.iframe.contentDocument;
+        } catch (error) {
+          console.log('[Launcher] Cannot access iframe window for scroll detection');
+        }
+      }
+
+      let same = 0;
+      let lastScrollTop: number | null = null;
+      let lastScrollLeft: number | null = null;
+      let rafId: number;
+
+      const timeoutId = setTimeout(() => {
+        cancelAnimationFrame(rafId);
+        resolve();
+      }, 2000); // 2 second timeout to allow for smooth scrolling
+
+      // Start scrolling
+      element.scrollIntoView(scrollOptions);
+      rafId = requestAnimationFrame(check);
+
+      function check() {
+        // For iframe elements, check scroll position instead of element position
+        // because getBoundingClientRect is relative to iframe viewport
+        if (iframeWindow && iframeDoc) {
+          const scrollTop = iframeWindow.pageYOffset || iframeDoc.documentElement.scrollTop || iframeDoc.body.scrollTop || 0;
+          const scrollLeft = iframeWindow.pageXOffset || iframeDoc.documentElement.scrollLeft || iframeDoc.body.scrollLeft || 0;
+
+          // Check if scroll position has stabilized
+          if (scrollTop === lastScrollTop && scrollLeft === lastScrollLeft) {
+            if (same++ > 2) {
+              clearTimeout(timeoutId);
+              console.log('[Launcher] Iframe scroll completed, scroll position stabilized');
+              resolve();
+              return;
+            }
+          } else {
+            same = 0;
+            lastScrollTop = scrollTop;
+            lastScrollLeft = scrollLeft;
+          }
+        } else {
+          // Fallback: check element position relative to iframe viewport
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top;
+          
+          if (elementTop === lastScrollTop) {
+            if (same++ > 5) {
+              clearTimeout(timeoutId);
+              console.log('[Launcher] Iframe element scroll completed, position stabilized');
+              resolve();
+              return;
+            }
+          } else {
+            same = 0;
+            lastScrollTop = elementTop;
+          }
+        }
+
+        rafId = requestAnimationFrame(check);
+      }
+    });
+  }
+
+  /**
+   * Updates iframe element position
+   * @private
+   */
+  private updateIframeElementPosition(iframeElementInfo: IframeElementInfo, virtualElement?: HTMLElement): void {
+    // Get virtual element from parameter or store
+    let elementToUpdate: HTMLElement | null = null;
+    
+    if (virtualElement) {
+      elementToUpdate = virtualElement;
+    } else {
+      const store = this.getStore().getSnapshot();
+      if (store?.triggerRef) {
+        elementToUpdate = store.triggerRef as HTMLElement;
+      }
+    }
+    
+    if (elementToUpdate && (elementToUpdate as any).__usertour_virtual_iframe) {
+      // Get the target element's position within the iframe
+      const targetElement = iframeElementInfo.element;
+      if (!targetElement || !targetElement.isConnected) {
+        console.log('[Launcher] Target element no longer connected, skipping position update');
+        return;
+      }
+      
+      const targetRect = targetElement.getBoundingClientRect();
+      
+      // Get the current iframe position
+      const iframeRect = iframeElementInfo.iframe.getBoundingClientRect();
+      
+      // Calculate the target element's position relative to the main document
+      const targetLeft = iframeRect.left + targetRect.left;
+      const targetTop = iframeRect.top + targetRect.top;
+      
+      // Update virtual element to match target element's position and size
+      elementToUpdate.style.left = `${targetLeft}px`;
+      elementToUpdate.style.top = `${targetTop}px`;
+      elementToUpdate.style.width = `${targetRect.width}px`;
+      elementToUpdate.style.height = `${targetRect.height}px`;
+      
+      // Update the stored iframe rect to keep it in sync
+      iframeElementInfo.iframeRect = iframeRect;
+      
+      console.log('[Launcher] Updated virtual element position to match target element:', {
+        targetRect,
+        iframeRect,
+        virtualPosition: { left: targetLeft, top: targetTop, width: targetRect.width, height: targetRect.height }
+      });
+    } else {
+      console.log('[Launcher] Virtual element not found for position update');
+    }
+  }
+
+  /**
+   * Sets up scroll and resize listeners to update iframe element position
+   * Similar to autoUpdate from floating-ui, but for iframe virtual elements
+   * Uses continuous animation frame updates for smooth tracking during fast scrolling
+   * @private
+   */
+  private setupIframePositionUpdate(iframeElementInfo: IframeElementInfo): void {
+    console.log('[Launcher] Setting up iframe position update listeners');
+    
+    // Clean up any existing listeners first
+    this.cleanupIframePositionUpdate();
+    
+    // Use continuous animation frame updates for smooth tracking
+    // This is similar to floating-ui's autoUpdate with animationFrame: true
+    let rafId: number | null = null;
+    let isRunning = false;
+    
+    const updateLoop = () => {
+      if (!isRunning) {
+        return;
+      }
+      
+      this.updateIframeElementPosition(iframeElementInfo);
+      rafId = requestAnimationFrame(updateLoop);
+    };
+    
+    const startUpdateLoop = () => {
+      if (!isRunning) {
+        isRunning = true;
+        rafId = requestAnimationFrame(updateLoop);
+      }
+    };
+    
+    const stopUpdateLoop = () => {
+      isRunning = false;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    };
+    
+    // Track scroll state for both main window and iframe
+    // Keep the loop running as long as either is scrolling
+    let mainWindowScrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    let iframeScrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    
+    const handleMainWindowScroll = () => {
+      startUpdateLoop();
+      
+      // Clear existing timeout
+      if (mainWindowScrollTimeout !== null) {
+        clearTimeout(mainWindowScrollTimeout);
+      }
+      
+      // Stop main window scroll tracking after scrolling stops (100ms of no scroll events)
+      mainWindowScrollTimeout = setTimeout(() => {
+        mainWindowScrollTimeout = null;
+        // Only stop loop if iframe is also not scrolling
+        if (iframeScrollTimeout === null) {
+          stopUpdateLoop();
+        }
+      }, 100);
+    };
+    
+    const handleIframeScroll = () => {
+      startUpdateLoop();
+      
+      // Clear existing timeout
+      if (iframeScrollTimeout !== null) {
+        clearTimeout(iframeScrollTimeout);
+      }
+      
+      // Stop iframe scroll tracking after scrolling stops (100ms of no scroll events)
+      iframeScrollTimeout = setTimeout(() => {
+        iframeScrollTimeout = null;
+        // Only stop loop if main window is also not scrolling
+        if (mainWindowScrollTimeout === null) {
+          stopUpdateLoop();
+        }
+      }, 100);
+    };
+    
+    const handleResize = () => {
+      startUpdateLoop();
+      // Resize typically happens once, so we can stop after a brief delay
+      setTimeout(() => {
+        stopUpdateLoop();
+      }, 200);
+    };
+    
+    // Set up scroll listeners on main window
+    window.addEventListener('scroll', handleMainWindowScroll, { passive: true, capture: true });
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    // Set up scroll listeners on iframe's contentWindow if accessible
+    let iframeScrollHandler: (() => void) | null = null;
+    let iframeResizeHandler: (() => void) | null = null;
+    
+    try {
+      const iframeWindow = iframeElementInfo.iframe.contentWindow;
+      const iframeDoc = iframeElementInfo.iframe.contentDocument;
+      
+      if (iframeWindow && iframeDoc) {
+        iframeScrollHandler = handleIframeScroll;
+        iframeResizeHandler = handleResize;
+        
+        // Listen to scroll events on iframe's window
+        iframeWindow.addEventListener('scroll', iframeScrollHandler, { passive: true, capture: true });
+        iframeWindow.addEventListener('resize', iframeResizeHandler, { passive: true });
+        
+        // Also listen to scroll events on iframe's document body if it exists
+        if (iframeDoc.body) {
+          const bodyScrollHandler = handleIframeScroll;
+          iframeDoc.body.addEventListener('scroll', bodyScrollHandler, { passive: true, capture: true });
+          
+          // Store body scroll handler for cleanup
+          (iframeElementInfo.iframe as any).__usertour_body_scroll_handler = bodyScrollHandler;
+        }
+        
+        console.log('[Launcher] Set up scroll/resize listeners on iframe window');
+      }
+    } catch (error) {
+      // Cross-origin iframe, cannot access contentWindow
+      console.log('[Launcher] Cannot access iframe contentWindow for scroll listeners (cross-origin)');
+    }
+    
+    // Store cleanup function
+    this.iframePositionUpdateCleanup = () => {
+      console.log('[Launcher] Cleaning up iframe position update listeners');
+      
+      // Stop the update loop
+      stopUpdateLoop();
+      
+      // Clear scroll timeouts
+      if (mainWindowScrollTimeout !== null) {
+        clearTimeout(mainWindowScrollTimeout);
+        mainWindowScrollTimeout = null;
+      }
+      if (iframeScrollTimeout !== null) {
+        clearTimeout(iframeScrollTimeout);
+        iframeScrollTimeout = null;
+      }
+      
+      window.removeEventListener('scroll', handleMainWindowScroll, { capture: true });
+      window.removeEventListener('resize', handleResize);
+      
+      if (iframeScrollHandler && iframeResizeHandler) {
+        try {
+          const iframeWindow = iframeElementInfo.iframe.contentWindow;
+          const iframeDoc = iframeElementInfo.iframe.contentDocument;
+          
+          if (iframeWindow) {
+            iframeWindow.removeEventListener('scroll', iframeScrollHandler, { capture: true });
+            iframeWindow.removeEventListener('resize', iframeResizeHandler);
+          }
+          
+          // Clean up body scroll handler if it exists
+          const bodyScrollHandler = (iframeElementInfo.iframe as any).__usertour_body_scroll_handler;
+          if (bodyScrollHandler && iframeDoc?.body) {
+            iframeDoc.body.removeEventListener('scroll', bodyScrollHandler, { capture: true });
+            delete (iframeElementInfo.iframe as any).__usertour_body_scroll_handler;
+          }
+        } catch (error) {
+          // Cross-origin iframe, ignore cleanup errors
+          console.log('[Launcher] Error cleaning up iframe listeners (cross-origin):', error);
+        }
+      }
+      
+      this.iframePositionUpdateCleanup = null;
+    };
+  }
+
+  /**
+   * Cleans up iframe position update listeners
+   * @private
+   */
+  private cleanupIframePositionUpdate(): void {
+    if (this.iframePositionUpdateCleanup) {
+      this.iframePositionUpdateCleanup();
+      this.iframePositionUpdateCleanup = null;
+    }
   }
 
   /**
@@ -294,6 +662,9 @@ export class Launcher extends BaseContent<LauncherStore> {
       this.watcher.destroy();
       this.watcher = null;
     }
+    
+    // Clean up position update listeners
+    this.cleanupIframePositionUpdate();
   }
 
   reset() {}
