@@ -452,12 +452,6 @@ export class Launcher extends BaseContent<LauncherStore> {
       
       // Update the stored iframe rect to keep it in sync
       iframeElementInfo.iframeRect = iframeRect;
-      
-      console.log('[Launcher] Updated virtual element position to match target element:', {
-        targetRect,
-        iframeRect,
-        virtualPosition: { left: targetLeft, top: targetTop, width: targetRect.width, height: targetRect.height }
-      });
     } else {
       console.log('[Launcher] Virtual element not found for position update');
     }

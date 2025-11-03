@@ -35,7 +35,10 @@ export class ElementWatcher extends Evented {
   private iframeElementInfo: IframeElementInfo | null = null; // Iframe element information if found in iframe
   private isSearchingIframes = false; // Prevent multiple concurrent iframe searches
   private hasFoundElement = false; // Prevent multiple element found events
-  private iframeSearchDisabled = false; // Completely disable iframe search after first attempt
+  private iframeSearchDisabled = false; // Temporarily disable iframe search to prevent rapid re-searches
+  private iframeMonitor: MutationObserver | null = null; // Monitor iframes for src changes
+  private lastIframeSearchTime = 0; // Track when we last searched iframes
+  private iframeSearchRetryInterval = 2000; // Retry iframe search every 2 seconds if element not found
 
   constructor(target: ElementSelectorPropsData) {
     super();
@@ -88,12 +91,26 @@ export class ElementWatcher extends Evented {
     }
 
     console.log('[ElementWatcher] Element not found in main document, searching iframes...');
-    // If not found in main document, search in iframes (only once)
-    if (!this.iframeSearchDisabled) {
+    // If not found in main document, search in iframes
+    // Allow periodic re-searches to catch iframe src changes
+    const now = Date.now();
+    const timeSinceLastIframeSearch = now - this.lastIframeSearchTime;
+    
+    if (!this.iframeSearchDisabled || timeSinceLastIframeSearch >= this.iframeSearchRetryInterval) {
+      // Reset the disabled flag if enough time has passed
+      if (timeSinceLastIframeSearch >= this.iframeSearchRetryInterval) {
+        this.iframeSearchDisabled = false;
+        this.lastIframeSearchTime = now;
+      }
       this.searchInIframes(retryTimes);
     } else {
-      console.log('[ElementWatcher] Iframe search already attempted, scheduling retry');
+      console.log('[ElementWatcher] Iframe search recently attempted, scheduling retry');
       this.scheduleRetry(retryTimes);
+    }
+    
+    // Start monitoring iframes for src changes if not already monitoring
+    if (!this.iframeMonitor && !this.hasFoundElement) {
+      this.startIframeMonitoring();
     }
   }
 
@@ -180,7 +197,8 @@ export class ElementWatcher extends Evented {
     }
     
     this.isSearchingIframes = true;
-    this.iframeSearchDisabled = true; // Disable after starting search
+    this.iframeSearchDisabled = true; // Temporarily disable to prevent rapid re-searches
+    this.lastIframeSearchTime = Date.now(); // Track when we searched
     console.log('[ElementWatcher] Starting iframe search for:', this.target);
     try {
       const iframeElementInfo = await iframeUtils.searchElementInIframes(this.target);
@@ -242,6 +260,7 @@ export class ElementWatcher extends Evented {
    * Useful when SPA navigation occurs and we want to start fresh
    */
   reset(): void {
+    this.stopIframeMonitoring();
     this.clearTimer();
     this.element = null;
     this.checker = null;
@@ -249,12 +268,121 @@ export class ElementWatcher extends Evented {
     this.isSearchingIframes = false;
     this.hasFoundElement = false;
     this.iframeSearchDisabled = false;
+    this.lastIframeSearchTime = 0;
+  }
+
+  /**
+   * Starts monitoring iframes for src attribute changes
+   * This allows us to detect when iframe content changes and re-search for elements
+   */
+  private startIframeMonitoring(): void {
+    if (this.iframeMonitor || this.hasFoundElement || !document) {
+      return;
+    }
+
+    console.log('[ElementWatcher] Starting iframe src change monitoring');
+    
+    // Store current iframe srcs to detect changes
+    const iframeSrcs = new Map<HTMLIFrameElement, string>();
+    
+    // Initialize tracking for existing iframes
+    const updateIframeTracking = () => {
+      if (this.hasFoundElement || !document) {
+        return;
+      }
+
+      const iframes = document.querySelectorAll('iframe');
+      for (const iframe of iframes) {
+        const currentSrc = iframe.src || '';
+        const previousSrc = iframeSrcs.get(iframe);
+        
+        if (previousSrc !== undefined && previousSrc !== currentSrc) {
+          console.log('[ElementWatcher] Detected iframe src change:', previousSrc, '->', currentSrc);
+          
+          // Re-enable iframe search when src changes
+          this.iframeSearchDisabled = false;
+          this.lastIframeSearchTime = 0; // Force immediate re-search
+          
+          // Trigger a new search after a short delay to allow new content to start loading
+          setTimeout(() => {
+            if (!this.hasFoundElement) {
+              console.log('[ElementWatcher] Re-searching iframes after src change');
+              this.findElement(0); // Reset retry count for new search
+            }
+          }, 500); // Give iframe time to start loading new content
+        }
+        
+        iframeSrcs.set(iframe, currentSrc);
+      }
+    };
+
+    // Use MutationObserver to watch for iframe src changes and new iframes
+    this.iframeMonitor = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+          const iframe = mutation.target as HTMLIFrameElement;
+          updateIframeTracking();
+        } else if (mutation.type === 'childList') {
+          // Check if any iframes were added or removed
+          for (const node of mutation.addedNodes) {
+            if (node instanceof HTMLIFrameElement) {
+              updateIframeTracking();
+            } else if (node instanceof Element && node.querySelector('iframe')) {
+              updateIframeTracking();
+            }
+          }
+        }
+      }
+    });
+
+    // Observe document body for changes
+    if (document.body) {
+      this.iframeMonitor.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['src'],
+      });
+    }
+
+    // Initial tracking
+    updateIframeTracking();
+
+    // Also periodically check for src changes (backup method)
+    const checkInterval = setInterval(() => {
+      if (this.hasFoundElement) {
+        clearInterval(checkInterval);
+        return;
+      }
+      updateIframeTracking();
+    }, 1000); // Check every second
+
+    // Store interval for cleanup (we'll need to track this)
+    (this.iframeMonitor as any).__checkInterval = checkInterval;
+  }
+
+  /**
+   * Stops monitoring iframes
+   */
+  private stopIframeMonitoring(): void {
+    if (this.iframeMonitor) {
+      console.log('[ElementWatcher] Stopping iframe src change monitoring');
+      this.iframeMonitor.disconnect();
+      
+      // Clear any intervals
+      if ((this.iframeMonitor as any).__checkInterval) {
+        clearInterval((this.iframeMonitor as any).__checkInterval);
+      }
+      
+      this.iframeMonitor = null;
+    }
   }
 
   /**
    * Cleans up resources and resets the watcher state
    */
   destroy() {
+    this.stopIframeMonitoring();
     this.reset();
   }
 

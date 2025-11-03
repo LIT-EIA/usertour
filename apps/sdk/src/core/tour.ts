@@ -1,4 +1,5 @@
 import { smoothScroll } from '@usertour-packages/dom';
+import { finderV2 } from '@usertour-packages/finder';
 import {
   ContentEditorClickableElement,
   ContentEditorElementType,
@@ -633,26 +634,67 @@ export class Tour extends BaseContent<TourStore> {
     // Try to inject SDK into iframe if it's same-origin
     if (iframeUtils.isIframeAccessible(iframeElementInfo.iframe)) {
       console.log('[Tour] Injecting SDK into iframe');
+      
+      // Retry logic for handling iframe src changes with delayed content loading
+      const sendFindElementMessage = (retryCount = 0, maxRetries = 8) => {
+        console.log('[Tour] Setting up element interaction for step:', step.cvid, `(attempt ${retryCount + 1}/${maxRetries + 1})`);
+        console.log('[Tour] Step target:', step.target);
+        console.log('[Tour] Step actions:', step.target?.actions);
+        
+        const message = {
+          type: 'usertour-find-element' as const,
+          element: step.target,
+          stepId: step.cvid,
+          actions: step.target?.actions,
+          triggers: step.trigger // Include triggers for iframe evaluation
+        };
+        
+        console.log('[Tour] Sending message to iframe:', message);
+        console.log('[Tour] Step triggers:', step.trigger);
+        iframeUtils.sendMessageToIframe(iframeElementInfo.iframe, message);
+        
+        // Verify element exists in iframe after sending message
+        // This is important for src changes where content takes time to load
+        if (retryCount < maxRetries && step.target) {
+          // Use exponential backoff: 300ms, 600ms, 900ms, 1200ms, etc.
+          const delay = Math.min(300 * (retryCount + 1), 2000);
+          setTimeout(() => {
+            try {
+              const iframeDoc = iframeElementInfo.iframe.contentDocument;
+              if (iframeDoc && step.target) {
+                const elementInIframe = finderV2(step.target, iframeDoc);
+                if (!elementInIframe) {
+                  console.log(`[Tour] Element not found in iframe after src change, retrying in ${delay}ms... (${retryCount + 1}/${maxRetries})`);
+                  sendFindElementMessage(retryCount + 1, maxRetries);
+                } else {
+                  console.log('[Tour] Element found in iframe, attachment successful');
+                }
+              } else {
+                // Iframe might be reloading, retry
+                if (iframeDoc) {
+                  console.log(`[Tour] Iframe document not accessible, retrying in ${delay}ms... (${retryCount + 1}/${maxRetries})`);
+                  sendFindElementMessage(retryCount + 1, maxRetries);
+                }
+              }
+            } catch (error) {
+              console.log('[Tour] Error checking element in iframe:', error);
+              // Retry on error
+              if (retryCount < maxRetries) {
+                sendFindElementMessage(retryCount + 1, maxRetries);
+              }
+            }
+          }, delay);
+        }
+      };
+      
       iframeUtils.injectSDKIntoIframe(iframeElementInfo.iframe).then(() => {
         // After SDK injection, wait a bit for SDK to initialize, then send message
         console.log('[Tour] SDK injected, waiting for initialization...');
         setTimeout(() => {
-          console.log('[Tour] Setting up element interaction for step:', step.cvid);
-          console.log('[Tour] Step target:', step.target);
-          console.log('[Tour] Step actions:', step.target?.actions);
-          
-          const message = {
-            type: 'usertour-find-element' as const,
-            element: step.target,
-            stepId: step.cvid,
-            actions: step.target?.actions,
-            triggers: step.trigger // Include triggers for iframe evaluation
-          };
-          
-          console.log('[Tour] Sending message to iframe:', message);
-          console.log('[Tour] Step triggers:', step.trigger);
-          iframeUtils.sendMessageToIframe(iframeElementInfo.iframe, message);
-        }, 100); // Wait 100ms for SDK to initialize
+          sendFindElementMessage();
+        }, 200); // Wait 200ms for SDK to initialize
+      }).catch((error) => {
+        console.log('[Tour] Error injecting SDK into iframe:', error);
       });
     } else {
       console.log('[Tour] Iframe is cross-origin, cannot inject SDK');
@@ -885,12 +927,6 @@ export class Tour extends BaseContent<TourStore> {
       
       // Update the stored iframe rect to keep it in sync
       iframeElementInfo.iframeRect = iframeRect;
-      
-      console.log('[Tour] Updated virtual element position to match target element:', {
-        targetRect,
-        iframeRect,
-        virtualPosition: { left: targetLeft, top: targetTop, width: targetRect.width, height: targetRect.height }
-      });
     } else {
       console.log('[Tour] Virtual element not found for position update');
     }

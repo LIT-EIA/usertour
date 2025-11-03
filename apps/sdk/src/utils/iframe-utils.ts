@@ -418,26 +418,162 @@ export class IframeUtils {
   }
 
   /**
-   * Wait for iframe to load
+   * Wait for iframe to load, including handling src attribute changes
+   * When src changes, we need to wait for the new content to fully load
    */
-  waitForIframeLoad(iframe: HTMLIFrameElement, timeout = 5000): Promise<void> {
+  waitForIframeLoad(iframe: HTMLIFrameElement, timeout = 10000): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (iframe.contentDocument?.readyState === 'complete') {
-        resolve();
-        return;
-      }
+      const startTime = Date.now();
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      let checkInterval: ReturnType<typeof setInterval> | null = null;
+      let loadEventListener: (() => void) | null = null;
+      let domContentLoadedListener: (() => void) | null = null;
 
-      const timeoutId = setTimeout(() => {
-        reject(new Error('Iframe load timeout'));
-      }, timeout);
-
-      const onLoad = () => {
-        clearTimeout(timeoutId);
-        iframe.removeEventListener('load', onLoad);
-        resolve();
+      const cleanup = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        if (checkInterval) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
+        if (loadEventListener) {
+          iframe.removeEventListener('load', loadEventListener);
+          loadEventListener = null;
+        }
+        if (domContentLoadedListener && iframe.contentWindow) {
+          try {
+            iframe.contentWindow.removeEventListener('DOMContentLoaded', domContentLoadedListener);
+          } catch {
+            // Ignore errors for cross-origin
+          }
+          domContentLoadedListener = null;
+        }
       };
 
-      iframe.addEventListener('load', onLoad);
+      const checkIframeReady = (): boolean => {
+        try {
+          // Check if iframe is accessible
+          if (!iframe.contentDocument || !iframe.contentWindow) {
+            return false;
+          }
+
+          const doc = iframe.contentDocument;
+
+          // Check if document has body (basic readiness)
+          if (!doc.body) {
+            return false;
+          }
+
+          // Check readyState - must be complete
+          if (doc.readyState === 'complete') {
+            // Additional verification: ensure the document is not empty
+            // Sometimes readyState is complete but content hasn't loaded yet
+            return true;
+          }
+
+          return false;
+        } catch {
+          // Cross-origin iframe or other error
+          return false;
+        }
+      };
+
+      const resolveIfReady = () => {
+        // Wait a bit after load event to ensure content is fully rendered
+        setTimeout(() => {
+          if (checkIframeReady()) {
+            cleanup();
+            resolve();
+          } else {
+            // If not ready after load event, start polling
+            startPolling();
+          }
+        }, 300); // Give content time to render after load event
+      };
+
+      const startPolling = () => {
+        if (checkInterval) {
+          return; // Already polling
+        }
+        
+        // Poll to check if iframe content is ready
+        checkInterval = setInterval(() => {
+          if (checkIframeReady()) {
+            cleanup();
+            resolve();
+          } else if (Date.now() - startTime > timeout) {
+            cleanup();
+            reject(new Error('Iframe load timeout'));
+          }
+        }, 200); // Check every 200ms
+      };
+
+      // Set up load event listener (fires when iframe finishes loading new content)
+      loadEventListener = () => {
+        console.log('[IframeUtils] Iframe load event fired, checking readiness...');
+        resolveIfReady();
+      };
+
+      iframe.addEventListener('load', loadEventListener);
+
+      // Also listen for DOMContentLoaded inside the iframe if accessible
+      try {
+        if (iframe.contentWindow) {
+          domContentLoadedListener = () => {
+            console.log('[IframeUtils] Iframe DOMContentLoaded fired, checking readiness...');
+            setTimeout(() => {
+              if (checkIframeReady()) {
+                cleanup();
+                resolve();
+              } else {
+                // Start polling if DOMContentLoaded fired but content not fully ready
+                startPolling();
+              }
+            }, 200);
+          };
+
+          iframe.contentWindow.addEventListener('DOMContentLoaded', domContentLoadedListener);
+        }
+      } catch {
+        // Cross-origin, can't access contentWindow
+        // Fall back to load event and polling
+      }
+
+      // If iframe is already loaded, check immediately
+      // But also handle the case where src just changed and content is loading
+      if (iframe.contentDocument?.readyState === 'complete') {
+        // Check if this is a new load or old content
+        // Wait a moment and verify it's still ready (handles src changes)
+        setTimeout(() => {
+          if (checkIframeReady()) {
+            // Double-check: if src changed, content might be loading
+            // Give it a moment and verify again
+            setTimeout(() => {
+              if (checkIframeReady()) {
+                cleanup();
+                resolve();
+              } else {
+                // Content might be changing, wait for load event
+                startPolling();
+              }
+            }, 500);
+          } else {
+            // Content is loading, wait for load event
+            startPolling();
+          }
+        }, 100);
+      } else {
+        // Content is loading, wait for load event and start polling as fallback
+        startPolling();
+      }
+
+      // Set overall timeout
+      timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error('Iframe load timeout'));
+      }, timeout);
     });
   }
 
