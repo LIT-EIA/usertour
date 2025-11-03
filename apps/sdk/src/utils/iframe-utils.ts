@@ -701,7 +701,7 @@ export class IframeUtils {
                   // Only set up immediate click handler if there are no triggers
                   // This allows triggers to be tested without click interference
                   console.log('[IframeSDK] No triggers - setting up immediate element interaction with actions:', elementInfo.actions);
-                  this.setupElementInteraction(element, elementInfo.stepId, elementInfo.actions);
+                  this.setupElementInteraction(element, elementInfo.stepId, elementInfo.actions, elementInfo.element);
                 }
               }
               
@@ -733,23 +733,154 @@ export class IframeUtils {
           }
         },
         
-        setupElementInteraction: function(element, stepId, actions) {
+        setupElementInteraction: function(element, stepId, actions, selector) {
           console.log('[IframeSDK] === SETUP ELEMENT INTERACTION ===');
           console.log('[IframeSDK] Element:', element);
           console.log('[IframeSDK] Step ID:', stepId);
           console.log('[IframeSDK] Actions:', actions);
           console.log('[IframeSDK] Actions length:', actions?.length || 0);
+          console.log('[IframeSDK] Selector:', selector);
           
           if (!element) {
             console.log('[IframeSDK] No element provided for interaction setup');
             return;
           }
+          
+          // Helper function to check if an element matches the selector
+          const elementMatchesSelector = function(el, sel) {
+            if (!el || !sel) {
+              return false;
+            }
+            
+            try {
+              // Check custom selector first
+              if (sel.customSelector) {
+                try {
+                  const matches = el.matches && el.matches(sel.customSelector);
+                  if (matches) {
+                    return true;
+                  }
+                } catch (e) {
+                  console.log('[IframeSDK] Error matching customSelector:', e);
+                }
+              }
+              
+              // Check selectors array
+              if (sel.selectors && sel.selectors.length > 0) {
+                for (let i = 0; i < sel.selectors.length; i++) {
+                  try {
+                    if (el.matches && el.matches(sel.selectors[i])) {
+                      return true;
+                    }
+                  } catch (e) {
+                    console.log('[IframeSDK] Error matching selector:', sel.selectors[i], e);
+                  }
+                }
+              }
+            } catch (e) {
+              console.log('[IframeSDK] Error in elementMatchesSelector:', e);
+            }
+            
+            return false;
+          };
 
           // Set up click listener to handle step actions
+          // Listen at document level in capture phase to catch events before any link handlers
+          // This ensures we catch the event even if link handlers call preventDefault() or stopPropagation()
+          let hasHandled = false;
           const clickHandler = (event) => {
+            // Check if the clicked element is our target element or a descendant
+            const target = event.target;
+            if (!target) {
+              console.log('[IframeSDK] No target in event');
+              return;
+            }
+            
+            console.log('[IframeSDK] Document-level event caught:', {
+              type: event.type,
+              target: target,
+              targetTag: target.tagName,
+              targetId: target.id,
+              targetClass: target.className,
+              targetHref: target.href || target.getAttribute('href') || 'N/A',
+              element: element,
+              elementTag: element.tagName,
+              elementId: element.id,
+              elementClass: element.className,
+              elementHref: element.href || element.getAttribute('href') || 'N/A'
+            });
+            
+            // Check if target is the element itself or a descendant
+            let isTargetOrDescendant = false;
+            const directMatch = target === element;
+            const containsMatch = element.contains && element.contains(target);
+            
+            // Also check if the clicked element matches the selector (in case the element found is a container)
+            const selectorMatch = selector && elementMatchesSelector(target, selector);
+            
+            console.log('[IframeSDK] Matching check:', {
+              directMatch: directMatch,
+              containsMatch: containsMatch,
+              selectorMatch: selectorMatch,
+              elementContains: typeof element.contains === 'function' ? 'function exists' : 'no contains method'
+            });
+            
+            if (directMatch) {
+              isTargetOrDescendant = true;
+              console.log('[IframeSDK] Target matches element directly');
+            } else if (containsMatch) {
+              isTargetOrDescendant = true;
+              console.log('[IframeSDK] Target is descendant of element');
+            } else if (selectorMatch) {
+              isTargetOrDescendant = true;
+              console.log('[IframeSDK] Target matches the selector');
+            } else {
+              // Also check if target is an ancestor (in case element is inside the link)
+              let current = element;
+              let ancestorLevel = 0;
+              while (current && current !== document.body && ancestorLevel < 10) {
+                if (current === target) {
+                  isTargetOrDescendant = true;
+                  console.log('[IframeSDK] Element is descendant of target at level', ancestorLevel);
+                  break;
+                }
+                current = current.parentElement;
+                ancestorLevel++;
+              }
+              if (!isTargetOrDescendant) {
+                console.log('[IframeSDK] Checked ancestors up to level', ancestorLevel, '- no match');
+              }
+            }
+            
+            if (!isTargetOrDescendant) {
+              console.log('[IframeSDK] Target does not match element, ignoring');
+              console.log('[IframeSDK] Full element comparison:', {
+                targetNode: target,
+                elementNode: element,
+                targetOuterHTML: target.outerHTML ? target.outerHTML.substring(0, 200) : 'N/A',
+                elementOuterHTML: element.outerHTML ? element.outerHTML.substring(0, 200) : 'N/A'
+              });
+              return;
+            }
+            
+            // Prevent duplicate handling
+            if (hasHandled) {
+              console.log('[IframeSDK] Already handled this click, ignoring duplicate');
+              return;
+            }
+            hasHandled = true;
+            
             console.log('[IframeSDK] === ELEMENT CLICKED ===');
+            console.log('[IframeSDK] Event type:', event.type);
+            console.log('[IframeSDK] Target:', target);
+            console.log('[IframeSDK] Element:', element);
             console.log('[IframeSDK] Element clicked, handling step actions:', stepId);
             console.log('[IframeSDK] Available actions:', actions);
+            
+            // Reset flag after a short delay to allow for future clicks
+            setTimeout(() => {
+              hasHandled = false;
+            }, 100);
             
             // If there are specific actions, send them to parent
             if (actions && actions.length > 0) {
@@ -773,14 +904,25 @@ export class IframeUtils {
             }
           };
 
-          // Add click listener
-          console.log('[IframeSDK] Adding click listener to element');
-          element.addEventListener('click', clickHandler);
+          // Listen at document level in capture phase for both mousedown and click
+          // This ensures we catch events before any link handlers can interfere
+          console.log('[IframeSDK] Adding document-level mousedown listener (capture phase)');
+          if (document) {
+            document.addEventListener('mousedown', clickHandler, true);
+          }
           
-          // Store reference for cleanup
+          // Also add click listener as fallback
+          console.log('[IframeSDK] Adding document-level click listener (capture phase) as fallback');
+          if (document) {
+            document.addEventListener('click', clickHandler, true);
+          }
+          
+          // Store references for cleanup
           element.__usertour_click_handler = clickHandler;
+          element.__usertour_click_handler_capture = true;
           element.__usertour_step_id = stepId;
           element.__usertour_actions = actions;
+          element.__usertour_selector = selector;
           
           console.log('[IframeSDK] Click listener added to element');
           console.log('[IframeSDK] Element properties set:', {
@@ -1265,11 +1407,11 @@ export class IframeUtils {
           if (!hasActiveTriggers && elementActions && elementActions.length > 0) {
             console.log('[IframeSDK] No active triggers found, setting up element click handler');
             if (element) {
-              this.setupElementInteraction(element, stepId, elementActions);
+              this.setupElementInteraction(element, stepId, elementActions, elementSelector);
             } else if (elementSelector) {
               const foundElement = this.findElementBySelector(elementSelector);
               if (foundElement) {
-                this.setupElementInteraction(foundElement, stepId, elementActions);
+                this.setupElementInteraction(foundElement, stepId, elementActions, elementSelector);
               }
             }
           }
@@ -1337,12 +1479,16 @@ export class IframeUtils {
           
           elements.forEach(element => {
             if (element.__usertour_step_id === stepId) {
-              if (element.__usertour_click_handler) {
-                element.removeEventListener('click', element.__usertour_click_handler);
+              if (element.__usertour_click_handler && document) {
+                // Remove document-level listeners with the same capture flag
+                const useCapture = element.__usertour_click_handler_capture === true;
+                document.removeEventListener('mousedown', element.__usertour_click_handler, useCapture);
+                document.removeEventListener('click', element.__usertour_click_handler, useCapture);
               }
               
               // Clear the properties
               delete element.__usertour_click_handler;
+              delete element.__usertour_click_handler_capture;
               delete element.__usertour_step_id;
               delete element.__usertour_actions;
             }
@@ -1362,10 +1508,14 @@ export class IframeUtils {
           
           elements.forEach(element => {
             if (element.__usertour_step_id) {
-              if (element.__usertour_click_handler) {
-                element.removeEventListener('click', element.__usertour_click_handler);
+              if (element.__usertour_click_handler && document) {
+                // Remove document-level listeners with the same capture flag
+                const useCapture = element.__usertour_click_handler_capture === true;
+                document.removeEventListener('mousedown', element.__usertour_click_handler, useCapture);
+                document.removeEventListener('click', element.__usertour_click_handler, useCapture);
               }
               delete element.__usertour_click_handler;
+              delete element.__usertour_click_handler_capture;
               delete element.__usertour_step_id;
               delete element.__usertour_actions;
             }
