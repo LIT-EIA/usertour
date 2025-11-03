@@ -66,7 +66,6 @@ export class IframeUtils {
    * Set up iframe communication handler with unique ID
    */
   setCommunicationHandler(id: string, handler: IframeCommunicationHandler): void {
-    console.log('[IframeUtils] Setting up communication handler with ID:', id);
     this.communicationHandlers.set(id, handler);
     this.setupMessageListener();
   }
@@ -75,7 +74,6 @@ export class IframeUtils {
    * Remove communication handler by ID
    */
   removeCommunicationHandler(id: string): void {
-    console.log('[IframeUtils] Removing communication handler with ID:', id);
     this.communicationHandlers.delete(id);
     
     // If no handlers left, remove message listener
@@ -88,7 +86,6 @@ export class IframeUtils {
    * Remove all communication handlers
    */
   removeAllCommunicationHandlers(): void {
-    console.log('[IframeUtils] Removing all communication handlers');
     this.communicationHandlers.clear();
     this.removeMessageListener();
   }
@@ -102,10 +99,8 @@ export class IframeUtils {
     }
 
     this.messageListener = (event: MessageEvent) => {
-      console.log('[IframeUtils] Received message:', event.data, 'from:', event.origin);
       // Only process messages from iframes
       if (!event.source || event.source === window) {
-        console.log('[IframeUtils] Message not from iframe, ignoring');
         return;
       }
 
@@ -113,18 +108,14 @@ export class IframeUtils {
         const message: IframeMessage = event.data;
         
         if (!message.type || !message.type.startsWith('usertour-')) {
-          console.log('[IframeUtils] Message not a usertour message, ignoring');
           return;
         }
-
-        console.log('[IframeUtils] Processing message type:', message.type);
 
         switch (message.type) {
           case 'usertour-step-complete':
             if (message.stepId) {
               // Call all handlers
-              this.communicationHandlers.forEach((handler, id) => {
-                console.log('[IframeUtils] Calling step complete handler:', id);
+              this.communicationHandlers.forEach((handler) => {
                 handler.onStepComplete(message.stepId!, message.data);
               });
             }
@@ -132,8 +123,7 @@ export class IframeUtils {
           case 'usertour-step-action':
             if (message.stepId && message.action) {
               // Call all handlers
-              this.communicationHandlers.forEach((handler, id) => {
-                console.log('[IframeUtils] Calling step action handler:', id);
+              this.communicationHandlers.forEach((handler) => {
                 handler.onStepAction(message.stepId!, message.action!, message.data);
               });
             }
@@ -155,8 +145,7 @@ export class IframeUtils {
                   };
                   
                   // Call all handlers
-                  this.communicationHandlers.forEach((handler, id) => {
-                    console.log('[IframeUtils] Calling element found handler:', id);
+                  this.communicationHandlers.forEach((handler) => {
                     handler.onElementFound(iframeElementInfo);
                   });
                 }
@@ -166,8 +155,7 @@ export class IframeUtils {
           case 'usertour-element-not-found':
             if (message.element) {
               // Call all handlers
-              this.communicationHandlers.forEach((handler, id) => {
-                console.log('[IframeUtils] Calling element not found handler:', id);
+              this.communicationHandlers.forEach((handler) => {
                 handler.onElementNotFound((message.element as any).selector);
               });
             }
@@ -203,14 +191,7 @@ export class IframeUtils {
     if (!document) {
       return [];
     }
-    console.log('[IframeUtils] Getting all iframes...');
     const iframes = Array.from(document.querySelectorAll('iframe'));
-    console.log('[IframeUtils] Found iframes:', iframes.map((iframe, i) => ({
-      index: i,
-      src: iframe.src || 'data URL',
-      id: iframe.id || 'no-id',
-      className: iframe.className || 'no-class'
-    })));
     return iframes;
   }
 
@@ -250,26 +231,20 @@ export class IframeUtils {
    * Search for an element across all iframes
    */
   async searchElementInIframes(selector: ElementSelectorPropsData): Promise<IframeElementInfo | null> {
-    console.log('[IframeUtils] Starting search across all iframes for selector:', selector);
     const iframes = this.getAllIframes();
-    console.log('[IframeUtils] Found', iframes.length, 'iframes on the page');
     
     for (let i = 0; i < iframes.length; i++) {
       const iframe = iframes[i];
-      console.log('[IframeUtils] Checking iframe', i, ':', iframe.src || 'data URL');
       
       try {
         // Check if iframe is accessible
         if (!iframe.contentDocument) {
-          console.log('[IframeUtils] Iframe', i, 'not accessible (cross-origin)');
           continue;
         }
 
-        console.log('[IframeUtils] Iframe', i, 'is accessible, searching for element...');
         // Search for element in this iframe
         const element = finderV2(selector, iframe.contentDocument);
         if (element) {
-          console.log('[IframeUtils] Element found in iframe', i, ':', element);
           const iframeRect = iframe.getBoundingClientRect();
           return {
             element,
@@ -278,16 +253,12 @@ export class IframeUtils {
             iframeIndex: i,
             iframeRect,
           };
-        } else {
-          console.log('[IframeUtils] Element not found in iframe', i);
         }
       } catch (error) {
         // Cross-origin iframe, skip silently
-        console.log('[IframeUtils] Cannot access iframe', i, 'content:', iframe.src);
       }
     }
     
-    console.log('[IframeUtils] Element not found in any iframe');
     return null;
   }
 
@@ -512,7 +483,6 @@ export class IframeUtils {
 
       // Set up load event listener (fires when iframe finishes loading new content)
       loadEventListener = () => {
-        console.log('[IframeUtils] Iframe load event fired, checking readiness...');
         resolveIfReady();
       };
 
@@ -522,7 +492,6 @@ export class IframeUtils {
       try {
         if (iframe.contentWindow) {
           domContentLoadedListener = () => {
-            console.log('[IframeUtils] Iframe DOMContentLoaded fired, checking readiness...');
             setTimeout(() => {
               if (checkIframeReady()) {
                 cleanup();
@@ -581,10 +550,8 @@ export class IframeUtils {
    * Inject SDK into iframe (for same-origin iframes)
    */
   async injectSDKIntoIframe(iframe: HTMLIFrameElement): Promise<boolean> {
-    console.log('[IframeUtils] Attempting to inject SDK into iframe:', iframe.src);
     try {
       if (!this.isIframeAccessible(iframe)) {
-        console.log('[IframeUtils] Iframe not accessible');
         return false;
       }
 
@@ -592,47 +559,35 @@ export class IframeUtils {
       
       // Check if SDK is already injected
       if (iframeDoc.querySelector('script[data-usertour-sdk]')) {
-        console.log('[IframeUtils] SDK already injected into iframe');
         return true;
       }
 
-      console.log('[IframeUtils] Waiting for iframe to load...');
       // Wait for iframe to be ready
       await this.waitForIframeLoad(iframe);
 
-      console.log('[IframeUtils] Creating and injecting SDK script...');
       // Create script tag to inject SDK
       const script = iframeDoc.createElement('script');
       script.setAttribute('data-usertour-sdk', 'true');
       script.textContent = `
         // Inject iframe SDK communication
         (function() {
-          console.log('[IframeSDK] === SDK INJECTION STARTING ===');
           if (window.usertourIframeSDK) {
-            console.log('[IframeSDK] SDK already exists, skipping');
             return;
           }
           
           // Import the iframe SDK functionality
           ${this.getIframeSDKCode()}
           
-          console.log('[IframeSDK] === SDK INJECTION COMPLETE ===');
-          console.log('[IframeSDK] SDK available:', !!window.usertourIframeSDK);
-          
           // Initialize the SDK
           if (window.usertourIframeSDK) {
-            console.log('[IframeSDK] Initializing SDK...');
             window.usertourIframeSDK.init();
-            console.log('[IframeSDK] SDK initialization complete');
           }
         })();
       `;
       
       iframeDoc.head.appendChild(script);
-      console.log('[IframeUtils] SDK successfully injected into iframe');
       return true;
     } catch (error) {
-      console.log('[IframeUtils] Error injecting SDK into iframe:', error);
       logger.error('Error injecting SDK into iframe:', error);
       return false;
     }
