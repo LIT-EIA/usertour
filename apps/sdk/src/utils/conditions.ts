@@ -27,6 +27,7 @@ import {
 } from 'date-fns';
 import { document, location } from '../utils/globals';
 import { off, on } from './listener';
+import { iframeUtils } from './iframe-utils';
 
 const isActiveRulesByCurrentPage = (rules: RulesCondition) => {
   const { excludes, includes } = rules.data;
@@ -116,7 +117,17 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  const el = finderV2(data.elementData, document);
+  
+  // First try to find element in main document
+  let el = finderV2(data.elementData, document) as HTMLElement | null;
+  
+  // If not found in main document, search in iframes
+  if (!el) {
+    const iframeElementInfo = await iframeUtils.searchElementInIframes(data.elementData);
+    if (iframeElementInfo) {
+      el = iframeElementInfo.element as HTMLElement;
+    }
+  }
 
   const isPresent = el ? await isVisible(el) : false;
   const isDisabled = el ? (el as any).disabled : false;
@@ -145,7 +156,18 @@ const isActiveRulesByTextInput = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  const el = finderV2(elementData, document) as HTMLInputElement;
+  
+  // First try to find element in main document
+  let el = finderV2(elementData, document) as HTMLInputElement;
+  
+  // If not found in main document, search in iframes
+  if (!el) {
+    const iframeElementInfo = await iframeUtils.searchElementInIframes(elementData);
+    if (iframeElementInfo) {
+      el = iframeElementInfo.element as HTMLInputElement;
+    }
+  }
+  
   if (!el) {
     return false;
   }
@@ -185,7 +207,18 @@ const isActiveRulesByTextFill = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  const el = finderV2(elementData, document) as HTMLInputElement;
+  
+  // First try to find element in main document
+  let el = finderV2(elementData, document) as HTMLInputElement;
+  
+  // If not found in main document, search in iframes
+  if (!el) {
+    const iframeElementInfo = await iframeUtils.searchElementInIframes(elementData);
+    if (iframeElementInfo) {
+      el = iframeElementInfo.element as HTMLInputElement;
+    }
+  }
+  
   if (!el) {
     return false;
   }
