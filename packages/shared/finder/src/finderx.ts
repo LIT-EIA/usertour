@@ -367,11 +367,49 @@ export function finderV2(target: Target, root: Element | Document) {
     if (!expected) {
       return true;
     }
-    const elText = normalizeText(el.innerText ?? el.textContent ?? '');
     const expText = normalizeText(expected);
-    // Exact matching with relaxed whitespace handling
-    // Normalization already collapses all whitespace sequences to single spaces
-    return textMatchMode === 'exact' ? elText === expText : elText.includes(expText);
+    
+    // First check innerText/textContent
+    const elText = normalizeText(el.innerText ?? el.textContent ?? '');
+    const textMatch = textMatchMode === 'exact' ? elText === expText : elText.includes(expText);
+    if (textMatch) {
+      return true;
+    }
+    
+    // If no match found in text content, check attributes in order: title, aria-label, aria-labelledby, name, alt
+    const attributeCheck = (attrValue: string | null | undefined): boolean => {
+      if (!attrValue) {
+        return false;
+      }
+      const normalizedAttr = normalizeText(attrValue);
+      return textMatchMode === 'exact' ? normalizedAttr === expText : normalizedAttr.includes(expText);
+    };
+    
+    // Check title attribute
+    if (attributeCheck(el.getAttribute('title'))) {
+      return true;
+    }
+    
+    // Check aria-label attribute
+    if (attributeCheck(el.getAttribute('aria-label'))) {
+      return true;
+    }
+
+    if (attributeCheck(el.getAttribute('aria-labelledby'))) {
+      return true;
+    }
+    
+    // Check name attribute
+    if (attributeCheck(el.getAttribute('name'))) {
+      return true;
+    }
+    
+    // Check alt attribute
+    if (attributeCheck(el.getAttribute('alt'))) {
+      return true;
+    }
+    
+    return false;
   };
 
   if (type === 'auto') {
