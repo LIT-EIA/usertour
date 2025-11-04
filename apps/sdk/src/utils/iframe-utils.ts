@@ -1113,17 +1113,148 @@ export class IframeUtils {
           if (!document) {
             return null;
           }
+          
+          // Helper function to normalize text for matching
+          const normalizeText = function(text) {
+            if (!text) return '';
+            return String(text).replace(/\\s+/g, ' ').trim().toLowerCase();
+          };
+          
+          // Helper function to check if element text matches expected content
+          // Checks innerText/textContent first, then falls back to attributes
+          const textMatches = function(el, expected, textMatchMode) {
+            if (!expected) {
+              return true;
+            }
+            const expText = normalizeText(expected);
+            const matchMode = textMatchMode || 'exact';
+            
+            // First check innerText/textContent
+            const elText = normalizeText(el.innerText || el.textContent || '');
+            const textMatch = matchMode === 'exact' ? elText === expText : elText.includes(expText);
+            if (textMatch) {
+              return true;
+            }
+            
+            // If no match found in text content, check attributes in order: title, aria-label, aria-labelledby, name, alt
+            const attributeCheck = function(attrValue) {
+              if (!attrValue) {
+                return false;
+              }
+              const normalizedAttr = normalizeText(attrValue);
+              return matchMode === 'exact' ? normalizedAttr === expText : normalizedAttr.includes(expText);
+            };
+            
+            // Check title attribute
+            if (attributeCheck(el.getAttribute('title'))) {
+              return true;
+            }
+            
+            // Check aria-label attribute
+            if (attributeCheck(el.getAttribute('aria-label'))) {
+              return true;
+            }
+            
+            // Check aria-labelledby attribute (references element(s) by ID, can be space-separated)
+            const ariaLabelledBy = el.getAttribute('aria-labelledby');
+            if (ariaLabelledBy) {
+              const ids = ariaLabelledBy.trim().split(/\\s+/);
+              for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                if (!id) continue;
+                try {
+                  const labelledElement = document.querySelector('#' + id);
+                  if (labelledElement) {
+                    const labelledText = normalizeText(
+                      (labelledElement.innerText || labelledElement.textContent || '')
+                    );
+                    const labelledMatch = matchMode === 'exact' 
+                      ? labelledText === expText 
+                      : labelledText.includes(expText);
+                    if (labelledMatch) {
+                      return true;
+                    }
+                  }
+                } catch (e) {
+                  // Ignore errors when querying by ID
+                }
+              }
+            }
+            
+            // Check name attribute
+            if (attributeCheck(el.getAttribute('name'))) {
+              return true;
+            }
+            
+            // Check alt attribute
+            if (attributeCheck(el.getAttribute('alt'))) {
+              return true;
+            }
+            
+            return false;
+          };
+          
           try {
+            let elements = [];
+            const content = elementData.content || '';
+            const textMatchMode = elementData.textMatchMode || 'exact';
+            const isDynamicContent = elementData.isDynamicContent || false;
+            
+            // Find elements by selector
             if (elementData.customSelector) {
-              return document.querySelector(elementData.customSelector);
+              const nodeList = document.querySelectorAll(elementData.customSelector);
+              elements = Array.from(nodeList);
+            } else if (elementData.selectors && elementData.selectors.length > 0) {
+              // Try each selector until we find matches
+              for (let i = 0; i < elementData.selectors.length; i++) {
+                try {
+                  const nodeList = document.querySelectorAll(elementData.selectors[i]);
+                  if (nodeList.length > 0) {
+                    elements = Array.from(nodeList);
+                    break;
+                  }
+                } catch (e) {
+                  // Continue to next selector if this one fails
+                }
+              }
             }
-            if (elementData.selectors && elementData.selectors.length > 0) {
-              return document.querySelector(elementData.selectors[0]);
+            
+            if (elements.length === 0) {
+              return null;
             }
+            
+            // If no content specified, return first element
+            if (!content || isDynamicContent) {
+              return elements[0];
+            }
+            
+            // Filter elements by text matching (including attributes)
+            const matchingElements = elements.filter(function(el) {
+              return textMatches(el, content, textMatchMode);
+            });
+            
+            if (matchingElements.length === 0) {
+              return null;
+            }
+            
+            // Handle sequence if specified
+            if (elementData.sequence) {
+              const sequenceMapping = {
+                '1st': 0,
+                '2st': 1,
+                '3st': 2,
+                '4st': 3,
+                '5st': 4,
+              };
+              const index = sequenceMapping[elementData.sequence] || 0;
+              return matchingElements[index] || matchingElements[0];
+            }
+            
+            return matchingElements[0];
           } catch (e) {
             console.error('[IframeSDK] Error finding element:', e);
+            return null;
           }
-          return null;
         },
         
         isElementVisible: function(el) {
