@@ -30,6 +30,7 @@ export class UtilitiesService {
 
     const s3Config: any = {
       region,
+      forcePathStyle: true,
       credentials: {
         accessKeyId,
         secretAccessKey,
@@ -44,7 +45,7 @@ export class UtilitiesService {
 
     const command = new PutObjectCommand({ Bucket: bucket, Key: key });
     const signedUrl = getSignedUrl(s3, command, { expiresIn: 3600 });
-    return { signedUrl, cdnUrl: `${domain}/${key}` };
+    return { signedUrl, cdnUrl: `${domain}/${bucket}/${key}` };
   }
 
   async queryOembedInfo(url: string) {
