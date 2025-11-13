@@ -228,6 +228,135 @@ export class IframeUtils {
   }
 
   /**
+   * Search for a visible element in a specific iframe document
+   * Returns the first visible element that matches the selector
+   */
+  private findVisibleElementInIframe(
+    selector: ElementSelectorPropsData,
+    iframeDoc: Document,
+  ): Element | null {
+    // If we have a customSelector, we can find all matches and filter by visibility
+    if (selector.customSelector) {
+      try {
+        const selectorStr = selector.customSelector.replace(/\\/g, '\\');
+        const allMatches = iframeDoc.querySelectorAll(selectorStr);
+        
+        // Check each match for visibility
+        for (const match of Array.from(allMatches)) {
+          if (!this.isElementInHiddenSectionInIframe(match, iframeDoc)) {
+            // Also check if content matches if specified
+            if (selector.content && !selector.isDynamicContent) {
+              const matchText = (match as HTMLElement).innerText?.trim() || '';
+              const targetText = selector.content.trim();
+              // Default to 'exact' match if not specified
+              const textMatchMode = (selector as any).textMatchMode || 'exact';
+              const textMatch = textMatchMode === 'exact' 
+                ? matchText === targetText 
+                : matchText.includes(targetText);
+              if (!textMatch) {
+                continue;
+              }
+            }
+            return match;
+          }
+        }
+      } catch (error) {
+        // Fall through to finderV2
+      }
+    }
+    
+    // If we have selectorsList, try each selector and find first visible match
+    if (selector.selectorsList && selector.selectorsList.length > 0) {
+      for (const selectorStr of selector.selectorsList) {
+        try {
+          const allMatches = iframeDoc.querySelectorAll(selectorStr);
+          
+          // Check each match for visibility
+          for (const match of Array.from(allMatches)) {
+            if (!this.isElementInHiddenSectionInIframe(match, iframeDoc)) {
+              // Also check if content matches if specified
+              if (selector.content && !selector.isDynamicContent) {
+                const matchText = (match as HTMLElement).innerText?.trim() || '';
+                const targetText = selector.content.trim();
+                // Default to 'exact' match if not specified
+                const textMatchMode = (selector as any).textMatchMode || 'exact';
+                const textMatch = textMatchMode === 'exact' 
+                  ? matchText === targetText 
+                  : matchText.includes(targetText);
+                if (!textMatch) {
+                  continue;
+                }
+              }
+              return match;
+            }
+          }
+        } catch (error) {
+          // Continue to next selector if this one fails
+          continue;
+        }
+      }
+    }
+    
+    // Fallback to original finderV2 method
+    const el = finderV2(selector, iframeDoc);
+    if (el && !this.isElementInHiddenSectionInIframe(el, iframeDoc)) {
+      return el;
+    }
+    
+    // If the found element is hidden, return null
+    return null;
+  }
+
+  /**
+   * Check if an element is in a hidden section within an iframe document
+   */
+  isElementInHiddenSectionInIframe(element: Element, iframeDoc: Document): boolean {
+    if (!element || !iframeDoc?.defaultView) {
+      return true; // If element doesn't exist, consider it hidden
+    }
+
+    try {
+      const iframeWindow = iframeDoc.defaultView;
+      let currentElement: Element | null = element;
+      
+      while (currentElement) {
+        const styles = iframeWindow.getComputedStyle(currentElement);
+        
+        // Check basic visibility
+        if (
+          styles.display === 'none' ||
+          styles.visibility === 'hidden' ||
+          Number.parseFloat(styles.opacity) < 0.01
+        ) {
+          return true; // Element is in a hidden section
+        }
+        
+        // Check if element has zero dimensions
+        const rect = currentElement.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) {
+          // Allow zero dimensions only if it's not the element itself
+          if (currentElement === element) {
+            return true; // Element itself has zero dimensions
+          }
+        }
+        
+        // Stop at body element
+        if (currentElement === iframeDoc.body || currentElement.tagName === 'BODY') {
+          break;
+        }
+        
+        currentElement = currentElement.parentElement;
+      }
+      
+      return false; // Element is not in a hidden section
+    } catch (error) {
+      logger.error('Error checking element visibility in iframe section:', error);
+      // On error, assume visible to avoid breaking functionality
+      return false;
+    }
+  }
+
+  /**
    * Search for an element across all iframes
    */
   async searchElementInIframes(selector: ElementSelectorPropsData): Promise<IframeElementInfo | null> {
@@ -247,8 +376,8 @@ export class IframeUtils {
           continue;
         }
 
-        // Search for element in this iframe
-        const element = finderV2(selector, iframe.contentDocument);
+        // Search for visible element in this iframe
+        const element = this.findVisibleElementInIframe(selector, iframe.contentDocument);
         if (element) {
           const iframeRect = iframe.getBoundingClientRect();
           return {
@@ -439,6 +568,55 @@ export class IframeUtils {
       logger.error('Error checking iframe CSS visibility:', error);
       // On error, assume visible to avoid breaking functionality
       return true;
+    }
+  }
+
+  /**
+   * Check if an element is in a hidden section (not display: none, visibility: hidden, or opacity < 0.01)
+   * This checks the element itself and its ancestors up to the body
+   */
+  isElementInHiddenSection(element: Element): boolean {
+    if (!element || !window) {
+      return true; // If element doesn't exist, consider it hidden
+    }
+
+    try {
+      let currentElement: Element | null = element;
+      
+      while (currentElement) {
+        const styles = window.getComputedStyle(currentElement);
+        
+        // Check basic visibility
+        if (
+          styles.display === 'none' ||
+          styles.visibility === 'hidden' ||
+          Number.parseFloat(styles.opacity) < 0.01
+        ) {
+          return true; // Element is in a hidden section
+        }
+        
+        // Check if element has zero dimensions
+        const rect = currentElement.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) {
+          // Allow zero dimensions only if it's not the element itself
+          if (currentElement === element) {
+            return true; // Element itself has zero dimensions
+          }
+        }
+        
+        // Stop at body element
+        if (currentElement === document?.body || currentElement.tagName === 'BODY') {
+          break;
+        }
+        
+        currentElement = currentElement.parentElement;
+      }
+      
+      return false; // Element is not in a hidden section
+    } catch (error) {
+      logger.error('Error checking element visibility in section:', error);
+      // On error, assume visible to avoid breaking functionality
+      return false;
     }
   }
 
@@ -739,6 +917,12 @@ export class IframeUtils {
             console.log('[IframeSDK] Element search result:', element);
             
             if (element) {
+              // Check if element is in a hidden section before setting up interactions
+              if (this.isElementInHiddenSection(element)) {
+                console.log('[IframeSDK] Element found but is in a hidden section, skipping interaction setup');
+                return;
+              }
+              
               console.log('[IframeSDK] Element found:', element);
               console.log('[IframeSDK] Element tag:', element.tagName);
               console.log('[IframeSDK] Element class:', element.className);
@@ -1324,6 +1508,51 @@ export class IframeUtils {
             style.visibility !== 'hidden' &&
             style.opacity !== '0'
           );
+        },
+        
+        isElementInHiddenSection: function(element) {
+          if (!element || !window) {
+            return true; // If element doesn't exist, consider it hidden
+          }
+
+          try {
+            let currentElement = element;
+            
+            while (currentElement) {
+              const styles = window.getComputedStyle(currentElement);
+              
+              // Check basic visibility
+              if (
+                styles.display === 'none' ||
+                styles.visibility === 'hidden' ||
+                parseFloat(styles.opacity) < 0.01
+              ) {
+                return true; // Element is in a hidden section
+              }
+              
+              // Check if element has zero dimensions
+              const rect = currentElement.getBoundingClientRect();
+              if (rect.width === 0 && rect.height === 0) {
+                // Allow zero dimensions only if it's not the element itself
+                if (currentElement === element) {
+                  return true; // Element itself has zero dimensions
+                }
+              }
+              
+              // Stop at body element
+              if (currentElement === document?.body || currentElement.tagName === 'BODY') {
+                break;
+              }
+              
+              currentElement = currentElement.parentElement;
+            }
+            
+            return false; // Element is not in a hidden section
+          } catch (error) {
+            console.log('[IframeSDK] Error checking element visibility in section:', error);
+            // On error, assume visible to avoid breaking functionality
+            return false;
+          }
         },
         
         clickedCache: new Map(),

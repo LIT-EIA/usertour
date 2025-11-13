@@ -146,6 +146,20 @@ export class Launcher extends BaseContent<LauncherStore> {
       let triggerRef: HTMLElement = el as HTMLElement;
 
       if (iframeElementInfo) {
+        // Check if iframe is CSS-visible before processing
+        if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
+          console.log('[Launcher] Iframe is not CSS-visible, skipping element processing');
+          // Reset element watcher state so it continues searching
+          if (this.watcher) {
+            this.watcher.reset();
+            // Continue searching after a short delay to avoid immediate re-trigger
+            setTimeout(() => {
+              this.watcher?.findElement(0);
+            }, 100);
+          }
+          return;
+        }
+        
         // For iframe elements, create a virtual element for positioning
         triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
         
@@ -183,6 +197,10 @@ export class Launcher extends BaseContent<LauncherStore> {
           // Element might be in cross-origin iframe, which is fine - we already scrolled the iframe
         }
       } else {
+        // For main document elements, we already checked visibility in findVisibleElementBySelector
+        // so we can trust that the element is visible and proceed with attachment
+        // No need to check again here as it could cause false negatives due to timing
+        
         // For main page elements, scroll into view and wait
         const { smoothScroll } = await import('@usertour-packages/dom');
         await smoothScroll(el as Element, { block: 'center' });

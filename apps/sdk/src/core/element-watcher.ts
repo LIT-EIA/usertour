@@ -80,7 +80,7 @@ export class ElementWatcher extends Evented {
 
     // First try to find element in main document
     console.log('[ElementWatcher] Searching for element in main document:', this.target);
-    const el = this.findElementBySelector();
+    const el = this.findVisibleElementBySelector();
     if (el) {
       console.log('[ElementWatcher] Element found in main document:', el);
       this.element = el;
@@ -126,10 +126,10 @@ export class ElementWatcher extends Evented {
     // Check if the element is still in the current DOM tree and is the correct target
     // This handles SPA page changes where the element might have been removed or changed
     if (!this.isElementValid()) {
-      // Try to find the element again with the same selector
-      const el = this.findElementBySelector();
+      // Try to find the element again with the same selector, but only look for visible ones
+      const el = this.findVisibleElementBySelector();
       if (el) {
-        // Found a new element that matches our selector
+        // Found a new visible element that matches our selector
         this.element = el;
         this.iframeElementInfo = null;
         this.trigger(AppEvents.ELEMENT_CHANGED, el);
@@ -152,6 +152,38 @@ export class ElementWatcher extends Evented {
           isTimeout: this.checker?.isTimeout || false,
         };
       }
+      
+      // Also check if element is in a hidden section within the iframe
+      try {
+        const iframeDoc = this.iframeElementInfo.iframe.contentDocument;
+        if (iframeDoc) {
+          // Use the iframe-specific visibility check
+          const isHiddenInIframe = iframeUtils.isElementInHiddenSectionInIframe(
+            this.element,
+            iframeDoc
+          );
+          if (isHiddenInIframe) {
+            const now = Date.now();
+            this.updateChecker(true, now);
+            return {
+              isHidden: true,
+              isTimeout: this.checker?.isTimeout || false,
+            };
+          }
+        }
+      } catch (error) {
+        // If we can't access iframe document, continue with main document check
+      }
+    }
+
+    // Check if element is in a hidden section using our visibility check (for main document)
+    if (!this.iframeElementInfo && iframeUtils.isElementInHiddenSection(this.element)) {
+      const now = Date.now();
+      this.updateChecker(true, now);
+      return {
+        isHidden: true,
+        isTimeout: this.checker?.isTimeout || false,
+      };
     }
 
     const isHidden =
@@ -204,6 +236,15 @@ export class ElementWatcher extends Evented {
       const iframeElementInfo = await iframeUtils.searchElementInIframes(this.target);
       
       if (iframeElementInfo) {
+        // Double-check iframe visibility before triggering ELEMENT_FOUND
+        // (iframe might have become hidden between search and trigger)
+        if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
+          console.log('[ElementWatcher] Element found in iframe but iframe is now hidden, skipping');
+          // Continue searching - iframe might become visible later
+          this.scheduleRetry(retryTimes);
+          return;
+        }
+        
         console.log('[ElementWatcher] Element found in iframe:', iframeElementInfo);
         this.element = iframeElementInfo.element;
         this.iframeElementInfo = iframeElementInfo;
@@ -532,5 +573,89 @@ export class ElementWatcher extends Evented {
       return null;
     }
     return finderV2(this.target, document.body);
+  }
+
+  /**
+   * Finds a visible element by selector, checking all matching elements
+   * and returning the first one that is not in a hidden section
+   */
+  private findVisibleElementBySelector(): Element | null {
+    if (!document?.body) {
+      return null;
+    }
+
+    const target = this.target;
+    
+    // If we have a customSelector, we can find all matches and filter by visibility
+    if (target.customSelector) {
+      try {
+        const selector = target.customSelector.replace(/\\/g, '\\');
+        const allMatches = document.body.querySelectorAll(selector);
+        
+        // Check each match for visibility
+        for (const match of Array.from(allMatches)) {
+          if (!iframeUtils.isElementInHiddenSection(match)) {
+            // Also check if content matches if specified
+            if (target.content && !target.isDynamicContent) {
+              const matchText = (match as HTMLElement).innerText?.trim() || '';
+              const targetText = target.content.trim();
+              // Default to 'exact' match if not specified
+              const textMatchMode = (target as any).textMatchMode || 'exact';
+              const textMatch = textMatchMode === 'exact' 
+                ? matchText === targetText 
+                : matchText.includes(targetText);
+              if (!textMatch) {
+                continue;
+              }
+            }
+            return match;
+          }
+        }
+      } catch (error) {
+        console.log('[ElementWatcher] Error querying customSelector, falling back to finderV2:', error);
+      }
+    }
+    
+    // If we have selectorsList, try each selector and find first visible match
+    if (target.selectorsList && target.selectorsList.length > 0) {
+      for (const selectorStr of target.selectorsList) {
+        try {
+          const allMatches = document.body.querySelectorAll(selectorStr);
+          
+          // Check each match for visibility
+          for (const match of Array.from(allMatches)) {
+            if (!iframeUtils.isElementInHiddenSection(match)) {
+              // Also check if content matches if specified
+              if (target.content && !target.isDynamicContent) {
+                const matchText = (match as HTMLElement).innerText?.trim() || '';
+                const targetText = target.content.trim();
+                // Default to 'exact' match if not specified
+                const textMatchMode = (target as any).textMatchMode || 'exact';
+                const textMatch = textMatchMode === 'exact' 
+                  ? matchText === targetText 
+                  : matchText.includes(targetText);
+                if (!textMatch) {
+                  continue;
+                }
+              }
+              return match;
+            }
+          }
+        } catch (error) {
+          // Continue to next selector if this one fails
+          continue;
+        }
+      }
+    }
+    
+    // Fallback to original finderV2 method
+    const el = finderV2(this.target, document.body);
+    if (el && !iframeUtils.isElementInHiddenSection(el)) {
+      return el;
+    }
+    
+    // If the found element is hidden, return null so we can retry
+    // This allows the retry logic to potentially find a visible element later
+    return null;
   }
 }

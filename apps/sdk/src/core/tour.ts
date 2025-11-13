@@ -407,6 +407,10 @@ export class Tour extends BaseContent<TourStore> {
       
       // IMPORTANT: Don't set up position updates yet - wait until after scrolling completes
       // This prevents conflicts when navigating between different iframes
+    } else {
+      // For main document elements, we already checked visibility in findVisibleElementBySelector
+      // so we can trust that the element is visible and proceed with attachment
+      // No need to check again here as it could cause false negatives due to timing
     }
 
     // Scroll element into view if tour is visible
