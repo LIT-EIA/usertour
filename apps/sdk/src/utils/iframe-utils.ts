@@ -242,6 +242,11 @@ export class IframeUtils {
           continue;
         }
 
+        // Check if iframe is CSS-visible before searching
+        if (!this.isIframeCSSVisible(iframe)) {
+          continue;
+        }
+
         // Search for element in this iframe
         const element = finderV2(selector, iframe.contentDocument);
         if (element) {
@@ -386,6 +391,55 @@ export class IframeUtils {
       rect.left < viewport.width &&
       rect.right > 0
     );
+  }
+
+  /**
+   * Check if iframe is CSS-visible (not display: none, visibility: hidden, or opacity < 0.01)
+   * This checks the iframe element itself and its ancestors
+   */
+  isIframeCSSVisible(iframe: HTMLIFrameElement): boolean {
+    if (!iframe || !window) {
+      return false;
+    }
+
+    try {
+      let currentElement: Element | null = iframe;
+      
+      while (currentElement) {
+        const styles = window.getComputedStyle(currentElement);
+        
+        // Check basic visibility
+        if (
+          styles.display === 'none' ||
+          styles.visibility === 'hidden' ||
+          Number.parseFloat(styles.opacity) < 0.01
+        ) {
+          return false;
+        }
+        
+        // Check if element has zero dimensions
+        const rect = currentElement.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) {
+          // Allow zero dimensions only if it's not the iframe itself
+          if (currentElement === iframe) {
+            return false;
+          }
+        }
+        
+        // Stop at body element
+        if (currentElement === document?.body || currentElement.tagName === 'BODY') {
+          break;
+        }
+        
+        currentElement = currentElement.parentElement;
+      }
+      
+      return true;
+    } catch (error) {
+      logger.error('Error checking iframe CSS visibility:', error);
+      // On error, assume visible to avoid breaking functionality
+      return true;
+    }
   }
 
   /**

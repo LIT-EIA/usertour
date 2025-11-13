@@ -381,6 +381,23 @@ export class Tour extends BaseContent<TourStore> {
     let triggerRef: Element = el;
 
     if (iframeElementInfo) {
+      // Check if iframe is CSS-visible before processing
+      if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
+        console.log('[Tour] Iframe is not CSS-visible, skipping element processing');
+        this.isProcessingElementFound = false;
+        // Reset element watcher state so it continues searching
+        // The element watcher has already found the element, but we need to reset it
+        // so it can continue searching for a visible iframe
+        if (this.watcher) {
+          this.watcher.reset();
+          // Continue searching after a short delay to avoid immediate re-trigger
+          setTimeout(() => {
+            this.watcher?.findElement(0);
+          }, 100);
+        }
+        return;
+      }
+      
       // For iframe elements, we need to create a virtual element that represents
       // the target element's position for positioning purposes
       triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
@@ -898,6 +915,12 @@ export class Tour extends BaseContent<TourStore> {
     if (iframeUtils.isIframeAccessible(iframeElementInfo.iframe)) {
       // Retry logic for handling iframe src changes with delayed content loading
       const sendFindElementMessage = (retryCount = 0, maxRetries = 8) => {
+        // Check visibility before sending message (iframe might become hidden during retries)
+        if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
+          console.log('[Tour] Iframe became hidden, stopping message retries');
+          return;
+        }
+        
         const message = {
           type: 'usertour-find-element' as const,
           element: step.target,
@@ -915,6 +938,12 @@ export class Tour extends BaseContent<TourStore> {
           const delay = Math.min(300 * (retryCount + 1), 2000);
           setTimeout(() => {
             try {
+              // Check visibility before retry
+              if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
+                console.log('[Tour] Iframe became hidden during retry, stopping');
+                return;
+              }
+              
               const iframeDoc = iframeElementInfo.iframe.contentDocument;
               if (iframeDoc && step.target) {
                 const elementInIframe = finderV2(step.target, iframeDoc);
