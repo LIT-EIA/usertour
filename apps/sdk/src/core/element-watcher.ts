@@ -7,6 +7,11 @@ import { document } from '../utils/globals';
 import { Evented } from './evented';
 import { DEFAULT_TARGET_MISSING_SECONDS } from './common';
 import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
+import {
+  parseSelectorWithCondition,
+  checkConditionalSelectorPresent,
+  ParsedSelector,
+} from '../utils/selector-parser';
 
 /**
  * Interface to track element visibility state
@@ -28,6 +33,7 @@ const RETRY_DELAY = 200; // Delay between retries in milliseconds
  */
 export class ElementWatcher extends Evented {
   private target: ElementSelectorPropsData; // Target element selector data
+  private parsedSelector: ParsedSelector; // Parsed selector with main and conditional parts
   private timer: NodeJS.Timeout | null = null; // Timer for retry mechanism
   private element: Element | null = null; // Reference to the found element
   private checker: CheckContentIsVisible | null = null; // Visibility state tracker
@@ -43,6 +49,7 @@ export class ElementWatcher extends Evented {
   constructor(target: ElementSelectorPropsData) {
     super();
     this.target = target;
+    this.parsedSelector = parseSelectorWithCondition(target);
   }
 
   /**
@@ -57,7 +64,7 @@ export class ElementWatcher extends Evented {
    * Attempts to find the target element in the DOM
    * @param retryTimes Current number of retry attempts
    */
-  findElement(retryTimes = 0): void {
+  async findElement(retryTimes = 0): Promise<void> {
     this.clearTimer();
 
     // AGGRESSIVE GUARD: If we already found an element, don't search again
@@ -78,8 +85,22 @@ export class ElementWatcher extends Evented {
       return;
     }
 
+    // Check conditional selector if present
+    if (this.parsedSelector.conditionalSelector) {
+      console.log('[ElementWatcher] Checking conditional selector:', this.parsedSelector.conditionalSelector);
+      const isConditionMet = await checkConditionalSelectorPresent(
+        this.parsedSelector.conditionalSelector,
+      );
+      if (!isConditionMet) {
+        console.log('[ElementWatcher] Conditional selector not present, scheduling retry', retryTimes);
+        this.scheduleRetry(retryTimes);
+        return;
+      }
+      console.log('[ElementWatcher] Conditional selector is present, proceeding with element search');
+    }
+
     // First try to find element in main document
-    console.log('[ElementWatcher] Searching for element in main document:', this.target);
+    console.log('[ElementWatcher] Searching for element in main document:', this.parsedSelector.mainSelector);
     const el = this.findVisibleElementBySelector();
     if (el) {
       console.log('[ElementWatcher] Element found in main document:', el);
@@ -102,7 +123,7 @@ export class ElementWatcher extends Evented {
         this.iframeSearchDisabled = false;
         this.lastIframeSearchTime = now;
       }
-      this.searchInIframes(retryTimes);
+      await this.searchInIframes(retryTimes);
     } else {
       console.log('[ElementWatcher] Iframe search recently attempted, scheduling retry');
       this.scheduleRetry(retryTimes);
@@ -231,9 +252,11 @@ export class ElementWatcher extends Evented {
     this.isSearchingIframes = true;
     this.iframeSearchDisabled = true; // Temporarily disable to prevent rapid re-searches
     this.lastIframeSearchTime = Date.now(); // Track when we searched
-    console.log('[ElementWatcher] Starting iframe search for:', this.target);
+    console.log('[ElementWatcher] Starting iframe search for:', this.parsedSelector.mainSelector);
     try {
-      const iframeElementInfo = await iframeUtils.searchElementInIframes(this.target);
+      const iframeElementInfo = await iframeUtils.searchElementInIframes(
+        this.parsedSelector.mainSelector,
+      );
       
       if (iframeElementInfo) {
         // Double-check iframe visibility before triggering ELEMENT_FOUND
@@ -292,7 +315,9 @@ export class ElementWatcher extends Evented {
     }
     
     this.timer = setTimeout(() => {
-      this.findElement(retryTimes + 1);
+      this.findElement(retryTimes + 1).catch((error) => {
+        console.error('[ElementWatcher] Error in findElement retry:', error);
+      });
     }, RETRY_DELAY);
   }
 
@@ -310,6 +335,8 @@ export class ElementWatcher extends Evented {
     this.hasFoundElement = false;
     this.iframeSearchDisabled = false;
     this.lastIframeSearchTime = 0;
+    // Re-parse selector in case target was updated
+    this.parsedSelector = parseSelectorWithCondition(this.target);
   }
 
   /**
@@ -348,7 +375,9 @@ export class ElementWatcher extends Evented {
           setTimeout(() => {
             if (!this.hasFoundElement) {
               console.log('[ElementWatcher] Re-searching iframes after src change');
-              this.findElement(0); // Reset retry count for new search
+              this.findElement(0).catch((error) => {
+                console.error('[ElementWatcher] Error in findElement after iframe src change:', error);
+              }); // Reset retry count for new search
             }
           }, 500); // Give iframe time to start loading new content
         }
@@ -572,7 +601,7 @@ export class ElementWatcher extends Evented {
     if (!document?.body) {
       return null;
     }
-    return finderV2(this.target, document.body);
+    return finderV2(this.parsedSelector.mainSelector, document.body);
   }
 
   /**
@@ -584,7 +613,7 @@ export class ElementWatcher extends Evented {
       return null;
     }
 
-    const target = this.target;
+    const target = this.parsedSelector.mainSelector;
     
     // If we have a customSelector, we can find all matches and filter by visibility
     if (target.customSelector) {
@@ -649,7 +678,7 @@ export class ElementWatcher extends Evented {
     }
     
     // Fallback to original finderV2 method
-    const el = finderV2(this.target, document.body);
+    const el = finderV2(this.parsedSelector.mainSelector, document.body);
     if (el && !iframeUtils.isElementInHiddenSection(el)) {
       return el;
     }

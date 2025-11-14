@@ -347,7 +347,9 @@ export class Tour extends BaseContent<TourStore> {
     // });
     // Start watching
     console.log('[Tour] Starting element watcher...');
-    this.watcher.findElement();
+    this.watcher.findElement().catch((error) => {
+      console.error('[Tour] Error in findElement:', error);
+    });
   }
 
   /**
@@ -392,7 +394,9 @@ export class Tour extends BaseContent<TourStore> {
           this.watcher.reset();
           // Continue searching after a short delay to avoid immediate re-trigger
           setTimeout(() => {
-            this.watcher?.findElement(0);
+            this.watcher?.findElement(0).catch((error) => {
+              console.error('[Tour] Error in findElement retry:', error);
+            });
           }, 100);
         }
         return;

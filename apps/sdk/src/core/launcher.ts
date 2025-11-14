@@ -154,7 +154,9 @@ export class Launcher extends BaseContent<LauncherStore> {
             this.watcher.reset();
             // Continue searching after a short delay to avoid immediate re-trigger
             setTimeout(() => {
-              this.watcher?.findElement(0);
+              this.watcher?.findElement(0).catch((error) => {
+                console.error('[Launcher] Error in findElement retry:', error);
+              });
             }, 100);
           }
           return;
@@ -219,7 +221,9 @@ export class Launcher extends BaseContent<LauncherStore> {
     });
 
     // Start element search
-    this.watcher.findElement();
+    this.watcher.findElement().catch((error) => {
+      console.error('[Launcher] Error in findElement:', error);
+    });
   }
 
   /**
