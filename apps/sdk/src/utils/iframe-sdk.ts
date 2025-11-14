@@ -1,6 +1,7 @@
 import { ElementSelectorPropsData } from '@usertour/types';
 import { logger } from './logger';
 import { document, window } from './globals';
+import { parseSelectorWithCondition } from './selector-parser';
 
 /**
  * Interface for iframe SDK communication
@@ -329,19 +330,31 @@ export class IframeSDK {
     }
 
     try {
+      // Parse selector to handle <<< pattern
+      const parsed = parseSelectorWithCondition(selector);
+      const mainSelector = parsed.mainSelector;
+      
       // Use custom selector if available
-      if (selector.customSelector) {
-        console.log('[IframeSDK] Using custom selector:', selector.customSelector);
-        const element = document.querySelector(selector.customSelector);
+      if (mainSelector.customSelector) {
+        console.log('[IframeSDK] Using custom selector:', mainSelector.customSelector);
+        const element = document.querySelector(mainSelector.customSelector);
         console.log('[IframeSDK] Custom selector result:', element);
         return element;
       }
 
       // Use first selector from selectors array
-      if (selector.selectors && selector.selectors.length > 0) {
-        console.log('[IframeSDK] Using first selector from array:', selector.selectors[0]);
-        const element = document.querySelector(selector.selectors[0]);
+      if (mainSelector.selectors && mainSelector.selectors.length > 0) {
+        console.log('[IframeSDK] Using first selector from array:', mainSelector.selectors[0]);
+        const element = document.querySelector(mainSelector.selectors[0]);
         console.log('[IframeSDK] Selector array result:', element);
+        return element;
+      }
+      
+      // Use selectorsList if available
+      if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
+        console.log('[IframeSDK] Using first selector from selectorsList:', mainSelector.selectorsList[0]);
+        const element = document.querySelector(mainSelector.selectorsList[0]);
+        console.log('[IframeSDK] SelectorsList result:', element);
         return element;
       }
       

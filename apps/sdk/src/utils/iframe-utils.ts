@@ -2,6 +2,7 @@ import { ElementSelectorPropsData } from '@usertour/types';
 import { finderV2 } from '@usertour-packages/finder';
 import { logger } from './logger';
 import { document, window } from './globals';
+import { parseSelectorWithCondition } from './selector-parser';
 
 /**
  * Interface for iframe communication messages
@@ -235,21 +236,25 @@ export class IframeUtils {
     selector: ElementSelectorPropsData,
     iframeDoc: Document,
   ): Element | null {
+    // Parse selector to handle <<< pattern
+    const parsed = parseSelectorWithCondition(selector);
+    const mainSelector = parsed.mainSelector;
+    
     // If we have a customSelector, we can find all matches and filter by visibility
-    if (selector.customSelector) {
+    if (mainSelector.customSelector) {
       try {
-        const selectorStr = selector.customSelector.replace(/\\/g, '\\');
+        const selectorStr = mainSelector.customSelector.replace(/\\/g, '\\');
         const allMatches = iframeDoc.querySelectorAll(selectorStr);
         
         // Check each match for visibility
         for (const match of Array.from(allMatches)) {
           if (!this.isElementInHiddenSectionInIframe(match, iframeDoc)) {
             // Also check if content matches if specified
-            if (selector.content && !selector.isDynamicContent) {
+            if (mainSelector.content && !mainSelector.isDynamicContent) {
               const matchText = (match as HTMLElement).innerText?.trim() || '';
-              const targetText = selector.content.trim();
+              const targetText = mainSelector.content.trim();
               // Default to 'exact' match if not specified
-              const textMatchMode = (selector as any).textMatchMode || 'exact';
+              const textMatchMode = (mainSelector as any).textMatchMode || 'exact';
               const textMatch = textMatchMode === 'exact' 
                 ? matchText === targetText 
                 : matchText.includes(targetText);
@@ -266,8 +271,8 @@ export class IframeUtils {
     }
     
     // If we have selectorsList, try each selector and find first visible match
-    if (selector.selectorsList && selector.selectorsList.length > 0) {
-      for (const selectorStr of selector.selectorsList) {
+    if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
+      for (const selectorStr of mainSelector.selectorsList) {
         try {
           const allMatches = iframeDoc.querySelectorAll(selectorStr);
           
@@ -275,11 +280,11 @@ export class IframeUtils {
           for (const match of Array.from(allMatches)) {
             if (!this.isElementInHiddenSectionInIframe(match, iframeDoc)) {
               // Also check if content matches if specified
-              if (selector.content && !selector.isDynamicContent) {
+              if (mainSelector.content && !mainSelector.isDynamicContent) {
                 const matchText = (match as HTMLElement).innerText?.trim() || '';
-                const targetText = selector.content.trim();
+                const targetText = mainSelector.content.trim();
                 // Default to 'exact' match if not specified
-                const textMatchMode = (selector as any).textMatchMode || 'exact';
+                const textMatchMode = (mainSelector as any).textMatchMode || 'exact';
                 const textMatch = textMatchMode === 'exact' 
                   ? matchText === targetText 
                   : matchText.includes(targetText);
@@ -298,7 +303,7 @@ export class IframeUtils {
     }
     
     // Fallback to original finderV2 method
-    const el = finderV2(selector, iframeDoc);
+    const el = finderV2(mainSelector, iframeDoc);
     if (el && !this.isElementInHiddenSectionInIframe(el, iframeDoc)) {
       return el;
     }
@@ -991,10 +996,14 @@ export class IframeUtils {
             }
             
             try {
+              // Parse selector to handle <<< pattern
+              const parsed = this.parseSelectorWithCondition(sel);
+              const mainSel = parsed.mainSelector;
+              
               // Check custom selector first
-              if (sel.customSelector) {
+              if (mainSel.customSelector) {
                 try {
-                  const matches = el.matches && el.matches(sel.customSelector);
+                  const matches = el.matches && el.matches(mainSel.customSelector);
                   if (matches) {
                     return true;
                   }
@@ -1004,14 +1013,27 @@ export class IframeUtils {
               }
               
               // Check selectors array
-              if (sel.selectors && sel.selectors.length > 0) {
-                for (let i = 0; i < sel.selectors.length; i++) {
+              if (mainSel.selectors && mainSel.selectors.length > 0) {
+                for (let i = 0; i < mainSel.selectors.length; i++) {
                   try {
-                    if (el.matches && el.matches(sel.selectors[i])) {
+                    if (el.matches && el.matches(mainSel.selectors[i])) {
                       return true;
                     }
                   } catch (e) {
-                    console.log('[IframeSDK] Error matching selector:', sel.selectors[i], e);
+                    console.log('[IframeSDK] Error matching selector:', mainSel.selectors[i], e);
+                  }
+                }
+              }
+              
+              // Check selectorsList
+              if (mainSel.selectorsList && mainSel.selectorsList.length > 0) {
+                for (let i = 0; i < mainSel.selectorsList.length; i++) {
+                  try {
+                    if (el.matches && el.matches(mainSel.selectorsList[i])) {
+                      return true;
+                    }
+                  } catch (e) {
+                    console.log('[IframeSDK] Error matching selector from selectorsList:', mainSel.selectorsList[i], e);
                   }
                 }
               }
@@ -1020,7 +1042,7 @@ export class IframeUtils {
             }
             
             return false;
-          };
+          }.bind(this);
 
           // Set up click listener to handle step actions
           // Listen at document level in capture phase to catch events before any link handlers
@@ -1174,6 +1196,36 @@ export class IframeUtils {
           console.log('[IframeSDK] Element setup completed at:', element.__usertour_setup_time);
         },
         
+        // Parse selector to handle <<< pattern
+        parseSelectorWithCondition: function(selector) {
+          if (!selector) {
+            return { mainSelector: selector };
+          }
+          
+          // Check customSelector for <<< pattern
+          if (selector.customSelector && selector.customSelector.includes(' <<< ')) {
+            const [main, conditional] = selector.customSelector.split(' <<< ').map(function(s) { return s.trim(); });
+            return {
+              mainSelector: Object.assign({}, selector, { customSelector: main }),
+              conditionalSelector: { type: 'manual', customSelector: conditional }
+            };
+          }
+          
+          // Check selectorsList for <<< pattern
+          if (selector.selectorsList && selector.selectorsList.length > 0) {
+            const firstSelector = selector.selectorsList[0];
+            if (firstSelector.includes(' <<< ')) {
+              const [main, conditional] = firstSelector.split(' <<< ').map(function(s) { return s.trim(); });
+              return {
+                mainSelector: Object.assign({}, selector, { selectorsList: [main].concat(selector.selectorsList.slice(1)) }),
+                conditionalSelector: { type: 'manual', customSelector: conditional }
+              };
+            }
+          }
+          
+          return { mainSelector: selector };
+        },
+        
         findElementBySelector: function(selector) {
           console.log('[IframeSDK] === FIND ELEMENT BY SELECTOR ===');
           console.log('[IframeSDK] Selector received:', selector);
@@ -1184,19 +1236,31 @@ export class IframeUtils {
           }
 
           try {
+            // Parse selector to handle <<< pattern
+            const parsed = this.parseSelectorWithCondition(selector);
+            const mainSelector = parsed.mainSelector;
+            
             // Use custom selector if available
-            if (selector.customSelector) {
-              console.log('[IframeSDK] Using custom selector:', selector.customSelector);
-              const element = document.querySelector(selector.customSelector);
+            if (mainSelector.customSelector) {
+              console.log('[IframeSDK] Using custom selector:', mainSelector.customSelector);
+              const element = document.querySelector(mainSelector.customSelector);
               console.log('[IframeSDK] Custom selector result:', element);
               return element;
             }
 
             // Use first selector from selectors array
-            if (selector.selectors && selector.selectors.length > 0) {
-              console.log('[IframeSDK] Using first selector from array:', selector.selectors[0]);
-              const element = document.querySelector(selector.selectors[0]);
+            if (mainSelector.selectors && mainSelector.selectors.length > 0) {
+              console.log('[IframeSDK] Using first selector from array:', mainSelector.selectors[0]);
+              const element = document.querySelector(mainSelector.selectors[0]);
               console.log('[IframeSDK] Selector array result:', element);
+              return element;
+            }
+            
+            // Use selectorsList if available
+            if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
+              console.log('[IframeSDK] Using first selector from selectorsList:', mainSelector.selectorsList[0]);
+              const element = document.querySelector(mainSelector.selectorsList[0]);
+              console.log('[IframeSDK] SelectorsList result:', element);
               return element;
             }
             
