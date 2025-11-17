@@ -1502,15 +1502,32 @@ export class IframeUtils {
             const textMatchMode = elementData.textMatchMode || 'exact';
             const isDynamicContent = elementData.isDynamicContent || false;
             
-            // Find elements by selector
-            if (elementData.customSelector) {
-              const nodeList = document.querySelectorAll(elementData.customSelector);
+            // Parse selector to handle <<< pattern (conditional selector)
+            const parsed = this.parseSelectorWithCondition(elementData);
+            const mainSelector = parsed.mainSelector;
+            
+            // Find elements by selector (using parsed main selector)
+            if (mainSelector.customSelector) {
+              const nodeList = document.querySelectorAll(mainSelector.customSelector);
               elements = Array.from(nodeList);
-            } else if (elementData.selectors && elementData.selectors.length > 0) {
+            } else if (mainSelector.selectors && mainSelector.selectors.length > 0) {
               // Try each selector until we find matches
-              for (let i = 0; i < elementData.selectors.length; i++) {
+              for (let i = 0; i < mainSelector.selectors.length; i++) {
                 try {
-                  const nodeList = document.querySelectorAll(elementData.selectors[i]);
+                  const nodeList = document.querySelectorAll(mainSelector.selectors[i]);
+                  if (nodeList.length > 0) {
+                    elements = Array.from(nodeList);
+                    break;
+                  }
+                } catch (e) {
+                  // Continue to next selector if this one fails
+                }
+              }
+            } else if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
+              // Try each selector in selectorsList until we find matches
+              for (let i = 0; i < mainSelector.selectorsList.length; i++) {
+                try {
+                  const nodeList = document.querySelectorAll(mainSelector.selectorsList[i]);
                   if (nodeList.length > 0) {
                     elements = Array.from(nodeList);
                     break;

@@ -261,15 +261,19 @@ export class Tour extends BaseContent<TourStore> {
     // Report step seen event
     await this.reportStepEvents(currentStep, BizEvents.FLOW_STEP_SEEN);
 
-    // Activate trigger conditions
-    await this.activeTriggerConditions();
-
-    // Set up element watcher
+    // Set up element watcher first to avoid interference with trigger condition evaluation
     // NOTE: We do NOT report flow completion here, even if it's the last step,
     // because we need to wait until the element is actually found.
     // Completion will be reported in handleElementFound() after the element is successfully located.
     const store = await this.buildStoreData();
     this.setupElementWatcher(currentStep, store);
+
+    // Activate trigger conditions after element watcher is set up
+    // This prevents trigger condition evaluation (which may search for elements) 
+    // from interfering with the element watcher's own element search
+    this.activeTriggerConditions().catch((error) => {
+      console.error('[Tour] Error in activeTriggerConditions:', error);
+    });
   }
 
   /**
