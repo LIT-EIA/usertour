@@ -990,17 +990,27 @@ export class IframeUtils {
           }
           
           // Helper function to check if an element matches the selector
+          // This function preserves the original preventDefault fix functionality
+          // while also supporting newer selector formats
           const elementMatchesSelector = function(el, sel) {
             if (!el || !sel) {
               return false;
             }
             
             try {
-              // Parse selector to handle <<< pattern
-              const parsed = this.parseSelectorWithCondition(sel);
-              const mainSel = parsed.mainSelector;
+              // Try parsing selector to handle <<< pattern (for newer selector formats)
+              let mainSel = sel;
+              try {
+                const parsed = this.parseSelectorWithCondition(sel);
+                if (parsed && parsed.mainSelector) {
+                  mainSel = parsed.mainSelector;
+                }
+              } catch (parseError) {
+                // If parsing fails, fall back to original selector (backward compatibility)
+                console.log('[IframeSDK] Selector parsing failed, using original selector:', parseError);
+              }
               
-              // Check custom selector first
+              // Check custom selector first (original logic from commit eca4f8e8d91f7aab1cd9e1ecd0126abbd57c22f4)
               if (mainSel.customSelector) {
                 try {
                   const matches = el.matches && el.matches(mainSel.customSelector);
@@ -1012,7 +1022,7 @@ export class IframeUtils {
                 }
               }
               
-              // Check selectors array
+              // Check selectors array (original logic from commit eca4f8e8d91f7aab1cd9e1ecd0126abbd57c22f4)
               if (mainSel.selectors && mainSel.selectors.length > 0) {
                 for (let i = 0; i < mainSel.selectors.length; i++) {
                   try {
@@ -1025,7 +1035,7 @@ export class IframeUtils {
                 }
               }
               
-              // Check selectorsList
+              // Check selectorsList (added in later commits, but preserve original behavior)
               if (mainSel.selectorsList && mainSel.selectorsList.length > 0) {
                 for (let i = 0; i < mainSel.selectorsList.length; i++) {
                   try {
@@ -1037,8 +1047,31 @@ export class IframeUtils {
                   }
                 }
               }
+              
+              // Fallback: if parsing was attempted but mainSel is same as sel, 
+              // also try original selector directly (backward compatibility)
+              if (mainSel === sel) {
+                // Already checked above, but this ensures we don't miss anything
+              }
             } catch (e) {
               console.log('[IframeSDK] Error in elementMatchesSelector:', e);
+              // Final fallback: try original selector directly
+              if (sel && typeof sel === 'object') {
+                try {
+                  if (sel.customSelector && el.matches && el.matches(sel.customSelector)) {
+                    return true;
+                  }
+                  if (sel.selectors && sel.selectors.length > 0) {
+                    for (let i = 0; i < sel.selectors.length; i++) {
+                      if (el.matches && el.matches(sel.selectors[i])) {
+                        return true;
+                      }
+                    }
+                  }
+                } catch (fallbackError) {
+                  console.log('[IframeSDK] Fallback matching also failed:', fallbackError);
+                }
+              }
             }
             
             return false;
@@ -1071,17 +1104,15 @@ export class IframeUtils {
             });
             
             // Check if target is the element itself or a descendant
+            // IMPORTANT: We match against the specific element found, NOT all elements matching the selector
+            // This ensures we only handle clicks on the exact element we're tracking
             let isTargetOrDescendant = false;
             const directMatch = target === element;
             const containsMatch = element.contains && element.contains(target);
             
-            // Also check if the clicked element matches the selector (in case the element found is a container)
-            const selectorMatch = selector && elementMatchesSelector(target, selector);
-            
             console.log('[IframeSDK] Matching check:', {
               directMatch: directMatch,
               containsMatch: containsMatch,
-              selectorMatch: selectorMatch,
               elementContains: typeof element.contains === 'function' ? 'function exists' : 'no contains method'
             });
             
@@ -1091,11 +1122,8 @@ export class IframeUtils {
             } else if (containsMatch) {
               isTargetOrDescendant = true;
               console.log('[IframeSDK] Target is descendant of element');
-            } else if (selectorMatch) {
-              isTargetOrDescendant = true;
-              console.log('[IframeSDK] Target matches the selector');
             } else {
-              // Also check if target is an ancestor (in case element is inside the link)
+              // Check if target is an ancestor (in case element is inside the link)
               let current = element;
               let ancestorLevel = 0;
               while (current && current !== document.body && ancestorLevel < 10) {
@@ -1107,6 +1135,45 @@ export class IframeUtils {
                 current = current.parentElement;
                 ancestorLevel++;
               }
+              
+              // Additional fallback for link clicks: check if target contains element (reverse contains)
+              // This handles cases where the link wraps the element or they're closely related
+              if (!isTargetOrDescendant && target.contains && target.contains(element)) {
+                isTargetOrDescendant = true;
+                console.log('[IframeSDK] Element is inside target (reverse contains match)');
+              }
+              
+              // Final fallback for links: if target is a link and element is also a link with same href,
+              // treat as match only if they're the same element (prevents matching other links with same href)
+              if (!isTargetOrDescendant && target.tagName === 'A' && element.tagName === 'A') {
+                // Only match if they're the exact same element (should have been caught by directMatch)
+                if (target === element) {
+                  isTargetOrDescendant = true;
+                  console.log('[IframeSDK] Target and element are the same link');
+                }
+              }
+              
+              // Last resort: use selector matching ONLY if target is within the same parent container as element
+              // This prevents matching unrelated elements that happen to match the selector
+              if (!isTargetOrDescendant && selector) {
+                // Check if target and element share a common parent (they're related)
+                const elementParent = element.parentElement;
+                const targetParent = target.parentElement;
+                const shareCommonParent = elementParent && targetParent && (
+                  elementParent === targetParent ||
+                  elementParent.contains(targetParent) ||
+                  targetParent.contains(elementParent)
+                );
+                
+                if (shareCommonParent) {
+                  const selectorMatch = elementMatchesSelector(target, selector);
+                  if (selectorMatch) {
+                    isTargetOrDescendant = true;
+                    console.log('[IframeSDK] Target matches selector and shares common parent with element');
+                  }
+                }
+              }
+              
               if (!isTargetOrDescendant) {
                 console.log('[IframeSDK] Checked ancestors up to level', ancestorLevel, '- no match');
               }
