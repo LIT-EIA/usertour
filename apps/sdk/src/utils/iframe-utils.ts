@@ -1110,9 +1110,14 @@ export class IframeUtils {
             const directMatch = target === element;
             const containsMatch = element.contains && element.contains(target);
             
+            // Also check if the clicked element matches the selector (for "fake links")
+            // This is critical for handling elements with preventDefault() that don't navigate
+            const selectorMatch = selector && elementMatchesSelector(target, selector);
+            
             console.log('[IframeSDK] Matching check:', {
               directMatch: directMatch,
               containsMatch: containsMatch,
+              selectorMatch: selectorMatch,
               elementContains: typeof element.contains === 'function' ? 'function exists' : 'no contains method'
             });
             
@@ -1122,6 +1127,12 @@ export class IframeUtils {
             } else if (containsMatch) {
               isTargetOrDescendant = true;
               console.log('[IframeSDK] Target is descendant of element');
+            } else if (selectorMatch) {
+              // CRITICAL FIX: Selector matching at same priority as direct/contains checks
+              // This allows "fake links" (elements with preventDefault) to trigger step progression
+              // even if they're not descendants of the tracked element
+              isTargetOrDescendant = true;
+              console.log('[IframeSDK] Target matches the selector (fake link support)');
             } else {
               // Check if target is an ancestor (in case element is inside the link)
               let current = element;
@@ -1141,37 +1152,6 @@ export class IframeUtils {
               if (!isTargetOrDescendant && target.contains && target.contains(element)) {
                 isTargetOrDescendant = true;
                 console.log('[IframeSDK] Element is inside target (reverse contains match)');
-              }
-              
-              // Final fallback for links: if target is a link and element is also a link with same href,
-              // treat as match only if they're the same element (prevents matching other links with same href)
-              if (!isTargetOrDescendant && target.tagName === 'A' && element.tagName === 'A') {
-                // Only match if they're the exact same element (should have been caught by directMatch)
-                if (target === element) {
-                  isTargetOrDescendant = true;
-                  console.log('[IframeSDK] Target and element are the same link');
-                }
-              }
-              
-              // Last resort: use selector matching ONLY if target is within the same parent container as element
-              // This prevents matching unrelated elements that happen to match the selector
-              if (!isTargetOrDescendant && selector) {
-                // Check if target and element share a common parent (they're related)
-                const elementParent = element.parentElement;
-                const targetParent = target.parentElement;
-                const shareCommonParent = elementParent && targetParent && (
-                  elementParent === targetParent ||
-                  elementParent.contains(targetParent) ||
-                  targetParent.contains(elementParent)
-                );
-                
-                if (shareCommonParent) {
-                  const selectorMatch = elementMatchesSelector(target, selector);
-                  if (selectorMatch) {
-                    isTargetOrDescendant = true;
-                    console.log('[IframeSDK] Target matches selector and shares common parent with element');
-                  }
-                }
               }
               
               if (!isTargetOrDescendant) {
@@ -1297,46 +1277,9 @@ export class IframeUtils {
           console.log('[IframeSDK] === FIND ELEMENT BY SELECTOR ===');
           console.log('[IframeSDK] Selector received:', selector);
           
-          if (!document) {
-            console.log('[IframeSDK] Document not available');
-            return null;
-          }
-
-          try {
-            // Parse selector to handle <<< pattern
-            const parsed = this.parseSelectorWithCondition(selector);
-            const mainSelector = parsed.mainSelector;
-            
-            // Use custom selector if available
-            if (mainSelector.customSelector) {
-              console.log('[IframeSDK] Using custom selector:', mainSelector.customSelector);
-              const element = document.querySelector(mainSelector.customSelector);
-              console.log('[IframeSDK] Custom selector result:', element);
-              return element;
-            }
-
-            // Use first selector from selectors array
-            if (mainSelector.selectors && mainSelector.selectors.length > 0) {
-              console.log('[IframeSDK] Using first selector from array:', mainSelector.selectors[0]);
-              const element = document.querySelector(mainSelector.selectors[0]);
-              console.log('[IframeSDK] Selector array result:', element);
-              return element;
-            }
-            
-            // Use selectorsList if available
-            if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
-              console.log('[IframeSDK] Using first selector from selectorsList:', mainSelector.selectorsList[0]);
-              const element = document.querySelector(mainSelector.selectorsList[0]);
-              console.log('[IframeSDK] SelectorsList result:', element);
-              return element;
-            }
-            
-            console.log('[IframeSDK] No valid selector found');
-            return null;
-          } catch (error) {
-            console.log('[IframeSDK] Error in findElementBySelector:', error);
-            return null;
-          }
+          // Use findElementBySelectorData for proper content and sequence matching
+          // This ensures we find the correct element, not just any element matching the CSS selector
+          return this.findElementBySelectorData(selector);
         },
         
         sendMessageToParent: function(message) {
