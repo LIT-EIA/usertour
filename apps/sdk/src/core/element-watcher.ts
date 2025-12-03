@@ -107,6 +107,9 @@ export class ElementWatcher extends Evented {
       this.element = el;
       this.iframeElementInfo = null;
       this.hasFoundElement = true;
+      // Reset search context since element was found in main document
+      // This optimizes future searches to check main document first
+      iframeUtils.resetSearchContext();
       this.trigger(AppEvents.ELEMENT_FOUND, el);
       return;
     }
@@ -153,6 +156,8 @@ export class ElementWatcher extends Evented {
         // Found a new visible element that matches our selector
         this.element = el;
         this.iframeElementInfo = null;
+        // Reset search context since element was found in main document
+        iframeUtils.resetSearchContext();
         this.trigger(AppEvents.ELEMENT_CHANGED, el);
       } else {
         // Try searching in iframes again (only if not already found)

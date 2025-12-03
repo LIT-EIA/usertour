@@ -52,6 +52,9 @@ export class IframeUtils {
   private static instance: IframeUtils;
   private communicationHandlers: Map<string, IframeCommunicationHandler> = new Map();
   private messageListener?: (event: MessageEvent) => void;
+  // Cache for optimized element search: stores the context where last element was found
+  // -1 = main document, >= 0 = iframe index
+  private lastSearchContext: number = -1;
 
   /**
    * Get singleton instance
@@ -89,6 +92,23 @@ export class IframeUtils {
   removeAllCommunicationHandlers(): void {
     this.communicationHandlers.clear();
     this.removeMessageListener();
+  }
+
+  /**
+   * Reset the search context cache to main document
+   * Call this when an element is found in the main document
+   * to optimize subsequent searches
+   */
+  resetSearchContext(): void {
+    this.lastSearchContext = -1;
+  }
+
+  /**
+   * Get the current search context
+   * -1 = main document, >= 0 = iframe index
+   */
+  getSearchContext(): number {
+    return this.lastSearchContext;
   }
 
   /**
@@ -362,12 +382,43 @@ export class IframeUtils {
   }
 
   /**
-   * Search for an element across all iframes
+   * Search for an element across all iframes with optimized search order
+   *
+   * Performance optimization: Reuses knowledge of the last successful search location.
+   *
+   * Search order:
+   * 1. Start in the iframe (or document context) where the last element was found
+   * 2. If not found, continue searching through remaining iframes in order
+   * 3. After exhausting all iframes, search the main document (if we started in an iframe)
+   * 4. Continue looping until we return to the starting context (full cycle)
+   *
+   * This approach is more efficient because:
+   * - Elements in the same flow are often in the same iframe
+   * - Avoids starting from scratch (main document) for every search
+   * - Maintains backward compatibility by eventually searching all contexts
    */
   async searchElementInIframes(selector: ElementSelectorPropsData): Promise<IframeElementInfo | null> {
     const iframes = this.getAllIframes();
+    const totalIframes = iframes.length;
     
-    for (let i = 0; i < iframes.length; i++) {
+    // If no iframes, nothing to search
+    if (totalIframes === 0) {
+      return null;
+    }
+    
+    // Determine starting point based on last successful search
+    // lastSearchContext: -1 = main document, >= 0 = iframe index
+    let startIndex = this.lastSearchContext >= 0 ? this.lastSearchContext : 0;
+    
+    // Ensure startIndex is within bounds (iframe might have been removed)
+    if (startIndex >= totalIframes) {
+      startIndex = 0;
+    }
+    
+    // Search iframes starting from the last known location
+    // Loop through all iframes, wrapping around if needed
+    for (let offset = 0; offset < totalIframes; offset++) {
+      const i = (startIndex + offset) % totalIframes;
       const iframe = iframes[i];
       
       try {
@@ -385,6 +436,10 @@ export class IframeUtils {
         const element = this.findVisibleElementInIframe(selector, iframe.contentDocument);
         if (element) {
           const iframeRect = iframe.getBoundingClientRect();
+          
+          // Cache this iframe index for next search
+          this.lastSearchContext = i;
+          
           return {
             element,
             iframe,
@@ -398,6 +453,9 @@ export class IframeUtils {
       }
     }
     
+    // Element not found in any iframe
+    // Reset search context to start from beginning next time
+    this.lastSearchContext = -1;
     return null;
   }
 
