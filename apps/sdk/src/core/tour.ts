@@ -31,6 +31,7 @@ import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
 export class Tour extends BaseContent<TourStore> {
   private watcher: ElementWatcher | null = null;
   private triggerTimeouts: NodeJS.Timeout[] = []; // Store timeout IDs
+  private iframeRetryTimeouts: NodeJS.Timeout[] = []; // Store iframe retry timeout IDs
   private flowCompletedReported = false; // Track if FLOW_COMPLETED has been reported
   private isUpdatingStore = false; // Prevent infinite loops
   private isProcessingElementFound = false; // Prevent duplicate element found processing
@@ -268,12 +269,11 @@ export class Tour extends BaseContent<TourStore> {
     const store = await this.buildStoreData();
     this.setupElementWatcher(currentStep, store);
 
-    // Activate trigger conditions after element watcher is set up
-    // This prevents trigger condition evaluation (which may search for elements) 
-    // from interfering with the element watcher's own element search
-    this.activeTriggerConditions().catch((error) => {
-      console.error('[Tour] Error in activeTriggerConditions:', error);
-    });
+    // IMPORTANT: Do NOT activate trigger conditions here!
+    // Triggers must only be activated AFTER the element is found and the step is fully stabilized.
+    // Otherwise, triggers with immediate conditions (wait=0) can fire before the element is found,
+    // causing premature navigation to the next step and destroying the current step.
+    // Trigger activation is now handled in handleElementFound() after the element is successfully located.
   }
 
   /**
@@ -792,6 +792,14 @@ export class Tour extends BaseContent<TourStore> {
     
     // Reset the processing flag
     this.isProcessingElementFound = false;
+    
+    // NOW activate trigger conditions after element is found and step is fully stabilized
+    // This prevents premature navigation from triggers firing before the step is ready
+    console.log('[Tour] Element found and stabilized, now activating trigger conditions');
+    this.activeTriggerConditions().catch((error) => {
+      console.error('[Tour] Error in activeTriggerConditions:', error);
+    });
+    
     console.log('[Tour] === handleElementFound COMPLETED ===');
   }
 
@@ -927,6 +935,17 @@ export class Tour extends BaseContent<TourStore> {
     if (iframeUtils.isIframeAccessible(iframeElementInfo.iframe)) {
       // Retry logic for handling iframe src changes with delayed content loading
       const sendFindElementMessage = (retryCount = 0, maxRetries = 8) => {
+        // CRITICAL: Validate we're still on the same step before sending message
+        // This prevents stale retry messages from previous steps
+        const currentStepId = this.getCurrentStep()?.cvid;
+        if (currentStepId !== step.cvid) {
+          console.log('[Tour] === CANCELLING STALE IFRAME RETRY ===');
+          console.log('[Tour] Retry was for step:', step.cvid);
+          console.log('[Tour] Current step is:', currentStepId);
+          console.log('[Tour] Retry count:', retryCount);
+          return;
+        }
+        
         // Check visibility before sending message (iframe might become hidden during retries)
         if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
           console.log('[Tour] Iframe became hidden, stopping message retries');
@@ -941,6 +960,7 @@ export class Tour extends BaseContent<TourStore> {
           triggers: step.trigger // Include triggers for iframe evaluation
         };
         
+        console.log('[Tour] [IFRAME-RETRY] Sending find-element message, retry:', retryCount, 'step:', step.cvid);
         iframeUtils.sendMessageToIframe(iframeElementInfo.iframe, message);
         
         // Verify element exists in iframe after sending message
@@ -948,11 +968,23 @@ export class Tour extends BaseContent<TourStore> {
         if (retryCount < maxRetries && step.target) {
           // Use exponential backoff: 300ms, 600ms, 900ms, 1200ms, etc.
           const delay = Math.min(300 * (retryCount + 1), 2000);
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             try {
+              // CRITICAL: Validate step again before retry
+              const nowStepId = this.getCurrentStep()?.cvid;
+              if (nowStepId !== step.cvid) {
+                console.log('[Tour] === CANCELLING STALE IFRAME RETRY IN TIMEOUT ===');
+                console.log('[Tour] Retry was for step:', step.cvid);
+                console.log('[Tour] Current step is:', nowStepId);
+                // Remove from timeout tracking
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                return;
+              }
+              
               // Check visibility before retry
               if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
                 console.log('[Tour] Iframe became hidden during retry, stopping');
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
                 return;
               }
               
@@ -960,21 +992,34 @@ export class Tour extends BaseContent<TourStore> {
               if (iframeDoc && step.target) {
                 const elementInIframe = finderV2(step.target, iframeDoc);
                 if (!elementInIframe) {
+                  console.log('[Tour] [IFRAME-RETRY] Element still not found, scheduling retry', retryCount + 1);
                   sendFindElementMessage(retryCount + 1, maxRetries);
+                } else {
+                  console.log('[Tour] [IFRAME-RETRY] Element found in iframe, no more retries needed');
                 }
               } else {
                 // Iframe might be reloading, retry
                 if (iframeDoc) {
+                  console.log('[Tour] [IFRAME-RETRY] Iframe doc available but element not found, retrying');
                   sendFindElementMessage(retryCount + 1, maxRetries);
                 }
               }
+              
+              // Remove from timeout tracking
+              this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
             } catch (error) {
               // Retry on error
               if (retryCount < maxRetries) {
+                console.log('[Tour] [IFRAME-RETRY] Error during retry, will retry again:', error);
                 sendFindElementMessage(retryCount + 1, maxRetries);
               }
+              this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
             }
           }, delay);
+          
+          // Track this timeout so we can cancel it if step changes
+          this.iframeRetryTimeouts.push(timeoutId);
+          console.log('[Tour] [IFRAME-RETRY] Scheduled retry', retryCount + 1, 'in', delay, 'ms. Total tracked timeouts:', this.iframeRetryTimeouts.length);
         }
       };
       
@@ -1593,7 +1638,11 @@ export class Tour extends BaseContent<TourStore> {
     for (const action of otherActions) {
       console.log('[Tour] Processing action:', action);
       if (action.type === ContentActionsItemType.STEP_GOTO) {
-        console.log('[Tour] Executing STEP_GOTO to:', action.data.stepCvid);
+        const currentStep = this.getCurrentStep();
+        console.log('[Tour] === EXECUTING STEP_GOTO ===');
+        console.log('[Tour] From step:', currentStep?.cvid);
+        console.log('[Tour] To step:', action.data.stepCvid);
+        console.log('[Tour] Timestamp:', new Date().toISOString());
         this.isNavigatingToStep = true; // Mark that we're navigating to prevent premature completion
         await this.show(action.data.stepCvid);
         // Note: isNavigatingToStep will be cleared in handleElementFound after the element is found
@@ -1788,6 +1837,16 @@ export class Tour extends BaseContent<TourStore> {
       return;
     }
 
+    console.log('[Tour] === ACTIVATING TRIGGER CONDITIONS ===');
+    console.log('[Tour] Current step:', currentStep.cvid);
+    console.log('[Tour] Number of triggers:', currentStep.trigger.length);
+    console.log('[Tour] Triggers:', currentStep.trigger.map(t => ({
+      id: t.id,
+      conditions: t.conditions,
+      actions: t.actions,
+      wait: t.wait
+    })));
+
     // Process triggers and collect remaining ones
     const remainingTriggers = await this.processTriggers(currentStep.trigger);
 
@@ -1802,19 +1861,50 @@ export class Tour extends BaseContent<TourStore> {
   private async processTriggers(triggers: StepTrigger[]): Promise<StepTrigger[]> {
     const remainingTriggers: StepTrigger[] = [];
     const MAX_WAIT_TIME = 300; // Maximum wait time in seconds
+    
+    // Capture current step ID at the time triggers are being processed
+    // This ensures we can validate the step hasn't changed when delayed triggers fire
+    const currentStepId = this.getCurrentStep()?.cvid;
+    
     for (const trigger of triggers) {
       const { conditions, ...rest } = trigger;
       const activatedConditions = await activedRulesConditions(conditions);
 
+      console.log('[Tour] === PROCESSING TRIGGER ===');
+      console.log('[Tour] Trigger ID:', trigger.id);
+      console.log('[Tour] Conditions active:', isActive(activatedConditions));
+      console.log('[Tour] Wait time:', trigger.wait);
+      console.log('[Tour] Current step ID:', currentStepId);
+
       if (!isActive(activatedConditions)) {
+        console.log('[Tour] Trigger conditions NOT met, keeping trigger for later');
         remainingTriggers.push({
           ...rest,
           conditions: activatedConditions,
         });
       } else {
+        console.log('[Tour] Trigger conditions MET, executing actions:', trigger.actions);
         const waitTime = Math.min(trigger.wait ?? 0, MAX_WAIT_TIME);
         if (waitTime > 0) {
+          console.log('[Tour] Scheduling trigger execution after', waitTime, 'seconds');
           const timeoutId = setTimeout(() => {
+            // CRITICAL: Validate we're still on the same step before executing
+            // This prevents stale triggers from previous steps from firing
+            const nowStepId = this.getCurrentStep()?.cvid;
+            if (nowStepId !== currentStepId) {
+              console.log('[Tour] === SKIPPING STALE TRIGGER ===');
+              console.log('[Tour] Trigger was for step:', currentStepId);
+              console.log('[Tour] Current step is:', nowStepId);
+              console.log('[Tour] Trigger ID:', trigger.id);
+              // Remove from timeouts array but don't execute
+              this.triggerTimeouts = this.triggerTimeouts.filter((id) => id !== timeoutId);
+              return;
+            }
+            
+            console.log('[Tour] === EXECUTING DELAYED TRIGGER ===');
+            console.log('[Tour] Trigger ID:', trigger.id);
+            console.log('[Tour] Actions:', trigger.actions);
+            console.log('[Tour] Step ID validated:', currentStepId);
             // Execute actions immediately when conditions are met
             this.handleActions(trigger.actions);
             // Remove the timeout ID from the array after execution
@@ -1823,8 +1913,16 @@ export class Tour extends BaseContent<TourStore> {
           // Store the timeout ID
           this.triggerTimeouts.push(timeoutId);
         } else {
-          // Execute actions immediately when conditions are met
-          await this.handleActions(trigger.actions);
+          console.log('[Tour] Executing trigger actions IMMEDIATELY (wait=0)');
+          // For immediate execution, also validate step hasn't changed during async operations
+          const nowStepId = this.getCurrentStep()?.cvid;
+          if (nowStepId === currentStepId) {
+            await this.handleActions(trigger.actions);
+          } else {
+            console.log('[Tour] === SKIPPING STALE IMMEDIATE TRIGGER ===');
+            console.log('[Tour] Trigger was for step:', currentStepId);
+            console.log('[Tour] Current step is now:', nowStepId);
+          }
         }
       }
     }
@@ -1901,11 +1999,18 @@ export class Tour extends BaseContent<TourStore> {
     // Clean up all iframe SDK instances across all iframes
     iframeUtils.sendCleanupAllStepsToAllIframes();
     
-    // Clear all pending timeouts
+    // Clear all pending trigger timeouts
     for (const timeoutId of this.triggerTimeouts) {
       clearTimeout(timeoutId);
     }
     this.triggerTimeouts = [];
+    
+    // CRITICAL: Clear all pending iframe retry timeouts to prevent stale retries
+    console.log('[Tour] Clearing', this.iframeRetryTimeouts.length, 'iframe retry timeouts');
+    for (const timeoutId of this.iframeRetryTimeouts) {
+      clearTimeout(timeoutId);
+    }
+    this.iframeRetryTimeouts = [];
     
     // Destroy the element watcher
     if (this.watcher) {
@@ -1931,11 +2036,17 @@ export class Tour extends BaseContent<TourStore> {
    * Destroys the tour
    */
   destroy() {
-    // Clear all pending timeouts
+    // Clear all pending trigger timeouts
     for (const timeoutId of this.triggerTimeouts) {
       clearTimeout(timeoutId);
     }
     this.triggerTimeouts = [];
+    
+    // Clear all pending iframe retry timeouts
+    for (const timeoutId of this.iframeRetryTimeouts) {
+      clearTimeout(timeoutId);
+    }
+    this.iframeRetryTimeouts = [];
 
     // Clean up iframe listeners for current step
     if (this.watcher) {
