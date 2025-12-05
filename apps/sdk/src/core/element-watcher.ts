@@ -44,7 +44,7 @@ export class ElementWatcher extends Evented {
   private iframeSearchDisabled = false; // Temporarily disable iframe search to prevent rapid re-searches
   private iframeMonitor: MutationObserver | null = null; // Monitor iframes for src changes
   private lastIframeSearchTime = 0; // Track when we last searched iframes
-  private iframeSearchRetryInterval = 2000; // Retry iframe search every 2 seconds if element not found
+  private iframeSearchRetryInterval = 500; // Retry iframe search every 500ms if element not found (reduced from 2000ms)
 
   constructor(target: ElementSelectorPropsData) {
     super();
@@ -120,9 +120,17 @@ export class ElementWatcher extends Evented {
     const now = Date.now();
     const timeSinceLastIframeSearch = now - this.lastIframeSearchTime;
     
-    if (!this.iframeSearchDisabled || timeSinceLastIframeSearch >= this.iframeSearchRetryInterval) {
+    // Smart throttling: check if any iframes are still loading content
+    // If so, allow more frequent searches (300ms), otherwise use standard interval (500ms)
+    const iframesLoading = this.areIframesLoading();
+    const adaptiveInterval = iframesLoading ? 300 : this.iframeSearchRetryInterval;
+    
+    // Progressive backoff: first 3 retries have no throttle, then use adaptive interval
+    const effectiveInterval = retryTimes < 3 ? 0 : adaptiveInterval;
+    
+    if (!this.iframeSearchDisabled || timeSinceLastIframeSearch >= effectiveInterval) {
       // Reset the disabled flag if enough time has passed
-      if (timeSinceLastIframeSearch >= this.iframeSearchRetryInterval) {
+      if (timeSinceLastIframeSearch >= effectiveInterval) {
         this.iframeSearchDisabled = false;
         this.lastIframeSearchTime = now;
       }
@@ -172,7 +180,6 @@ export class ElementWatcher extends Evented {
       const iframeVisible = iframeUtils.isIframeVisible(this.iframeElementInfo.iframe);
       if (!iframeVisible) {
         const now = Date.now();
-        this.updateChecker(true, now);
         return {
           isHidden: true,
           isTimeout: this.checker?.isTimeout || false,
@@ -212,9 +219,9 @@ export class ElementWatcher extends Evented {
       };
     }
 
-    const isHidden =
-      !isVisibleNode(this.element as HTMLElement) ||
-      !(await this.checkElementVisibilityInContext(this.element as HTMLElement));
+    const isVisibleCheck = isVisibleNode(this.element as HTMLElement);
+    const contextCheck = await this.checkElementVisibilityInContext(this.element as HTMLElement);
+    const isHidden = !isVisibleCheck || !contextCheck;
 
     if (!isHidden) {
       this.checker = null;
@@ -262,7 +269,7 @@ export class ElementWatcher extends Evented {
       const iframeElementInfo = await iframeUtils.searchElementInIframes(
         this.parsedSelector.mainSelector,
       );
-      
+            
       if (iframeElementInfo) {
         // Double-check iframe visibility before triggering ELEMENT_FOUND
         // (iframe might have become hidden between search and trigger)
@@ -691,5 +698,30 @@ export class ElementWatcher extends Evented {
     // If the found element is hidden, return null so we can retry
     // This allows the retry logic to potentially find a visible element later
     return null;
+  }
+
+  /**
+   * Checks if any iframes are still loading content
+   * @returns boolean indicating if any iframes have readyState !== 'complete'
+   */
+  private areIframesLoading(): boolean {
+    if (!document) {
+      return false;
+    }
+    
+    try {
+      const iframes = iframeUtils.getAllIframes();
+      return iframes.some(iframe => {
+        try {
+          const doc = iframe.contentDocument;
+          return doc && doc.readyState !== 'complete';
+        } catch {
+          // Cross-origin iframe, assume not loading
+          return false;
+        }
+      });
+    } catch {
+      return false;
+    }
   }
 }

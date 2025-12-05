@@ -27,6 +27,7 @@ import { ElementWatcher } from './element-watcher';
 import { logger } from '../utils/logger';
 import { getStepByCvid } from '../utils/content-utils';
 import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
+import { parseSelectorWithCondition } from '../utils/selector-parser';
 
 export class Tour extends BaseContent<TourStore> {
   private watcher: ElementWatcher | null = null;
@@ -37,6 +38,7 @@ export class Tour extends BaseContent<TourStore> {
   private isProcessingElementFound = false; // Prevent duplicate element found processing
   private isNavigatingToStep = false; // Track if we're navigating to a step via STEP_GOTO
   private iframePositionUpdateCleanup: (() => void) | null = null; // Cleanup function for iframe position update listeners
+  private iframeSDKConfirmedSteps: Set<string> = new Set(); // Track steps confirmed by iframe SDK
 
   /**
    * Monitors and updates the tour state
@@ -929,12 +931,30 @@ export class Tour extends BaseContent<TourStore> {
         // Element not found in iframe, handle timeout
         this.handleElementNotFound(step);
       },
+      onElementSetupComplete: (stepId: string) => {
+        // Iframe SDK has confirmed element setup is complete
+        console.log('[Tour] [IFRAME-CONFIRM] Iframe SDK confirmed element setup for step:', stepId);
+        this.iframeSDKConfirmedSteps.add(stepId);
+        // Cancel all pending retries for this step
+        this.cancelIframeRetries(stepId);
+      },
     });
 
     // Try to inject SDK into iframe if it's same-origin
     if (iframeUtils.isIframeAccessible(iframeElementInfo.iframe)) {
       // Retry logic for handling iframe src changes with delayed content loading
+      // Using original retry count (8) but with early cancellation when iframe SDK confirms
+      let consecutiveErrors = 0;
+      const MAX_CONSECUTIVE_ERRORS = 3;
+      
       const sendFindElementMessage = (retryCount = 0, maxRetries = 8) => {
+        // CRITICAL: Check if iframe SDK already confirmed element setup
+        // If so, cancel all remaining retries immediately
+        if (step.cvid && this.iframeSDKConfirmedSteps.has(step.cvid)) {
+          console.log('[Tour] [IFRAME-RETRY] Element already confirmed by iframe SDK, cancelling retry', retryCount);
+          return;
+        }
+        
         // CRITICAL: Validate we're still on the same step before sending message
         // This prevents stale retry messages from previous steps
         const currentStepId = this.getCurrentStep()?.cvid;
@@ -970,6 +990,13 @@ export class Tour extends BaseContent<TourStore> {
           const delay = Math.min(300 * (retryCount + 1), 2000);
           const timeoutId = setTimeout(() => {
             try {
+              // CRITICAL: Check if iframe SDK confirmed element before retry
+              if (step.cvid && this.iframeSDKConfirmedSteps.has(step.cvid)) {
+                console.log('[Tour] [IFRAME-RETRY] Element confirmed by SDK before retry, cancelling');
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                return;
+              }
+              
               // CRITICAL: Validate step again before retry
               const nowStepId = this.getCurrentStep()?.cvid;
               if (nowStepId !== step.cvid) {
@@ -990,16 +1017,24 @@ export class Tour extends BaseContent<TourStore> {
               
               const iframeDoc = iframeElementInfo.iframe.contentDocument;
               if (iframeDoc && step.target) {
-                const elementInIframe = finderV2(step.target, iframeDoc);
+                // CRITICAL FIX: Parse selector to handle conditional patterns (<<<)
+                // This prevents SyntaxError when selector contains invalid CSS
+                const parsed = parseSelectorWithCondition(step.target);
+                const elementInIframe = finderV2(parsed.mainSelector, iframeDoc);
+                
                 if (!elementInIframe) {
+                  // Element not found is normal during page loads - don't count as failure
+                  // Only errors should increment the circuit breaker counter
                   console.log('[Tour] [IFRAME-RETRY] Element still not found, scheduling retry', retryCount + 1);
                   sendFindElementMessage(retryCount + 1, maxRetries);
                 } else {
+                  consecutiveErrors = 0; // Reset error counter on success
                   console.log('[Tour] [IFRAME-RETRY] Element found in iframe, no more retries needed');
                 }
               } else {
                 // Iframe might be reloading, retry
                 if (iframeDoc) {
+                  // Iframe doc available but no target is normal during navigation
                   console.log('[Tour] [IFRAME-RETRY] Iframe doc available but element not found, retrying');
                   sendFindElementMessage(retryCount + 1, maxRetries);
                 }
@@ -1008,10 +1043,31 @@ export class Tour extends BaseContent<TourStore> {
               // Remove from timeout tracking
               this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
             } catch (error) {
-              // Retry on error
+              consecutiveErrors++;
+              
+              // Enhanced error logging
+              if (error instanceof SyntaxError && (error as any).message?.includes('not a valid selector')) {
+                console.error('[Tour] [IFRAME-RETRY] Invalid selector syntax detected:', error.message);
+                console.error('[Tour] [IFRAME-RETRY] This is likely due to unparsed conditional selector (<<<)');
+                // Don't retry on syntax errors - they won't resolve
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                return;
+              }
+              
+              // Circuit breaker: stop retries only after consecutive ERRORS (not element-not-found)
+              // This prevents infinite loops on actual errors while still allowing retries during page loads
+              if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                console.error('[Tour] [IFRAME-RETRY] Circuit breaker triggered after', consecutiveErrors, 'consecutive errors:', error);
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                return;
+              }
+              
+              // Retry on other errors
               if (retryCount < maxRetries) {
-                console.log('[Tour] [IFRAME-RETRY] Error during retry, will retry again:', error);
+                console.log('[Tour] [IFRAME-RETRY] Error during retry', retryCount + 1, ', will retry again:', error);
                 sendFindElementMessage(retryCount + 1, maxRetries);
+              } else {
+                console.warn('[Tour] [IFRAME-RETRY] Max retries reached after errors');
               }
               this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
             }
@@ -1094,6 +1150,23 @@ export class Tour extends BaseContent<TourStore> {
         await this.handleActions([matchingAction]);
       }
     }
+  }
+
+  /**
+   * Cancels all pending iframe retries for a specific step
+   * @private
+   */
+  private cancelIframeRetries(stepId: string): void {
+    console.log('[Tour] [IFRAME-RETRY] Cancelling all pending retries for step:', stepId);
+    const initialCount = this.iframeRetryTimeouts.length;
+    
+    // Clear all timeouts and remove them from tracking
+    for (const timeoutId of this.iframeRetryTimeouts) {
+      clearTimeout(timeoutId);
+    }
+    this.iframeRetryTimeouts = [];
+    
+    console.log('[Tour] [IFRAME-RETRY] Cancelled', initialCount, 'pending retry timeouts');
   }
 
   /**
@@ -1790,7 +1863,7 @@ export class Tour extends BaseContent<TourStore> {
     currentStep: Step,
     triggerRef: Element | null,
     currentOpenState: boolean,
-  ): Promise<void> {
+  ): Promise<void> {    
     // Early return if not a tooltip or missing required data
     if (
       !triggerRef ||
@@ -1814,6 +1887,7 @@ export class Tour extends BaseContent<TourStore> {
 
     // Handle timeout or hidden state
     if (isTimeout) {
+      console.log('[Tour] checkTooltipVisibility: Element timeout - closing tour');
       await this.close(contentEndReason.TOOLTIP_TARGET_MISSING);
     } else {
       this.hide();
@@ -1992,6 +2066,9 @@ export class Tour extends BaseContent<TourStore> {
     
     // Clean up position update listeners
     this.cleanupIframePositionUpdate();
+    
+    // Clear iframe SDK confirmation tracking
+    this.iframeSDKConfirmedSteps.clear();
     
     // Clean up all iframe communication handlers
     iframeUtils.removeAllCommunicationHandlers();

@@ -8,7 +8,7 @@ import { parseSelectorWithCondition } from './selector-parser';
  * Interface for iframe communication messages
  */
 export interface IframeMessage {
-  type: 'usertour-step-complete' | 'usertour-step-action' | 'usertour-element-found' | 'usertour-element-not-found' | 'usertour-find-element' | 'usertour-cleanup-step' | 'usertour-cleanup-all-steps';
+  type: 'usertour-step-complete' | 'usertour-step-action' | 'usertour-element-found' | 'usertour-element-not-found' | 'usertour-find-element' | 'usertour-cleanup-step' | 'usertour-cleanup-all-steps' | 'usertour-element-setup-complete';
   stepId?: string;
   action?: string;
   element?: {
@@ -39,6 +39,7 @@ export interface IframeCommunicationHandler {
   onStepAction: (stepId: string, action: string, data?: any) => void;
   onElementFound: (element: IframeElementInfo) => void;
   onElementNotFound: (selector: ElementSelectorPropsData) => void;
+  onElementSetupComplete?: (stepId: string) => void;
 }
 
 export interface IframeCommunicationHandlerWithId extends IframeCommunicationHandler {
@@ -133,6 +134,14 @@ export class IframeUtils {
         }
 
         switch (message.type) {
+          case 'usertour-element-setup-complete':
+            if (message.stepId) {
+              // Call all handlers with onElementSetupComplete callback
+              this.communicationHandlers.forEach((handler) => {
+                handler.onElementSetupComplete?.(message.stepId!);
+              });
+            }
+            break;
           case 'usertour-step-complete':
             if (message.stepId) {
               // Call all handlers
