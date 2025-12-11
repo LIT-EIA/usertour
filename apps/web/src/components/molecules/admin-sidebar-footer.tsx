@@ -4,12 +4,20 @@ import {
 } from '../templates/admin-sidebar-template';
 
 import { AdminSidebarFooterTemplate } from '../templates/admin-sidebar-template';
-import { QuestionMarkCircledIcon } from '@usertour-packages/icons';
+import { QuestionMarkCircledIcon, PlugIcon } from '@usertour-packages/icons';
+import { useAppContext } from '@/contexts/app-context';
 
 const AdminSidebarFooter = () => {
+  const { environment } = useAppContext();
+  const pluginsHref = environment?.id ? `/env/${environment.id}/plugins` : '/plugins';
+
   return (
     <AdminSidebarFooterTemplate>
       <AdminSidebarFooterTextItemTemplate>Resources</AdminSidebarFooterTextItemTemplate>
+      <AdminSidebarFooterLinkItemTemplate href={pluginsHref}>
+        <PlugIcon className="w-4 h-4 mr-1" />
+        Install Plugins
+      </AdminSidebarFooterLinkItemTemplate>
       <AdminSidebarFooterLinkItemTemplate
         target="_blank"
         href="https://docs.usertour.io/developers/usertourjs-installation/"

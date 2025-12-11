@@ -15,6 +15,7 @@ import {
   AdminSettingsLayout,
   AuthLayout,
 } from '@/pages/layouts';
+import { InstallPlugins } from '@/pages/plugins';
 import { AdminSettings, SettingsThemeDetail } from '@/pages/settings';
 import { AdminSettingsDetail } from '@/pages/settings/admin-setting-detail';
 import { UserDetail, UserList } from '@/pages/users';
@@ -169,6 +170,16 @@ const config: CustomRouteConfig[] = [
     loginRequired: true,
     redirectIfLogged: false,
     title: 'CompanyList',
+  },
+  /* InstallPlugins */
+  {
+    id: 'plugins',
+    path: '/env/:envId/plugins',
+    component: InstallPlugins,
+    layout: AdminListLayout,
+    loginRequired: true,
+    redirectIfLogged: false,
+    title: 'InstallPlugins',
   },
   /* SettingsThemeDetail */
   {
