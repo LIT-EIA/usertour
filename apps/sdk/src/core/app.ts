@@ -965,7 +965,7 @@ export class App extends Evented {
     opts?: UserTourTypes.StartOptions,
   ): Promise<void> {
     const activeTour = this.tours.find((tour) => tour.getContent().contentId === contentId);
-    if (!activeTour || isSameTour(activeTour, this.activeTour)) {
+    if (!activeTour) {
       return;
     }
 
@@ -973,7 +973,17 @@ export class App extends Evented {
       return;
     }
 
-    if (this.activeTour) {
+    // Handle restarting the same tour that's already running
+    const isRestartingSameTour = isSameTour(activeTour, this.activeTour);
+    if (isRestartingSameTour) {
+      // Close the current tour first to allow immediate restart
+      if (this.activeTour) {
+        await this.activeTour.close(contentEndReason.USER_STARTED_OTHER_CONTENT);
+      }
+      // Clear activeTour reference to allow restart
+      this.unsetActiveTour();
+    } else if (this.activeTour) {
+      // Close any other active tour if switching to a different tour
       await this.activeTour.close(contentEndReason.USER_STARTED_OTHER_CONTENT);
     }
 
