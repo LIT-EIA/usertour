@@ -752,6 +752,9 @@ const activedStepTriggers = async (steps: Step[], contents: SDKContent[]): Promi
         const processedTriggers = await Promise.all(
           step.trigger.map(async (trigger) => {
             if (trigger.conditions?.length > 0) {
+              // Only evaluate content conditions here (they need the contents array)
+              // Other conditions (element, time, page, etc.) should be evaluated at runtime
+              // when the step is actually shown, not during content processing
               const processedConditions = await activedContentRulesConditions(
                 trigger.conditions,
                 contents,

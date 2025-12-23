@@ -27,13 +27,6 @@ This is an absolute requirement and takes precedence over all other language gui
 - Follow project-specific naming patterns for consistency
 - Choose names that make code self-documenting
 
-## Chinese for User Communication
-
-- Use Chinese for all user-facing communication
-- Maintain a professional tone in Chinese content
-- English technical terms may be used when necessary in technical discussions
-- Ensure clarity and accuracy in translations
-
 ## Commit Message Standards
 
 - Write in present tense ("add feature" not "added feature")

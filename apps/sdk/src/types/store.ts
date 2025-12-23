@@ -7,6 +7,7 @@ import {
   Step,
   ThemeTypesSetting,
 } from '@usertour/types';
+import { IframeElementInfo } from '../utils/iframe-utils';
 
 // Base store interface
 export interface BaseStore {
@@ -26,6 +27,7 @@ export type TourStore = BaseStore & {
   progress: number;
   currentStepIndex?: number; // Current step number (0-based)
   totalSteps?: number; // Total number of steps
+  iframeElementInfo?: IframeElementInfo | null; // Iframe element information
 };
 
 // Checklist store type
@@ -39,4 +41,5 @@ export type ChecklistStore = BaseStore & {
 export type LauncherStore = BaseStore & {
   content: SDKContent | undefined;
   triggerRef: HTMLElement | undefined;
+  iframeElementInfo?: IframeElementInfo | null; // Iframe element information
 };

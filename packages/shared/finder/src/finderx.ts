@@ -39,6 +39,7 @@ export type Target = {
   isDynamicContent?: boolean;
   customSelector?: string;
   type?: string;
+  textMatchMode?: 'contains' | 'exact';
 };
 
 const finderAttrs = [
@@ -352,7 +353,65 @@ export function finderV2(target: Target, root: Element | Document) {
     isDynamicContent = false,
     customSelector = '',
     type = 'auto',
+    textMatchMode = 'exact',
   } = target;
+
+  // Normalize and text matching helpers
+  const normalizeText = (text: string): string =>
+    (text ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+  const textMatches = (el: HTMLElement, expected: string): boolean => {
+    if (!expected) {
+      return true;
+    }
+    const expText = normalizeText(expected);
+    
+    // First check innerText/textContent
+    const elText = normalizeText(el.innerText ?? el.textContent ?? '');
+    const textMatch = textMatchMode === 'exact' ? elText === expText : elText.includes(expText);
+    if (textMatch) {
+      return true;
+    }
+    
+    // If no match found in text content, check attributes in order: title, aria-label, aria-labelledby, name, alt
+    const attributeCheck = (attrValue: string | null | undefined): boolean => {
+      if (!attrValue) {
+        return false;
+      }
+      const normalizedAttr = normalizeText(attrValue);
+      return textMatchMode === 'exact' ? normalizedAttr === expText : normalizedAttr.includes(expText);
+    };
+    
+    // Check title attribute
+    if (attributeCheck(el.getAttribute('title'))) {
+      return true;
+    }
+    
+    // Check aria-label attribute
+    if (attributeCheck(el.getAttribute('aria-label'))) {
+      return true;
+    }
+
+    if (attributeCheck(el.getAttribute('aria-labelledby'))) {
+      return true;
+    }
+    
+    // Check name attribute
+    if (attributeCheck(el.getAttribute('name'))) {
+      return true;
+    }
+    
+    // Check alt attribute
+    if (attributeCheck(el.getAttribute('alt'))) {
+      return true;
+    }
+    
+    return false;
+  };
+
   if (type === 'auto') {
     const mapping: any = {
       looser: 1,
@@ -364,10 +423,12 @@ export function finderV2(target: Target, root: Element | Document) {
     };
     const el = finderX(selectors, root, mapping[precision]) as HTMLElement;
     if (el) {
-      if (isDynamicContent && content && el.innerText !== content) {
-        return null;
+      // If dynamic text, skip text comparison entirely
+      if (isDynamicContent) {
+        return el;
       }
-      return el;
+      // If content provided, require a contains match after normalization
+      return content ? (textMatches(el, content) ? el : null) : el;
     }
   } else {
     const sequenceMapping: any = {
@@ -378,14 +439,19 @@ export function finderV2(target: Target, root: Element | Document) {
       '5st': 4,
     };
     if (customSelector) {
-      const selector = customSelector.replace(/\\\\/g, '\\');
-      const els = root.querySelectorAll(selector);
-      if (els.length > 0) {
-        const el = (els[sequenceMapping[sequence]] as HTMLElement) || els[0];
-        if (content && el.innerText.trim() !== content) {
+      const selector = customSelector.replace(/\\/g, '\\');
+      const nodeList = root.querySelectorAll(selector);
+      if (nodeList.length > 0) {
+        const allEls = Array.from(nodeList) as HTMLElement[];
+        // If dynamic, do not filter by text; else filter using normalized contains
+        const filtered = isDynamicContent || !content
+          ? allEls
+          : allEls.filter((e) => textMatches(e, content));
+        if (filtered.length === 0) {
           return null;
         }
-        return el;
+        const index = sequenceMapping[sequence] ?? 0;
+        return filtered[index] || filtered[0];
       }
     }
   }

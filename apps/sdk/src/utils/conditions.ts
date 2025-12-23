@@ -27,6 +27,8 @@ import {
 } from 'date-fns';
 import { document, location } from '../utils/globals';
 import { off, on } from './listener';
+import { iframeUtils } from './iframe-utils';
+import { parseSelectorWithCondition } from './selector-parser';
 
 const isActiveRulesByCurrentPage = (rules: RulesCondition) => {
   const { excludes, includes } = rules.data;
@@ -116,7 +118,22 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  const el = finderV2(data.elementData, document);
+  
+  // Parse selector to handle <<< pattern (conditional selector)
+  // For trigger conditions, we only use the main selector part
+  const parsed = parseSelectorWithCondition(data.elementData);
+  const mainSelector = parsed.mainSelector;
+  
+  // First try to find element in main document
+  let el = finderV2(mainSelector, document) as HTMLElement | null;
+  
+  // If not found in main document, search in iframes
+  if (!el) {
+    const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
+    if (iframeElementInfo) {
+      el = iframeElementInfo.element as HTMLElement;
+    }
+  }
 
   const isPresent = el ? await isVisible(el) : false;
   const isDisabled = el ? (el as any).disabled : false;
@@ -145,7 +162,22 @@ const isActiveRulesByTextInput = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  const el = finderV2(elementData, document) as HTMLInputElement;
+  
+  // Parse selector to handle <<< pattern (conditional selector)
+  const parsed = parseSelectorWithCondition(elementData);
+  const mainSelector = parsed.mainSelector;
+  
+  // First try to find element in main document
+  let el = finderV2(mainSelector, document) as HTMLInputElement;
+  
+  // If not found in main document, search in iframes
+  if (!el) {
+    const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
+    if (iframeElementInfo) {
+      el = iframeElementInfo.element as HTMLInputElement;
+    }
+  }
+  
   if (!el) {
     return false;
   }
@@ -185,7 +217,22 @@ const isActiveRulesByTextFill = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  const el = finderV2(elementData, document) as HTMLInputElement;
+  
+  // Parse selector to handle <<< pattern (conditional selector)
+  const parsed = parseSelectorWithCondition(elementData);
+  const mainSelector = parsed.mainSelector;
+  
+  // First try to find element in main document
+  let el = finderV2(mainSelector, document) as HTMLInputElement;
+  
+  // If not found in main document, search in iframes
+  if (!el) {
+    const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
+    if (iframeElementInfo) {
+      el = iframeElementInfo.element as HTMLInputElement;
+    }
+  }
+  
   if (!el) {
     return false;
   }

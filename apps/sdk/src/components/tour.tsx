@@ -170,6 +170,12 @@ const useTargetActions = (
     const element = ref instanceof Element ? ref : ref?.current;
     if (!element || !currentStep?.target?.actions) return;
 
+    // Check if this is a virtual iframe element
+    if ((element as any).__usertour_virtual_iframe) {
+      console.log('[Tour] Skipping event listener setup for virtual iframe element - interaction handled by iframe SDK');
+      return;
+    }
+
     const actions = currentStep.target.actions as RulesCondition[];
     const handler = () => handleActions(actions);
 

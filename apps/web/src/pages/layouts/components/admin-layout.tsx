@@ -6,14 +6,15 @@ import {
 } from '@/contexts/environment-list-context';
 import { SubscriptionProvider } from '@/contexts/subscription-context';
 import { userTourToken } from '@/utils/env';
+import { loadUsertourSDK } from '@/utils/usertour-sdk-loader';
 import { Button } from '@usertour-packages/button';
 import { storage } from '@usertour/helpers';
 import { cn } from '@usertour/helpers';
+import type { UserTourTypes } from '@usertour/types';
 import { usePostHog } from 'posthog-js/react';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
-import usertour from 'usertour.js';
 import { AdminEnvSwitcher } from './admin-env-switcher';
 import { AdminMainNav } from './admin-main-nav';
 import { AdminUserNav } from './admin-user-nav';
@@ -129,28 +130,70 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-// Add new custom hook
-//biome-ignore lint/suspicious/noExplicitAny: <explanation>
+/**
+ * Custom hook for user tracking with usertour SDK and PostHog
+ * Handles SDK loading and user identification
+ */
+//biome-ignore lint/suspicious/noExplicitAny: userInfo type varies by context
 const useUserTracking = (userInfo: any) => {
   const posthog = usePostHog();
+  const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [sdkError, setSdkError] = useState<Error | null>(null);
+  const sdkRef = useRef<UserTourTypes.Usertour | null>(null);
 
   useEffect(() => {
-    if (!userInfo || !userInfo.id) {
+    let isMounted = true;
+
+    // Load SDK on mount
+    loadUsertourSDK()
+      .then((usertour) => {
+        if (isMounted) {
+          sdkRef.current = usertour;
+          setSdkLoaded(true);
+          setSdkError(null);
+        }
+      })
+      .catch((error) => {
+        if (isMounted) {
+          console.error('Failed to load usertour SDK:', error);
+          setSdkError(error instanceof Error ? error : new Error(String(error)));
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sdkLoaded || !sdkRef.current || !userInfo || !userInfo.id) {
       return;
     }
-    usertour.init(userTourToken);
-    usertour.identify(`${userInfo.id}`, {
-      name: userInfo?.name,
-      email: userInfo?.email,
-      signed_up_at: userInfo.createdAt,
-    });
-    posthog?.identify(userInfo.id, {
-      email: userInfo.email,
-    });
-    if (userInfo.projectId) {
-      posthog?.group('company', userInfo.projectId);
+
+    try {
+      const usertour = sdkRef.current;
+      usertour.init(userTourToken);
+      usertour.identify(`${userInfo.id}`, {
+        name: userInfo?.name,
+        email: userInfo?.email,
+        signed_up_at: userInfo.createdAt,
+      });
+    } catch (error) {
+      console.error('Failed to initialize usertour SDK:', error);
     }
-  }, [userInfo, posthog]);
+
+    // PostHog tracking (independent of SDK)
+    try {
+      posthog?.identify(userInfo.id, {
+        email: userInfo.email,
+      });
+      if (userInfo.projectId) {
+        posthog?.group('company', userInfo.projectId);
+      }
+    } catch (error) {
+      console.error('Failed to identify user in PostHog:', error);
+    }
+  }, [userInfo, posthog, sdkLoaded]);
 };
 
 export const AdminLayout = (props: AdminLayoutProps) => {
