@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@usertour-packages/select';
 import { ScrollArea } from '@usertour-packages/scroll-area';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PluginsSidebar } from './components/sidebar';
 
 export const InstallPlugins = () => {
@@ -18,6 +18,69 @@ export const InstallPlugins = () => {
   const [testEnvironmentId, setTestEnvironmentId] = useState<string>('');
   const [prodEnvironmentId, setProdEnvironmentId] = useState<string>('');
   const [activeView, setActiveView] = useState<string>('bookmarklets');
+
+  const generateBookmarklet = useMemo(() => {
+    if (!testEnvironmentId || !prodEnvironmentId || !environmentList) {
+      return '#';
+    }
+
+    const testEnvironment = environmentList.find((env) => env.id === testEnvironmentId);
+    const prodEnvironment = environmentList.find((env) => env.id === prodEnvironmentId);
+
+    if (!testEnvironment?.token || !prodEnvironment?.token) {
+      return '#';
+    }
+
+    const url =
+      typeof window !== 'undefined'
+        ? `${window.location.protocol}//${window.location.host}`
+        : '';
+    const baseCode = `const iframe = document.createElement("iframe");
+
+iframe.style.display = "none";
+
+document.body.appendChild(iframe);
+
+window.URL = iframe.contentWindow.URL;
+
+document.body.removeChild(iframe);
+
+!function(){var e="undefined"==typeof window?{}:window,r=e.usertour;if(console.log("enter npm backage, usertour:",r),!r){var t="/libraries/usertour/js/";console.log("enter npm backage: ",t);var n=null;r=e.usertour={_stubbed:!0,load:function(){return n||(n=new Promise((function(r,o){var s=document.createElement("script");s.async=!0;var a=e.USERTOURJS_ENV_VARS||{};"es2020"===(a.USERTOURJS_BROWSER_TARGET||function(e){for(var r=[[/Edg\\//,/Edg\\/(\\d+)/,80],[/OPR\\//,/OPR\\/(\\d+)/,67],[/Chrome\\//,/Chrome\\/(\\d+)/,80],[/CriOS\\//,/CriOS\\/(\\d+)/,100],[/Safari\\//,/Version\\/(\\d+)/,14],[/Firefox\\//,/Firefox\\/(\\d+)/,74]],t=0;t<r.length;t++){var n=r[t],o=n[0],s=n[1],a=n[2];if(e.match(o)){var i=e.match(new RegExp(s));if(i&&parseInt(i[1],10)>=a)return"es2020";break}}return"legacy"}(navigator.userAgent))?(s.type="module",s.src=a.USERTOURJS_ES2020_URL||t+"es2020/usertour.js"):s.src=a.USERTOURJS_LEGACY_URL||t+"legacy/usertour.iife.js",s.onload=function(){r()},s.onerror=function(){document.head.removeChild(s),n=null;var e=new Error("Could not load Usertour.js");console.warn(e.message),o(e)},document.head.appendChild(s)}))),n}};var o=e.USERTOURJS_QUEUE=e.USERTOURJS_QUEUE||[],s=function(e){r[e]=function(){var t=Array.prototype.slice.call(arguments);r.load(),o.push([e,null,t])}},a=function(e){r[e]=function(){var t,n=Array.prototype.slice.call(arguments);r.load();var s=new Promise((function(e,r){t={resolve:e,reject:r}}));return o.push([e,t,n]),s}},i=function(e,t){r[e]=function(){return t}};s("init"),s("off"),s("on"),s("reset"),s("setBaseZIndex"),s("setSessionTimeout"),s("setTargetMissingSeconds"),s("setCustomInputSelector"),s("setCustomNavigate"),s("setCustomScrollIntoView"),s("setInferenceAttributeFilter"),s("setInferenceAttributeNames"),s("setInferenceClassNameFilter"),s("setScrollPadding"),s("setServerEndpoint"),s("setShadowDomEnabled"),s("setPageTrackingDisabled"),s("setUrlFilter"),s("setLinkUrlDecorator"),a("endAll"),a("group"),a("identify"),a("identifyAnonymous"),a("start"),a("track"),a("updateGroup"),a("updateUser"),i("isIdentified",!1),i("isStarted",!1)}}();
+
+!function(){function e(e){var t=localStorage.getItem("ut-configurator"),o=JSON.parse(t)||{};return o&&o[e]?o[e]:null}!function(e,t,o){t=t||100,o=o||5e3;var r=Date.now();!function n(){window.usertour&&"function"==typeof window.usertour.init?e():Date.now()-r<o?setTimeout(n,t):console.warn("Usertour object not ready after timeout")}()}(function(){usertour.enableUserTour=function(t){var o=e("testMode")?window.USERTOURJS_ENV_VARS.ENVIRONMENT_TEST:window.USERTOURJS_ENV_VARS.ENVIRONMENT_LIVE;usertour.init(o);var r=t&&t.role||usertour._app&&usertour._app.userInfo&&usertour._app.userInfo.data&&usertour._app.userInfo.data.role||null;usertour.identifyAnonymous({role:r}),function(){var t=e("testMode"),o=document.querySelector(".vertical-banner");o&&o.remove();var r=document.querySelector("style[data-testmode-style]");if(r&&r.remove(),t){var n=document.createElement("div");n.className="vertical-banner",n.innerHTML='<span class="vertical-text">Usertour Mode: Test</span>';var a=document.createElement("style");a.setAttribute("data-testmode-style","true"),a.textContent="body {  padding-left: 15px!important;}.vertical-banner {  width: 15px;  height: 100%;  background-color: rgb(255, 0, 90);  display: flex;  align-items: center;  justify-content: center;  position: fixed;  top: 0;  left: 0;  z-index: 9999;}.vertical-text {  writing-mode: vertical-lr;  text-orientation: mixed;  color: white;  font-size: 12px;  font-weight: bold;}",document.body.appendChild(a),document.body.appendChild(n)}}()}})}();
+
+if (usertour && !usertour.isIdentified()) {
+
+  window.USERTOURJS_ENV_VARS = {
+
+    WS_URI:
+
+      "${url}",
+
+    ASSETS_URI:
+
+      "${url}/sdk/",
+
+    USERTOURJS_ES2020_URL:
+
+      "${url}/sdk/es2020/usertour.js",
+
+    USERTOURJS_LEGACY_URL:
+
+      "${url}/sdk/legacy/usertour.iife.js",
+
+    ENVIRONMENT_TEST: "${testEnvironment.token}",
+
+    ENVIRONMENT_LIVE: "${prodEnvironment.token}"
+
+  };
+
+  usertour.enableUserTour({ role: "insert" });
+
+}`;
+
+    return `javascript:(function(){${baseCode}})();`;
+  }, [testEnvironmentId, prodEnvironmentId, environmentList]);
 
   useEffect(() => {
     if (environmentList && environmentList.length > 0) {
@@ -126,7 +189,7 @@ export const InstallPlugins = () => {
                         </a>
                       </Button>
                       <Button asChild className="w-full text-center whitespace-normal break-words p-5">
-                        <a href="#" draggable className="text-center">
+                        <a href={generateBookmarklet} draggable className="text-center">
                           Start UserTour
                         </a>
                       </Button>
