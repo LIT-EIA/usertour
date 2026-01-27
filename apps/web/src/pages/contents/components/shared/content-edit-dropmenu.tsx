@@ -6,11 +6,13 @@ import {
   DropdownMenuTrigger,
 } from '@usertour-packages/dropdown-menu';
 import { CopyIcon, Delete2Icon, UnPublishIcon } from '@usertour-packages/icons';
+import { ArrowRightIcon } from '@radix-ui/react-icons';
 import { Content } from '@usertour/types';
 import { ReactNode, useState } from 'react';
 import { ContentDeleteForm } from './content-delete-form';
 import { ContentDuplicateForm } from './content-duplicate-form';
 import { ContentUnpublishForm } from './content-unpublish-form';
+import { ContentChangeEnvironmentForm } from './content-change-environment-form';
 import { isPublishedAtLeastOneEnvironment } from '@usertour/helpers';
 
 type ContentEditDropdownMenuProps = {
@@ -24,6 +26,7 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
   const [openDelete, setOpenDelete] = useState(false);
   const [openDuplicate, setOpenDuplicate] = useState(false);
   const [openUnpublish, setOpenUnpublish] = useState(false);
+  const [openChangeEnvironment, setOpenChangeEnvironment] = useState(false);
 
   const isPublished = isPublishedAtLeastOneEnvironment(content);
 
@@ -44,6 +47,13 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
   const handleUnpublishSuccess = () => {
     setOpenUnpublish(false);
     onSubmit('unpublish');
+  };
+  const handleChangeEnvironmentOpen = () => {
+    setOpenChangeEnvironment(true);
+  };
+  const handleChangeEnvironmentSuccess = () => {
+    setOpenChangeEnvironment(false);
+    onSubmit('change-environment');
   };
 
   return (
@@ -67,6 +77,16 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
             <CopyIcon className="mr-1" width={15} height={15} />
             Duplicate {content.type}
           </DropdownMenuItem>
+          {!isPublished && (
+            <DropdownMenuItem
+              onClick={handleChangeEnvironmentOpen}
+              className="cursor-pointer"
+              disabled={disabled}
+            >
+              <ArrowRightIcon className="mr-1" width={15} height={15} />
+              Change Environment
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-red-600 cursor-pointer"
@@ -100,6 +120,12 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
         open={openUnpublish}
         onOpenChange={setOpenUnpublish}
         onSuccess={handleUnpublishSuccess}
+      />
+      <ContentChangeEnvironmentForm
+        content={content}
+        open={openChangeEnvironment}
+        onOpenChange={setOpenChangeEnvironment}
+        onSuccess={handleChangeEnvironmentSuccess}
       />
     </>
   );

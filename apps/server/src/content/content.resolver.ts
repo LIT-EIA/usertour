@@ -186,25 +186,10 @@ export class ContentResolver {
 
     if (published !== undefined) {
       if (!published) {
-        conditions.OR = [
-          {
-            environmentId,
-            published: false,
-            contentOnEnvironments: { none: {} },
-          },
-          {
-            environmentId: { not: environmentId },
-            contentOnEnvironments: { none: {} },
-          },
-          {
-            contentOnEnvironments: {
-              some: {},
-              none: {
-                environmentId,
-              },
-            },
-          },
-        ];
+        // For drafts, only show content assigned to the selected environment
+        conditions.environmentId = environmentId;
+        conditions.published = false;
+        conditions.contentOnEnvironments = { none: {} };
       } else {
         conditions.OR = [
           {

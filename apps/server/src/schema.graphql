@@ -1044,6 +1044,7 @@ input UpdateAttributeInput {
 input UpdateContentInput {
   buildUrl: String
   config: JSON
+  environmentId: String
   name: String
 }
 
