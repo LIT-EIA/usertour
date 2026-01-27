@@ -23,7 +23,7 @@ import { cn } from '@usertour/helpers';
 import { useSignupMutation } from '@usertour-packages/shared-hooks';
 
 // Form validation schema
-const registFormSchema = z.object({
+const registFormSchemaBase = z.object({
   userName: z
     .string({
       required_error: 'Please input your full name.',
@@ -42,8 +42,20 @@ const registFormSchema = z.object({
       required_error: 'Please input your password.',
     })
     .max(20)
-    .min(8),
+    .min(12, 'Password must be at least 12 characters'),
+  confirmPassword: z.string({
+    required_error: 'Please confirm your password.',
+  }),
   isAccept: z.boolean(),
+});
+
+const passwordMatchRefine = (data: { password?: string; confirmPassword?: string }) =>
+  data.password === data.confirmPassword;
+
+// Full schema with password confirmation validation
+const registFormSchema = registFormSchemaBase.refine(passwordMatchRefine, {
+  message: 'Passwords do not match.',
+  path: ['confirmPassword'],
 });
 
 type RegistFormValues = z.infer<typeof registFormSchema>;
@@ -53,6 +65,7 @@ const defaultValues: Partial<RegistFormValues> = {
   isAccept: false,
   companyName: '',
   password: '',
+  confirmPassword: '',
 };
 
 // Context type definition
@@ -92,7 +105,12 @@ const RegistrationRoot = ({
   const { toast } = useToast();
   const { registrationCode } = useParams();
 
-  const formSchema = inviteCode ? registFormSchema.omit({ companyName: true }) : registFormSchema;
+  const formSchema = inviteCode
+    ? registFormSchemaBase.omit({ companyName: true }).refine(passwordMatchRefine, {
+        message: 'Passwords do not match.',
+        path: ['confirmPassword'],
+      })
+    : registFormSchema;
 
   const form = useForm<RegistFormValues>({
     resolver: zodResolver(formSchema),
@@ -111,7 +129,7 @@ const RegistrationRoot = ({
   };
 
   const onSubmit = async (formData: RegistFormValues) => {
-    const { isAccept, ...others } = formData;
+    const { isAccept, confirmPassword: _confirmPassword, ...others } = formData;
     const code = inviteCode ? inviteCode : registrationCode;
     const isInvite = !!inviteCode;
 
@@ -209,6 +227,19 @@ const RegistrationFormFields = () => {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input placeholder="Pick a strong password" type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm password</FormLabel>
+              <FormControl>
+                <Input placeholder="Confirm your password" type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

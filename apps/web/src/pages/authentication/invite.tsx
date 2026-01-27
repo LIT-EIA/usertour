@@ -16,7 +16,7 @@ import {
 import React from 'react';
 
 const InviteHeader = () => {
-  const { inviteCode } = useInviteContext();
+  const { inviteCode, showRegistration } = useInviteContext();
   const { data } = useGetInviteQuery(inviteCode);
   return (
     <CardHeader className="space-y-1 text-center">
@@ -24,7 +24,11 @@ const InviteHeader = () => {
         <p className="text-lg font-normal">
           {data?.user?.name} invites you to join {data?.project?.name}
         </p>
-        <p className="text-sm text-muted-foreground">Sign in with your account to join them.</p>
+        <p className="text-sm text-muted-foreground">
+          {showRegistration
+            ? 'Create an account to join them.'
+            : 'Sign in with your account to join them.'}
+        </p>
       </CardTitle>
     </CardHeader>
   );
@@ -114,7 +118,7 @@ const InviteBody = () => {
 // Update Invite component
 export const Invite = () => {
   const { inviteCode } = useParams();
-  const [showRegistration, setShowRegistration] = React.useState(false);
+  const [showRegistration, setShowRegistration] = React.useState(true);
 
   if (!inviteCode) {
     return null;

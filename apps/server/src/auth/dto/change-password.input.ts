@@ -5,7 +5,7 @@ import { IsNotEmpty, MinLength } from 'class-validator';
 export class ResetPasswordByCodeInput {
   @Field()
   @IsNotEmpty()
-  @MinLength(8)
+  @MinLength(12)
   password: string;
 
   @Field()

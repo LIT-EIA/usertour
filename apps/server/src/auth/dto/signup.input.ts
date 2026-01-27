@@ -9,7 +9,7 @@ export class SignupInput {
 
   @Field(() => String, { nullable: false })
   @IsNotEmpty()
-  @MinLength(8)
+  @MinLength(12)
   password: string;
 
   @Field(() => String, { nullable: false })

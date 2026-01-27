@@ -10,6 +10,6 @@ export class ChangePasswordInput {
 
   @Field()
   @IsNotEmpty()
-  @MinLength(8)
+  @MinLength(12)
   newPassword: string;
 }
