@@ -278,6 +278,8 @@ export enum ElementConditionLogic {
   UNDISABLED = 'undisabled',
   CLICKED = 'clicked',
   UNCLICKED = 'unclicked',
+  VISIBLE = 'visible',
+  UNVISIBLE = 'unvisible',
 }
 
 export enum StringConditionLogic {

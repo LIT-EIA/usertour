@@ -1488,6 +1488,138 @@ export class IframeUtils {
           return isMatchIncludes && !isMatchExcludes;
         },
         
+        findFirstVisibleElementBySelectorData: function(elementData) {
+          if (!document) {
+            return null;
+          }
+          
+          console.log('[IframeSDK] [Find Visible Element] Searching for visible element with selector:', elementData);
+          
+          try {
+            let elements = [];
+            
+            // Parse selector to handle <<< pattern (conditional selector)
+            const parsed = this.parseSelectorWithCondition(elementData);
+            const mainSelector = parsed.mainSelector;
+            
+            console.log('[IframeSDK] [Find Visible Element] Content filter:', mainSelector.content);
+            console.log('[IframeSDK] [Find Visible Element] isDynamicContent:', mainSelector.isDynamicContent);
+            console.log('[IframeSDK] [Find Visible Element] Sequence:', mainSelector.sequence);
+            
+            // Find elements by selector (using parsed main selector)
+            if (mainSelector.customSelector) {
+              const nodeList = document.querySelectorAll(mainSelector.customSelector);
+              elements = Array.from(nodeList);
+            } else if (mainSelector.selectors && mainSelector.selectors.length > 0) {
+              // Try each selector until we find matches
+              for (let i = 0; i < mainSelector.selectors.length; i++) {
+                try {
+                  const nodeList = document.querySelectorAll(mainSelector.selectors[i]);
+                  if (nodeList.length > 0) {
+                    elements = Array.from(nodeList);
+                    break;
+                  }
+                } catch (e) {
+                  // Continue to next selector if this one fails
+                }
+              }
+            } else if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
+              // Try each selector in selectorsList until we find matches
+              for (let i = 0; i < mainSelector.selectorsList.length; i++) {
+                try {
+                  const nodeList = document.querySelectorAll(mainSelector.selectorsList[i]);
+                  if (nodeList.length > 0) {
+                    elements = Array.from(nodeList);
+                    break;
+                  }
+                } catch (e) {
+                  // Continue to next selector if this one fails
+                }
+              }
+            }
+            
+            console.log('[IframeSDK] [Find Visible Element] Found ' + elements.length + ' matching elements');
+            
+            if (elements.length === 0) {
+              return null;
+            }
+            
+            // First filter by visibility
+            var visibleElements = [];
+            for (let i = 0; i < elements.length; i++) {
+              const el = elements[i];
+              const isHidden = this.isElementInHiddenSection(el);
+              
+              console.log('[IframeSDK] [Find Visible Element] Element ' + i + ':', {
+                tag: el.tagName,
+                id: el.id,
+                class: el.className,
+                text: el.innerText ? el.innerText.substring(0, 50) : '',
+                isHidden: isHidden,
+              });
+              
+              if (!isHidden) {
+                visibleElements.push(el);
+              }
+            }
+            
+            console.log('[IframeSDK] [Find Visible Element] Found ' + visibleElements.length + ' visible elements');
+            
+            if (visibleElements.length === 0) {
+              console.log('[IframeSDK] [Find Visible Element] No visible elements found');
+              return null;
+            }
+            
+            // Filter by text content if specified and not dynamic
+            var filteredElements = visibleElements;
+            
+            if (mainSelector.content && !mainSelector.isDynamicContent) {
+              var targetText = String(mainSelector.content).trim().toLowerCase();
+              filteredElements = visibleElements.filter(function(el) {
+                var elText = (el.innerText || el.textContent || '').trim().toLowerCase();
+                var matches = elText === targetText || elText.indexOf(targetText) !== -1;
+                console.log('[IframeSDK] [Find Visible Element] Text filter:', {
+                  elementText: elText.substring(0, 50),
+                  targetText: targetText.substring(0, 50),
+                  matches: matches,
+                });
+                return matches;
+              });
+              console.log('[IframeSDK] [Find Visible Element] After text filter: ' + filteredElements.length + ' elements');
+            }
+            
+            if (filteredElements.length === 0) {
+              console.log('[IframeSDK] [Find Visible Element] No elements match text filter');
+              return null;
+            }
+            
+            // Apply sequence selection if specified
+            if (mainSelector.sequence) {
+              var sequenceMapping = {
+                '1st': 0,
+                '2st': 1,
+                '3st': 2,
+                '4st': 3,
+                '5st': 4,
+              };
+              var index = sequenceMapping[mainSelector.sequence] || 0;
+              console.log('[IframeSDK] [Find Visible Element] Applying sequence ' + mainSelector.sequence + ' -> index ' + index);
+              
+              if (filteredElements[index]) {
+                console.log('[IframeSDK] [Find Visible Element] Selected element at sequence index ' + index);
+                return filteredElements[index];
+              }
+            }
+            
+            // Return first matching visible element
+            console.log('[IframeSDK] [Find Visible Element] Returning first visible element');
+            return filteredElements[0];
+          } catch (e) {
+            console.error('[IframeSDK] [Find Visible Element] Error finding visible element:', e);
+            return null;
+          }
+        },
+        
         findElementBySelectorData: function(elementData) {
           if (!document) {
             return null;
@@ -1669,15 +1801,32 @@ export class IframeUtils {
         },
         
         isElementInHiddenSection: function(element) {
+          console.log('[IframeSDK] [Visibility] === Checking element visibility ===');
+          console.log('[IframeSDK] [Visibility] Element:', element);
+          console.log('[IframeSDK] [Visibility] Element tag:', element?.tagName);
+          console.log('[IframeSDK] [Visibility] Element id:', element?.id);
+          console.log('[IframeSDK] [Visibility] Element class:', element?.className);
+          
           if (!element || !window) {
+            console.log('[IframeSDK] [Visibility] Element or window is undefined, returning hidden=true');
             return true; // If element doesn't exist, consider it hidden
           }
 
           try {
             let currentElement = element;
+            let depth = 0;
             
             while (currentElement) {
               const styles = window.getComputedStyle(currentElement);
+              
+              console.log('[IframeSDK] [Visibility] Checking ancestor at depth ' + depth + ':', {
+                tag: currentElement.tagName,
+                id: currentElement.id,
+                class: currentElement.className,
+                display: styles.display,
+                visibility: styles.visibility,
+                opacity: styles.opacity,
+              });
               
               // Check basic visibility
               if (
@@ -1685,29 +1834,44 @@ export class IframeUtils {
                 styles.visibility === 'hidden' ||
                 parseFloat(styles.opacity) < 0.01
               ) {
+                console.log('[IframeSDK] [Visibility] Element is HIDDEN at depth ' + depth + ' because:', {
+                  displayNone: styles.display === 'none',
+                  visibilityHidden: styles.visibility === 'hidden',
+                  opacityZero: parseFloat(styles.opacity) < 0.01,
+                });
                 return true; // Element is in a hidden section
               }
               
               // Check if element has zero dimensions
               const rect = currentElement.getBoundingClientRect();
+              console.log('[IframeSDK] [Visibility] Dimensions at depth ' + depth + ':', {
+                width: rect.width,
+                height: rect.height,
+                isElement: currentElement === element,
+              });
+              
               if (rect.width === 0 && rect.height === 0) {
                 // Allow zero dimensions only if it's not the element itself
                 if (currentElement === element) {
+                  console.log('[IframeSDK] [Visibility] Element itself has zero dimensions, returning hidden=true');
                   return true; // Element itself has zero dimensions
                 }
               }
               
               // Stop at body element
               if (currentElement === document?.body || currentElement.tagName === 'BODY') {
+                console.log('[IframeSDK] [Visibility] Reached body element, stopping traversal');
                 break;
               }
               
               currentElement = currentElement.parentElement;
+              depth++;
             }
             
+            console.log('[IframeSDK] [Visibility] Element is VISIBLE, returning hidden=false');
             return false; // Element is not in a hidden section
           } catch (error) {
-            console.log('[IframeSDK] Error checking element visibility in section:', error);
+            console.error('[IframeSDK] [Visibility] Error checking visibility:', error);
             // On error, assume visible to avoid breaking functionality
             return false;
           }
@@ -1760,13 +1924,35 @@ export class IframeUtils {
               if (!elementData) {
                 return false;
               }
-              const el = this.findElementBySelectorData(elementData);
+              
+              // For visibility conditions, find the first visible element
+              // For other conditions, use the default behavior (first found element)
+              const isVisibilityCondition = logic === 'visible' || logic === 'unvisible';
+              
+              let el;
+              if (isVisibilityCondition) {
+                console.log('[IframeSDK] [Element Condition] Visibility condition detected, searching for visible elements');
+                el = this.findFirstVisibleElementBySelectorData(elementData);
+              } else {
+                el = this.findElementBySelectorData(elementData);
+              }
+              
               if (!el) {
                 return logic === 'unpresent';
               }
               
               const isPresent = this.isElementVisible(el);
               const isDisabled = el.disabled || false;
+              const isVisibleCSS = !this.isElementInHiddenSection(el);
+              
+              console.log('[IframeSDK] [Element Condition] Evaluating element condition:', {
+                logic: logic,
+                element: el,
+                elementTag: el?.tagName,
+                isPresent,
+                isDisabled,
+                isVisibleCSS,
+              });
               
               switch (logic) {
                 case 'present':
@@ -1781,6 +1967,12 @@ export class IframeUtils {
                   return this.isElementClicked(el);
                 case 'unclicked':
                   return !this.isElementClicked(el);
+                case 'visible':
+                  console.log('[IframeSDK] Checking VISIBLE condition, result:', isVisibleCSS);
+                  return isVisibleCSS;
+                case 'unvisible':
+                  console.log('[IframeSDK] Checking UNVISIBLE condition, result:', !isVisibleCSS);
+                  return !isVisibleCSS;
                 default:
                   return false;
               }

@@ -98,6 +98,209 @@ export const isVisible = async (el: HTMLElement) => {
   return true;
 };
 
+/**
+ * Check if element is in a hidden section based on CSS properties
+ * An element is considered in a hidden section if it or any ancestor has:
+ * - display: none
+ * - visibility: hidden
+ * - opacity: 0
+ */
+const isElementInHiddenSection = (element: Element): boolean => {
+  console.log('[Visibility] === Checking element visibility ===');
+  console.log('[Visibility] Element:', element);
+  console.log('[Visibility] Element tag:', element.tagName);
+  console.log('[Visibility] Element id:', element.id);
+  console.log('[Visibility] Element class:', element.className);
+  
+  if (!element || typeof window === 'undefined') {
+    console.log('[Visibility] Element or window is undefined, returning hidden=true');
+    return true;
+  }
+
+  try {
+    let currentElement: Element | null = element;
+    let depth = 0;
+    
+    while (currentElement) {
+      const styles = window.getComputedStyle(currentElement);
+      
+      console.log(`[Visibility] Checking ancestor at depth ${depth}:`, {
+        tag: currentElement.tagName,
+        id: currentElement.id,
+        class: currentElement.className,
+        display: styles.display,
+        visibility: styles.visibility,
+        opacity: styles.opacity,
+      });
+      
+      // Check visibility properties
+      if (
+        styles.display === 'none' ||
+        styles.visibility === 'hidden' ||
+        Number.parseFloat(styles.opacity) < 0.01
+      ) {
+        console.log(`[Visibility] Element is HIDDEN at depth ${depth} because:`, {
+          displayNone: styles.display === 'none',
+          visibilityHidden: styles.visibility === 'hidden',
+          opacityZero: Number.parseFloat(styles.opacity) < 0.01,
+        });
+        return true;
+      }
+      
+      // Check if element has zero dimensions
+      const rect = currentElement.getBoundingClientRect();
+      console.log(`[Visibility] Dimensions at depth ${depth}:`, {
+        width: rect.width,
+        height: rect.height,
+        isElement: currentElement === element,
+      });
+      
+      if (rect.width === 0 && rect.height === 0) {
+        // Allow zero dimensions only if it's not the element itself
+        if (currentElement === element) {
+          console.log('[Visibility] Element itself has zero dimensions, returning hidden=true');
+          return true;
+        }
+      }
+      
+      // Stop at body element
+      if (currentElement === document?.body || currentElement.tagName === 'BODY') {
+        console.log('[Visibility] Reached body element, stopping traversal');
+        break;
+      }
+      
+      currentElement = currentElement.parentElement;
+      depth++;
+    }
+    
+    console.log('[Visibility] Element is VISIBLE, returning hidden=false');
+    return false;
+  } catch (error) {
+    console.error('[Visibility] Error checking visibility:', error);
+    // On error, assume visible to avoid breaking functionality
+    return false;
+  }
+};
+
+/**
+ * Find the first visible element matching the selector
+ * Searches through all matching elements and returns the first one that is visible
+ * Also filters by text content and applies sequence selection
+ */
+const findFirstVisibleElement = async (elementData: any): Promise<HTMLElement | null> => {
+  if (!document) {
+    return null;
+  }
+  
+  console.log('[Find Visible Element] Searching for visible element with selector:', elementData);
+  
+  // Get the selector string to query all matching elements
+  let selectorStr: string | null = null;
+  
+  if (elementData.customSelector) {
+    selectorStr = elementData.customSelector;
+  } else if (elementData.selectorsList && elementData.selectorsList.length > 0) {
+    selectorStr = elementData.selectorsList[0];
+  }
+  
+  if (!selectorStr) {
+    console.log('[Find Visible Element] No selector found, falling back to finderV2');
+    return finderV2(elementData, document) as HTMLElement | null;
+  }
+  
+  console.log('[Find Visible Element] Using selector:', selectorStr);
+  console.log('[Find Visible Element] Content filter:', elementData.content);
+  console.log('[Find Visible Element] isDynamicContent:', elementData.isDynamicContent);
+  console.log('[Find Visible Element] Sequence:', elementData.sequence);
+  
+  // Find all matching elements in main document
+  try {
+    const allElements = Array.from(document.querySelectorAll(selectorStr)) as HTMLElement[];
+    console.log(`[Find Visible Element] Found ${allElements.length} matching elements in main document`);
+    
+    // First filter by visibility
+    const visibleElements: HTMLElement[] = [];
+    for (let i = 0; i < allElements.length; i++) {
+      const el = allElements[i];
+      const isHidden = isElementInHiddenSection(el);
+      console.log(`[Find Visible Element] Element ${i}:`, {
+        tag: el.tagName,
+        id: el.id,
+        class: el.className,
+        text: el.innerText?.substring(0, 50),
+        isHidden,
+      });
+      
+      if (!isHidden) {
+        visibleElements.push(el);
+      }
+    }
+    
+    console.log(`[Find Visible Element] Found ${visibleElements.length} visible elements`);
+    
+    if (visibleElements.length === 0) {
+      console.log('[Find Visible Element] No visible elements found in main document');
+    } else {
+      // Filter by text content if specified and not dynamic
+      let filteredElements = visibleElements;
+      
+      if (elementData.content && !elementData.isDynamicContent) {
+        const targetText = elementData.content.trim().toLowerCase();
+        filteredElements = visibleElements.filter((el) => {
+          const elText = (el.innerText || el.textContent || '').trim().toLowerCase();
+          const matches = elText === targetText || elText.includes(targetText);
+          console.log('[Find Visible Element] Text filter:', {
+            elementText: elText.substring(0, 50),
+            targetText: targetText.substring(0, 50),
+            matches,
+          });
+          return matches;
+        });
+        console.log(`[Find Visible Element] After text filter: ${filteredElements.length} elements`);
+      }
+      
+      if (filteredElements.length === 0) {
+        console.log('[Find Visible Element] No elements match text filter');
+      } else {
+        // Apply sequence selection if specified
+        if (elementData.sequence) {
+          const sequenceMapping: Record<string, number> = {
+            '1st': 0,
+            '2st': 1,
+            '3st': 2,
+            '4st': 3,
+            '5st': 4,
+          };
+          const index = sequenceMapping[elementData.sequence] || 0;
+          console.log(`[Find Visible Element] Applying sequence ${elementData.sequence} -> index ${index}`);
+          
+          if (filteredElements[index]) {
+            console.log(`[Find Visible Element] Selected element at sequence index ${index}`);
+            return filteredElements[index];
+          }
+        }
+        
+        // Return first matching visible element
+        console.log('[Find Visible Element] Returning first visible element');
+        return filteredElements[0];
+      }
+    }
+  } catch (error) {
+    console.error('[Find Visible Element] Error querying main document:', error);
+  }
+  
+  // If not found in main document, search in iframes
+  console.log('[Find Visible Element] No visible element in main document, searching iframes');
+  const iframeElementInfo = await iframeUtils.searchElementInIframes(elementData);
+  if (iframeElementInfo) {
+    console.log('[Find Visible Element] Found element in iframe');
+    return iframeElementInfo.element as HTMLElement;
+  }
+  
+  console.log('[Find Visible Element] No visible element found');
+  return null;
+};
+
 const cache = new Map();
 
 const isClicked = (el: HTMLElement) => {
@@ -124,19 +327,42 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
   const parsed = parseSelectorWithCondition(data.elementData);
   const mainSelector = parsed.mainSelector;
   
-  // First try to find element in main document
-  let el = finderV2(mainSelector, document) as HTMLElement | null;
+  // For visibility conditions, we need to find the first VISIBLE element
+  // For other conditions, use the default behavior (first found element)
+  const isVisibilityCondition = data.logic === 'visible' || data.logic === 'unvisible';
   
-  // If not found in main document, search in iframes
-  if (!el) {
-    const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
-    if (iframeElementInfo) {
-      el = iframeElementInfo.element as HTMLElement;
+  let el: HTMLElement | null = null;
+  
+  if (isVisibilityCondition) {
+    console.log('[Element Condition] Visibility condition detected, searching for visible elements');
+    // Find all matching elements and get the first visible one
+    el = await findFirstVisibleElement(mainSelector);
+  } else {
+    // First try to find element in main document
+    el = finderV2(mainSelector, document) as HTMLElement | null;
+    
+    // If not found in main document, search in iframes
+    if (!el) {
+      const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
+      if (iframeElementInfo) {
+        el = iframeElementInfo.element as HTMLElement;
+      }
     }
   }
 
   const isPresent = el ? await isVisible(el) : false;
   const isDisabled = el ? (el as any).disabled : false;
+  const isVisibleCSS = el ? !isElementInHiddenSection(el) : false;
+  
+  console.log('[Element Condition] Evaluating element condition:', {
+    logic: data.logic,
+    element: el,
+    elementTag: el?.tagName,
+    isPresent,
+    isDisabled,
+    isVisibleCSS,
+  });
+  
   switch (data.logic) {
     case ElementConditionLogic.PRESENT:
       return isPresent;
@@ -150,6 +376,12 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
       return el && isClicked(el);
     case ElementConditionLogic.UNCLICKED:
       return el && !isClicked(el);
+    case 'visible':
+      console.log('[Element Condition] Checking VISIBLE condition, result:', el && isVisibleCSS);
+      return el && isVisibleCSS;
+    case 'unvisible':
+      console.log('[Element Condition] Checking UNVISIBLE condition, result:', el && !isVisibleCSS);
+      return el && !isVisibleCSS;
     default:
       return false;
   }

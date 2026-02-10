@@ -37,6 +37,8 @@ const conditions = [
   { value: 'undisabled', name: 'is not disabled' },
   { value: 'clicked', name: 'is clicked' },
   { value: 'unclicked', name: 'is not clicked' },
+  { value: 'visible', name: 'is visible' },
+  { value: 'unvisible', name: 'is not visible' },
 ];
 
 interface RulesElementContextValue {
