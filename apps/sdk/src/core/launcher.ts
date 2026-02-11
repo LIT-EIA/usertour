@@ -12,6 +12,7 @@ import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
 export class Launcher extends BaseContent<LauncherStore> {
   private watcher: ElementWatcher | null = null;
   private iframePositionUpdateCleanup: (() => void) | null = null; // Cleanup function for iframe position update listeners
+  private isRefindingElement = false; // Flag to prevent multiple simultaneous re-find operations
 
   /**
    * Monitors the launcher's visibility state and ensures it's properly handled
@@ -46,6 +47,37 @@ export class Launcher extends BaseContent<LauncherStore> {
     }
 
     const store = this.getStore().getSnapshot();
+
+    // Check if triggerRef is stale (element detached from DOM)
+    if (store?.triggerRef) {
+      const isConnected = (store.triggerRef as any).isConnected;
+      const boundingRect = (store.triggerRef as any).getBoundingClientRect?.();
+
+      // If element is detached or has zero dimensions, re-find it
+      if (!this.isRefindingElement && (!isConnected || (boundingRect && boundingRect.top === 0 && boundingRect.left === 0 && boundingRect.width === 0 && boundingRect.height === 0))) {
+        // Set flag to prevent multiple simultaneous re-find operations
+        this.isRefindingElement = true;
+
+        // Clear the stale triggerRef from store immediately
+        this.updateStore({ triggerRef: undefined });
+
+        // Reset watcher and re-find the element
+        if (this.watcher) {
+          this.watcher.reset();
+
+          // Re-register the element found handler before finding
+          this.setupElementFoundHandler();
+
+          this.watcher.findElement().catch((error) => {
+            console.error('[Launcher] Error re-finding element:', error);
+            // Reset flag on error
+            this.isRefindingElement = false;
+          });
+        }
+        return;
+      }
+    }
+
     const { isHidden } = await this.watcher.checkVisibility();
     const openState = store?.openState;
 
@@ -109,6 +141,104 @@ export class Launcher extends BaseContent<LauncherStore> {
   }
 
   /**
+   * Sets up the element found event handler
+   * This can be called both during initial setup and when re-finding elements
+   * @private
+   */
+  private setupElementFoundHandler() {
+    if (!this.watcher) {
+      return;
+    }
+
+    // Set up element found handler
+    this.watcher.once(AppEvents.ELEMENT_FOUND, async (el) => {
+      // Reset the refinding flag
+      this.isRefindingElement = false;
+      // Check if element is in iframe
+      const iframeElementInfo = this.watcher?.getIframeElementInfo();
+      let triggerRef: HTMLElement = el as HTMLElement;
+
+      if (iframeElementInfo) {
+        // Check if iframe is CSS-visible before processing
+        if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
+          console.log('[Launcher] Iframe is not CSS-visible, skipping element processing');
+          // Reset element watcher state so it continues searching
+          if (this.watcher) {
+            this.watcher.reset();
+            // Re-register handler before continuing search
+            this.setupElementFoundHandler();
+            // Continue searching after a short delay to avoid immediate re-trigger
+            setTimeout(() => {
+              this.watcher?.findElement(0).catch((error) => {
+                console.error('[Launcher] Error in findElement retry:', error);
+              });
+            }, 100);
+          }
+          return;
+        }
+
+        // For iframe elements, create a virtual element for positioning
+        triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
+
+        // Set up scroll/resize listeners to keep position updated
+        this.setupIframePositionUpdate(iframeElementInfo);
+
+        // Scroll iframe and element into view
+        const { smoothScroll } = await import('@usertour-packages/dom');
+        // First scroll the iframe itself into view on the main page
+        console.log('[Launcher] Scrolling iframe into view');
+        await smoothScroll(iframeElementInfo.iframe, { block: 'center' });
+
+        // Then scroll the element inside the iframe into view and wait for it to complete
+        try {
+          const targetElement = iframeElementInfo.element;
+          if (targetElement && targetElement.isConnected) {
+            console.log('[Launcher] Scrolling element inside iframe into view');
+            await this.waitForIframeElementScroll(targetElement, iframeElementInfo, {
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            console.log('[Launcher] Element inside iframe finished scrolling');
+
+            // Update the virtual element position after scrolling completes
+            // The element's position relative to the iframe has changed, so we need to recalculate
+            // Pass the virtual element directly since store hasn't been updated yet
+            this.updateIframeElementPosition(iframeElementInfo, triggerRef);
+
+            // Small delay to ensure position update is processed by the browser
+            await new Promise(resolve => requestAnimationFrame(resolve));
+          }
+        } catch (error) {
+          console.log('[Launcher] Error scrolling element inside iframe:', error);
+          // Element might be in cross-origin iframe, which is fine - we already scrolled the iframe
+        }
+      } else {
+        // For main document elements, we already checked visibility in findVisibleElementBySelector
+        // so we can trust that the element is visible and proceed with attachment
+        // No need to check again here as it could cause false negatives due to timing
+
+        // For main page elements, scroll into view and wait
+        const { smoothScroll } = await import('@usertour-packages/dom');
+        await smoothScroll(el as Element, { block: 'center' });
+      }
+
+      // Update store with new triggerRef
+      this.updateStore({
+        triggerRef,
+        iframeElementInfo,
+      });
+    });
+
+    // Set up timeout handler
+    this.watcher.once(AppEvents.ELEMENT_FOUND_TIMEOUT, () => {
+      // Reset the refinding flag
+      this.isRefindingElement = false;
+      this.close();
+    });
+  }
+
+  /**
    * Shows the launcher by initializing the element watcher and setting up event listeners
    * This method will:
    * 1. Validate the target element exists
@@ -140,85 +270,7 @@ export class Launcher extends BaseContent<LauncherStore> {
     this.watcher.setTargetMissingSeconds(this.getTargetMissingSeconds());
 
     // Set up element found handler
-    this.watcher.once(AppEvents.ELEMENT_FOUND, async (el) => {
-      // Check if element is in iframe
-      const iframeElementInfo = this.watcher?.getIframeElementInfo();
-      let triggerRef: HTMLElement = el as HTMLElement;
-
-      if (iframeElementInfo) {
-        // Check if iframe is CSS-visible before processing
-        if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
-          console.log('[Launcher] Iframe is not CSS-visible, skipping element processing');
-          // Reset element watcher state so it continues searching
-          if (this.watcher) {
-            this.watcher.reset();
-            // Continue searching after a short delay to avoid immediate re-trigger
-            setTimeout(() => {
-              this.watcher?.findElement(0).catch((error) => {
-                console.error('[Launcher] Error in findElement retry:', error);
-              });
-            }, 100);
-          }
-          return;
-        }
-        
-        // For iframe elements, create a virtual element for positioning
-        triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
-        
-        // Set up scroll/resize listeners to keep position updated
-        this.setupIframePositionUpdate(iframeElementInfo);
-        
-        // Scroll iframe and element into view
-        const { smoothScroll } = await import('@usertour-packages/dom');
-        // First scroll the iframe itself into view on the main page
-        console.log('[Launcher] Scrolling iframe into view');
-        await smoothScroll(iframeElementInfo.iframe, { block: 'center' });
-        
-        // Then scroll the element inside the iframe into view and wait for it to complete
-        try {
-          const targetElement = iframeElementInfo.element;
-          if (targetElement && targetElement.isConnected) {
-            console.log('[Launcher] Scrolling element inside iframe into view');
-            await this.waitForIframeElementScroll(targetElement, iframeElementInfo, {
-              behavior: 'smooth',
-              block: 'center',
-              inline: 'nearest'
-            });
-            console.log('[Launcher] Element inside iframe finished scrolling');
-            
-            // Update the virtual element position after scrolling completes
-            // The element's position relative to the iframe has changed, so we need to recalculate
-            // Pass the virtual element directly since store hasn't been updated yet
-            this.updateIframeElementPosition(iframeElementInfo, triggerRef);
-            
-            // Small delay to ensure position update is processed by the browser
-            await new Promise(resolve => requestAnimationFrame(resolve));
-          }
-        } catch (error) {
-          console.log('[Launcher] Error scrolling element inside iframe:', error);
-          // Element might be in cross-origin iframe, which is fine - we already scrolled the iframe
-        }
-      } else {
-        // For main document elements, we already checked visibility in findVisibleElementBySelector
-        // so we can trust that the element is visible and proceed with attachment
-        // No need to check again here as it could cause false negatives due to timing
-        
-        // For main page elements, scroll into view and wait
-        const { smoothScroll } = await import('@usertour-packages/dom');
-        await smoothScroll(el as Element, { block: 'center' });
-      }
-
-      this.setStore({ 
-        ...store, 
-        triggerRef,
-        iframeElementInfo,
-      });
-    });
-
-    // Set up timeout handler
-    this.watcher.once(AppEvents.ELEMENT_FOUND_TIMEOUT, () => {
-      this.close();
-    });
+    this.setupElementFoundHandler();
 
     // Start element search
     this.watcher.findElement().catch((error) => {
@@ -234,7 +286,7 @@ export class Launcher extends BaseContent<LauncherStore> {
     if (!document) {
       throw new Error('Document is not available');
     }
-    
+
     // Create a virtual element that represents the iframe's position
     // This is used for positioning the launcher relative to the iframe
     // Use 'fixed' position to match floating-ui's 'fixed' strategy (viewport-relative)
@@ -246,14 +298,14 @@ export class Launcher extends BaseContent<LauncherStore> {
     virtualElement.style.height = `${iframeElementInfo.iframeRect.height}px`;
     virtualElement.style.pointerEvents = 'none';
     virtualElement.style.visibility = 'hidden';
-    
+
     // Add to DOM temporarily for positioning calculations
     document.body.appendChild(virtualElement);
-    
+
     // Store reference for cleanup
     (virtualElement as any).__usertour_virtual_iframe = true;
     (virtualElement as any).__usertour_iframe_info = iframeElementInfo;
-    
+
     return virtualElement;
   }
 
@@ -439,7 +491,7 @@ export class Launcher extends BaseContent<LauncherStore> {
   private updateIframeElementPosition(iframeElementInfo: IframeElementInfo, virtualElement?: HTMLElement): void {
     // Get virtual element from parameter or store
     let elementToUpdate: HTMLElement | null = null;
-    
+
     if (virtualElement) {
       elementToUpdate = virtualElement;
     } else {
@@ -448,7 +500,7 @@ export class Launcher extends BaseContent<LauncherStore> {
         elementToUpdate = store.triggerRef as HTMLElement;
       }
     }
-    
+
     if (elementToUpdate && (elementToUpdate as any).__usertour_virtual_iframe) {
       // Get the target element's position within the iframe
       const targetElement = iframeElementInfo.element;
@@ -456,22 +508,22 @@ export class Launcher extends BaseContent<LauncherStore> {
         console.log('[Launcher] Target element no longer connected, skipping position update');
         return;
       }
-      
+
       const targetRect = targetElement.getBoundingClientRect();
-      
+
       // Get the current iframe position
       const iframeRect = iframeElementInfo.iframe.getBoundingClientRect();
-      
+
       // Calculate the target element's position relative to the main document
       const targetLeft = iframeRect.left + targetRect.left;
       const targetTop = iframeRect.top + targetRect.top;
-      
+
       // Update virtual element to match target element's position and size
       elementToUpdate.style.left = `${targetLeft}px`;
       elementToUpdate.style.top = `${targetTop}px`;
       elementToUpdate.style.width = `${targetRect.width}px`;
       elementToUpdate.style.height = `${targetRect.height}px`;
-      
+
       // Update the stored iframe rect to keep it in sync
       iframeElementInfo.iframeRect = iframeRect;
     } else {
@@ -495,12 +547,12 @@ export class Launcher extends BaseContent<LauncherStore> {
     // This is similar to floating-ui's autoUpdate with animationFrame: true
     let rafId: number | null = null;
     let isRunning = false;
-    
+
     const updateLoop = () => {
       if (!isRunning) {
         return;
       }
-      
+
       this.updateIframeElementPosition(iframeElementInfo);
       rafId = requestAnimationFrame(updateLoop);
     };
@@ -511,7 +563,7 @@ export class Launcher extends BaseContent<LauncherStore> {
         rafId = requestAnimationFrame(updateLoop);
       }
     };
-    
+
     const stopUpdateLoop = () => {
       isRunning = false;
       if (rafId !== null) {
@@ -527,12 +579,12 @@ export class Launcher extends BaseContent<LauncherStore> {
     
     const handleMainWindowScroll = () => {
       startUpdateLoop();
-      
+
       // Clear existing timeout
       if (mainWindowScrollTimeout !== null) {
         clearTimeout(mainWindowScrollTimeout);
       }
-      
+
       // Stop main window scroll tracking after scrolling stops (100ms of no scroll events)
       mainWindowScrollTimeout = setTimeout(() => {
         mainWindowScrollTimeout = null;
@@ -545,12 +597,12 @@ export class Launcher extends BaseContent<LauncherStore> {
     
     const handleIframeScroll = () => {
       startUpdateLoop();
-      
+
       // Clear existing timeout
       if (iframeScrollTimeout !== null) {
         clearTimeout(iframeScrollTimeout);
       }
-      
+
       // Stop iframe scroll tracking after scrolling stops (100ms of no scroll events)
       iframeScrollTimeout = setTimeout(() => {
         iframeScrollTimeout = null;
@@ -678,7 +730,10 @@ export class Launcher extends BaseContent<LauncherStore> {
       this.watcher.destroy();
       this.watcher = null;
     }
-    
+
+    // Reset flags
+    this.isRefindingElement = false;
+
     // Clean up position update listeners
     this.cleanupIframePositionUpdate();
   }
