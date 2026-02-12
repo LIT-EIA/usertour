@@ -30,6 +30,7 @@ import { RulesLogic } from './rules-logic';
 import { RulesRemove } from './rules-remove';
 import { RulesSegment } from './rules-segment';
 import { RulesTextInput } from './rules-text-input';
+import { RulesPageName } from './rules-page-name';
 import { RulesUrlPattern } from './rules-url-pattern';
 import { RulesUserAttribute } from './rules-user-attribute';
 import { RulesUserFills } from './rules-user-fills';
@@ -90,6 +91,12 @@ export const RULES_ITEMS = [
     text: 'Text input value',
     IconElement: TextInputIcon,
     RulesElement: RulesTextInput,
+  },
+  {
+    type: RulesType.PAGE_NAME,
+    text: 'Page name',
+    IconElement: PagesIcon,
+    RulesElement: RulesPageName,
   },
   {
     type: RulesType.TEXT_FILL,

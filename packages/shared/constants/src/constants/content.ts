@@ -18,6 +18,7 @@ export enum RulesType {
   CONTENT = 'content',
   ELEMENT = 'element',
   TEXT_INPUT = 'text-input',
+  PAGE_NAME = 'page-name',
   TEXT_FILL = 'text-fill',
   TIME = 'time',
   GROUP = 'group',
