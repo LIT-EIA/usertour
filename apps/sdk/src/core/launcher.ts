@@ -55,11 +55,16 @@ export class Launcher extends BaseContent<LauncherStore> {
 
       // If element is detached or has zero dimensions, re-find it
       if (!this.isRefindingElement && (!isConnected || (boundingRect && boundingRect.top === 0 && boundingRect.left === 0 && boundingRect.width === 0 && boundingRect.height === 0))) {
+        console.log('[Launcher] Detected stale element, re-activating auto-start conditions and re-finding element');
+
         // Set flag to prevent multiple simultaneous re-find operations
         this.isRefindingElement = true;
 
         // Clear the stale triggerRef from store immediately
         this.updateStore({ triggerRef: undefined });
+
+        // Re-check and activate auto-start conditions before re-finding
+        await this.activeContentConditions();
 
         // Reset watcher and re-find the element
         if (this.watcher) {
@@ -266,6 +271,8 @@ export class Launcher extends BaseContent<LauncherStore> {
 
     // Create and configure new element watcher
     this.watcher = new ElementWatcher(data.target.element);
+    // Mark this watcher as being for a launcher (searches indefinitely)
+    this.watcher.setIsLauncher(true);
     // Set the target missing seconds
     this.watcher.setTargetMissingSeconds(this.getTargetMissingSeconds());
 
