@@ -561,18 +561,17 @@ export class AuthService {
 
   async sendResetPasswordEmail(id: string, email: string, name: string) {
     const link = `${this.configService.get('app.homepageUrl')}/auth/password-reset/${id}`;
-    const template = await compileEmailTemplate({
-      fileName: 'forgotPassword.mjml',
-      data: {
-        name,
-        url: link,
-      },
-    });
+    var resetData = {
+      name,
+      url: link,
+    };
+
+    console.log("Password Reset:", resetData);
     return await this.sendEmail({
       from: this.configService.get('auth.email.sender'), // sender address
       to: email, // list of receivers
       subject: 'Set up a new password for Usertour', // Subject line
-      html: template, // html body
+      html: resetData, // html body
     });
   }
 
