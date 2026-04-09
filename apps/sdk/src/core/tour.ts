@@ -19,7 +19,7 @@ import {
 } from '@usertour/types';
 import { evalCode } from '@usertour/helpers';
 import { TourStore } from '../types/store';
-import { activedRulesConditions, flowIsDismissed, isActive } from '../utils/conditions';
+import { activedRulesConditions, clearClickCache, flowIsDismissed, isActive } from '../utils/conditions';
 import { AppEvents } from '../utils/event';
 import { document } from '../utils/globals';
 import { BaseContent } from './base-content';
@@ -1626,10 +1626,14 @@ export class Tour extends BaseContent<TourStore> {
   async close(reason: contentEndReason = contentEndReason.USER_CLOSED) {
     console.log('[Tour] === CLOSING TOUR ===');
     console.log('[Tour] Close reason:', reason);
-    
+
+    // Clear click cache when flow is closed to reset click condition tracking
+    // This ensures that click conditions are properly re-evaluated on the next auto-start
+    clearClickCache();
+
     // Hide the tooltip UI first
     this.hide();
-    
+
     // Clean up iframe listeners before closing
     if (this.watcher) {
       const iframeInfo = this.watcher.getIframeElementInfo();
@@ -1640,7 +1644,7 @@ export class Tour extends BaseContent<TourStore> {
         }
       }
     }
-    
+
     // Clean up position update listeners
     this.cleanupIframePositionUpdate();
     
@@ -2052,7 +2056,7 @@ export class Tour extends BaseContent<TourStore> {
    */
   reset() {
     console.log('[Tour] === RESETTING TOUR ===');
-    
+
     // Clean up iframe listeners before reset
     if (this.watcher) {
       const iframeInfo = this.watcher.getIframeElementInfo();
@@ -2063,49 +2067,49 @@ export class Tour extends BaseContent<TourStore> {
         }
       }
     }
-    
+
     // Clean up position update listeners
     this.cleanupIframePositionUpdate();
-    
+
     // Clear iframe SDK confirmation tracking
     this.iframeSDKConfirmedSteps.clear();
-    
+
     // Clean up all iframe communication handlers
     iframeUtils.removeAllCommunicationHandlers();
-    
+
     // Clean up all iframe SDK instances across all iframes
     iframeUtils.sendCleanupAllStepsToAllIframes();
-    
+
     // Clear all pending trigger timeouts
     for (const timeoutId of this.triggerTimeouts) {
       clearTimeout(timeoutId);
     }
     this.triggerTimeouts = [];
-    
+
     // CRITICAL: Clear all pending iframe retry timeouts to prevent stale retries
     console.log('[Tour] Clearing', this.iframeRetryTimeouts.length, 'iframe retry timeouts');
     for (const timeoutId of this.iframeRetryTimeouts) {
       clearTimeout(timeoutId);
     }
     this.iframeRetryTimeouts = [];
-    
+
     // Destroy the element watcher
     if (this.watcher) {
       this.watcher.destroy();
       this.watcher = null;
     }
-    
+
     // Reset flags
     this.isUpdatingStore = false;
     this.isProcessingElementFound = false;
     this.flowCompletedReported = false;
     // Don't reset isNavigatingToStep here - it should persist through reset
     // when navigating via STEP_GOTO, and will be cleared in handleElementFound
-    
+
     // Reset state
     this.setCurrentStep(null);
     this.setStore(undefined);
-    
+
     console.log('[Tour] Tour reset completed');
   }
 

@@ -239,23 +239,127 @@ const findFirstVisibleElement = async (elementData: any): Promise<HTMLElement | 
   return null;
 };
 
-const cache = new Map();
+// Cache structure: Map<element | selectorKey, boolean>
+// We use both element references AND selector strings as keys to handle cases
+// where elements are temporarily removed from DOM
+const cache = new Map<HTMLElement | string, boolean>();
 
-const isClicked = (el: HTMLElement) => {
+// Track selectors that are waiting for elements to appear
+const pendingSelectors = new Set<string>();
+
+/**
+ * Clears the click cache to reset click condition tracking.
+ * This should be called when a flow is dismissed to ensure click conditions
+ * are properly re-evaluated on the next auto-start cycle.
+ */
+export const clearClickCache = () => {
+  console.log('[CLICK-CACHE] Clearing click cache, size before:', cache.size);
+  cache.clear();
+  pendingSelectors.clear();
+  console.log('[CLICK-CACHE] Click cache cleared');
+};
+
+/**
+ * Generates a cache key from element data selector
+ */
+const getSelectorCacheKey = (elementData: any): string => {
+  if (elementData.customSelector) {
+    return `selector:${elementData.customSelector}`;
+  }
+  if (elementData.selectorsList && elementData.selectorsList.length > 0) {
+    return `selector:${elementData.selectorsList[0]}`;
+  }
+  return '';
+};
+
+/**
+ * Tries to attach click listeners to pending selectors
+ * This is called periodically to attach listeners when elements appear in DOM
+ */
+export const attachPendingClickListeners = () => {
+  if (!document || pendingSelectors.size === 0) {
+    return;
+  }
+
+  for (const selectorKey of Array.from(pendingSelectors)) {
+    // Extract the actual selector from the key
+    const selector = selectorKey.replace(/^selector:/, '');
+    if (!selector) continue;
+
+    // Try to find the element
+    const el = document.querySelector(selector) as HTMLElement;
+    if (el) {
+      // Found the element! Attach click listener
+      console.log('[CLICK-PENDING] Found pending element, attaching listener');
+      const onClick = () => {
+        console.log('[CLICK-CONDITION] ✓✓ CLICK EVENT FIRED');
+        cache.set(el, true);
+        cache.set(selectorKey, true);
+        pendingSelectors.delete(selectorKey);
+        off(el, 'click', onClick);
+      };
+      on(el, 'click', onClick);
+      cache.set(el, false);
+      cache.set(selectorKey, false);
+      pendingSelectors.delete(selectorKey);
+    }
+  }
+};
+
+const isClicked = (el: HTMLElement, elementData?: any) => {
+  // Check if this specific element was clicked
   if (cache.has(el)) {
     return cache.get(el);
   }
+
+  // Check if element matching this selector was previously clicked
+  // This handles the case where the element was re-created in the DOM
+  if (elementData) {
+    const selectorKey = getSelectorCacheKey(elementData);
+    if (selectorKey && cache.has(selectorKey)) {
+      const wasClicked = cache.get(selectorKey);
+      // Update element cache with selector's click state
+      cache.set(el, wasClicked!);
+      // Remove from pending since we found the element
+      pendingSelectors.delete(selectorKey);
+      return wasClicked;
+    }
+  }
+
+  console.log('[CLICK-CONDITION] Attaching new click listener to element');
   const onClick = () => {
+    console.log('[CLICK-CONDITION] ✓✓ CLICK EVENT FIRED');
     cache.set(el, true);
+    // Also cache by selector if available
+    if (elementData) {
+      const selectorKey = getSelectorCacheKey(elementData);
+      if (selectorKey) {
+        cache.set(selectorKey, true);
+        // Remove from pending since it's now clicked
+        pendingSelectors.delete(selectorKey);
+      }
+    }
     off(el, 'click', onClick);
   };
   on(el, 'click', onClick);
   cache.set(el, false);
+
+  // Also cache by selector with false state and remove from pending
+  if (elementData) {
+    const selectorKey = getSelectorCacheKey(elementData);
+    if (selectorKey) {
+      cache.set(selectorKey, false);
+      // Remove from pending since listener is now attached
+      pendingSelectors.delete(selectorKey);
+    }
+  }
+
   return false;
 };
 
 const isActiveRulesByElement = async (rules: RulesCondition) => {
   const { data } = rules;
+
   if (!document) {
     return false;
   }
@@ -287,6 +391,11 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
     }
   }
 
+  // Only log when element is NOT found (this indicates a potential issue)
+  if (!el && data.logic === 'clicked') {
+    console.log('[ELEMENT-FINDER] Click condition element NOT FOUND');
+  }
+
   const isPresent = el ? await isVisible(el) : false;
   const isDisabled = el ? (el as any).disabled : false;
   const isVisibleCSS = el ? !isElementInHiddenSection(el) : false;
@@ -301,9 +410,30 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
     case ElementConditionLogic.UNDISABLED:
       return el && !isDisabled;
     case ElementConditionLogic.CLICKED:
-      return el && isClicked(el);
+      // For click conditions, pass elementData to enable selector-based caching
+      // This allows the condition to remain true even if element is temporarily removed from DOM
+      if (el) {
+        return isClicked(el, data.elementData);
+      }
+      // If element doesn't exist, check if matching selector was previously clicked
+      const selectorKey = getSelectorCacheKey(data.elementData);
+      if (selectorKey && cache.has(selectorKey)) {
+        return cache.get(selectorKey)!;
+      }
+      // Mark this selector as pending so we can attach listener when element appears
+      // Call attachPendingClickListeners() to try attaching now
+      if (selectorKey) {
+        pendingSelectors.add(selectorKey);
+        // Try to attach listener immediately in case element exists now
+        attachPendingClickListeners();
+      }
+      // Check again if it was found and clicked
+      if (selectorKey && cache.has(selectorKey)) {
+        return cache.get(selectorKey)!;
+      }
+      return false;
     case ElementConditionLogic.UNCLICKED:
-      return el && !isClicked(el);
+      return el && !isClicked(el, data.elementData);
     case 'visible':
       return el && isVisibleCSS;
     case 'unvisible':
