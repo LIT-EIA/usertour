@@ -312,20 +312,24 @@ const isClicked = (el: HTMLElement, elementData?: any) => {
     return cache.get(el);
   }
 
-  // Check if element matching this selector was previously clicked
-  // This handles the case where the element was re-created in the DOM
+  // Element not in cache - need to attach listener
+  // But first check if selector was previously clicked (for recreated elements)
+  let wasPreviouslyClicked = false;
   if (elementData) {
     const selectorKey = getSelectorCacheKey(elementData);
     if (selectorKey && cache.has(selectorKey)) {
-      const wasClicked = cache.get(selectorKey);
-      // Update element cache with selector's click state
-      cache.set(el, wasClicked!);
-      // Remove from pending since we found the element
-      pendingSelectors.delete(selectorKey);
-      return wasClicked;
+      wasPreviouslyClicked = cache.get(selectorKey)!;
+      // If it was already clicked, just update cache and return
+      // No need to attach listener since condition is already met
+      if (wasPreviouslyClicked) {
+        cache.set(el, true);
+        pendingSelectors.delete(selectorKey);
+        return true;
+      }
     }
   }
 
+  // Element hasn't been clicked yet - attach listener
   console.log('[CLICK-CONDITION] Attaching new click listener to element');
   const onClick = () => {
     console.log('[CLICK-CONDITION] ✓✓ CLICK EVENT FIRED');
