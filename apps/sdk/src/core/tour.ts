@@ -1410,13 +1410,15 @@ export class Tour extends BaseContent<TourStore> {
     let iframeScrollTimeout: ReturnType<typeof setTimeout> | null = null;
     
     const handleMainWindowScroll = () => {
+      // Synchronous update so floating-ui's RAF reads the current frame's position
+      this.updateIframeElementPosition(iframeElementInfo);
       startUpdateLoop();
-      
+
       // Clear existing timeout
       if (mainWindowScrollTimeout !== null) {
         clearTimeout(mainWindowScrollTimeout);
       }
-      
+
       // Stop main window scroll tracking after scrolling stops (100ms of no scroll events)
       mainWindowScrollTimeout = setTimeout(() => {
         mainWindowScrollTimeout = null;
@@ -1426,10 +1428,12 @@ export class Tour extends BaseContent<TourStore> {
         }
       }, 100);
     };
-    
+
     const handleIframeScroll = () => {
+      // Synchronous update so floating-ui's RAF reads the current frame's position
+      this.updateIframeElementPosition(iframeElementInfo);
       startUpdateLoop();
-      
+
       // Clear existing timeout
       if (iframeScrollTimeout !== null) {
         clearTimeout(iframeScrollTimeout);

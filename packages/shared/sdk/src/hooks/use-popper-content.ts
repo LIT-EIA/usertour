@@ -80,7 +80,7 @@ export const usePopperContent = (
     sticky = 'partial',
     hideWhenDetached = false,
     width = 'auto',
-    updatePositionStrategy = 'optimized',
+    updatePositionStrategy = 'always',
   } = props;
 
   const { triggerRef, zIndex, setReferenceHidden, setRect, setOverflow } = context;

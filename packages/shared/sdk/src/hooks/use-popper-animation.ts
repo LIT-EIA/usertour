@@ -56,75 +56,77 @@ export const usePopperAnimation = (
     enabled = true,
   } = options;
 
-  // Animation state management
-  const [animationPhase, setAnimationPhase] = useState<'offset' | 'animating'>('offset');
-  const [lastTransform, setLastTransform] = useState('');
+  // 'offset'   – initial state: tooltip at offset position, no transition
+  // 'animating'– fly-in in progress: tooltip at correct position with CSS transition
+  // 'done'     – fly-in complete: no CSS transition so real-time tracking has zero lag
+  const [animationPhase, setAnimationPhase] = useState<'offset' | 'animating' | 'done'>('offset');
   const stableTimerRef = useRef<NodeJS.Timeout>();
+  const doneTimerRef = useRef<NodeJS.Timeout>();
 
-  // Reset animation phase when placement changes
+  // Reset animation phase when placement changes (tooltip flipped sides → replay fly-in)
   useEffect(() => {
     setAnimationPhase('offset');
-    setLastTransform(''); // Reset lastTransform to ensure stability detection works
 
-    // Clear any existing timer when placement changes
     if (stableTimerRef.current) {
       clearTimeout(stableTimerRef.current);
+      stableTimerRef.current = undefined;
+    }
+    if (doneTimerRef.current) {
+      clearTimeout(doneTimerRef.current);
+      doneTimerRef.current = undefined;
     }
   }, [placement]);
 
-  // Detect position stability using setTimeout
+  // Start the stability timer exactly once when the first transform arrives.
+  // Do NOT reset it on subsequent position changes — resetting caused the timer
+  // to never fire while the page was being scrolled, leaving the tooltip stuck
+  // at the offset position indefinitely.
   useEffect(() => {
-    // If animation is disabled, skip the effect
-    if (!enabled) {
-      return;
-    }
+    if (!enabled) return;
 
     const currentTransform = floatingStyles.transform as string;
-    if (currentTransform && currentTransform !== lastTransform) {
-      setLastTransform(currentTransform);
+    if (!currentTransform || animationPhase !== 'offset' || stableTimerRef.current) return;
 
-      // Clear previous timer
+    stableTimerRef.current = setTimeout(() => {
+      stableTimerRef.current = undefined;
+      setAnimationPhase('animating');
+    }, stableThreshold);
+
+    return () => {
       if (stableTimerRef.current) {
         clearTimeout(stableTimerRef.current);
+        stableTimerRef.current = undefined;
       }
-
-      // Set new timer
-      stableTimerRef.current = setTimeout(() => {
-        if (animationPhase === 'offset') {
-          setAnimationPhase('animating');
-        }
-      }, stableThreshold);
-
-      return () => {
-        if (stableTimerRef.current) {
-          clearTimeout(stableTimerRef.current);
-        }
-      };
-    }
-
-    if (currentTransform && lastTransform && currentTransform === lastTransform) {
-      // If transform is stable (same as last), also set timer
-      if (stableTimerRef.current) {
-        clearTimeout(stableTimerRef.current);
-      }
-
-      stableTimerRef.current = setTimeout(() => {
-        if (animationPhase === 'offset') {
-          setAnimationPhase('animating');
-        }
-      }, stableThreshold);
-    }
+    };
   }, [floatingStyles.transform, animationPhase, stableThreshold, enabled]);
+
+  // Once the fly-in CSS transition finishes, switch to 'done' so that real-time
+  // position updates (from floating-ui's RAF loop during scroll) are applied
+  // instantly instead of being smoothed over animationDuration ms.
+  useEffect(() => {
+    if (!enabled || animationPhase !== 'animating') return;
+
+    doneTimerRef.current = setTimeout(() => {
+      doneTimerRef.current = undefined;
+      setAnimationPhase('done');
+    }, animationDuration);
+
+    return () => {
+      if (doneTimerRef.current) {
+        clearTimeout(doneTimerRef.current);
+        doneTimerRef.current = undefined;
+      }
+    };
+  }, [animationPhase, animationDuration, enabled]);
 
   // Calculate final styles based on animation phase
   const finalStyles = useMemo(() => {
-    // If animation is disabled, return original styles immediately
     if (!enabled) {
       return floatingStyles;
     }
 
     if (animationPhase === 'offset') {
-      // Offset position, no animation
+      // Starting position for fly-in — offset away from target, no transition
       return {
         ...floatingStyles,
         transform: floatingStyles.transform
@@ -134,16 +136,25 @@ export const usePopperAnimation = (
       };
     }
 
-    // Final position, with animation
+    if (animationPhase === 'animating') {
+      // Fly-in: animate from offset position to correct position
+      return {
+        ...floatingStyles,
+        transition: `opacity 250ms linear, transform ${animationDuration}ms ${easing}`,
+      };
+    }
+
+    // 'done': fly-in complete — track target with zero lag, no CSS transition on transform
     return {
       ...floatingStyles,
-      transition: `opacity 250ms linear, transform ${animationDuration}ms ${easing}`,
+      transition: 'none',
     };
   }, [floatingStyles, placement, animationPhase, offset, animationDuration, easing, enabled]);
 
   return {
     finalStyles,
-    animationPhase: enabled ? animationPhase : 'animating',
-    isStable: enabled ? animationPhase === 'animating' : true,
+    // Expose 'animating' for 'done' phase too so callers see consistent API
+    animationPhase: animationPhase === 'offset' ? 'offset' : 'animating',
+    isStable: enabled ? animationPhase !== 'offset' : true,
   };
 };

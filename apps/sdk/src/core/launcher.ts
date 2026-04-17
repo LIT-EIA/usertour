@@ -585,6 +585,8 @@ export class Launcher extends BaseContent<LauncherStore> {
     let iframeScrollTimeout: ReturnType<typeof setTimeout> | null = null;
     
     const handleMainWindowScroll = () => {
+      // Synchronous update so floating-ui's RAF reads the current frame's position
+      this.updateIframeElementPosition(iframeElementInfo);
       startUpdateLoop();
 
       // Clear existing timeout
@@ -603,6 +605,8 @@ export class Launcher extends BaseContent<LauncherStore> {
     };
     
     const handleIframeScroll = () => {
+      // Synchronous update so floating-ui's RAF reads the current frame's position
+      this.updateIframeElementPosition(iframeElementInfo);
       startUpdateLoop();
 
       // Clear existing timeout

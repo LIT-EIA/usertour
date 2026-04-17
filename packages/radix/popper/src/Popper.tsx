@@ -140,7 +140,7 @@ const PopperContent = React.forwardRef<PopperContentElement, PopperContentProps>
       collisionPadding: collisionPaddingProp = 0,
       sticky = 'partial',
       hideWhenDetached = false,
-      updatePositionStrategy = 'optimized',
+      updatePositionStrategy = 'always',
       onPlaced,
       ...contentProps
     } = props;
