@@ -69,7 +69,6 @@ export class IframeLauncherRenderer {
     // Watch for target size changes
     this.observeTargetResize();
 
-    console.log('[IframeLauncherRenderer] Tooltip rendered inside iframe');
   }
 
   /**
@@ -365,8 +364,6 @@ export class IframeLauncherRenderer {
    * Destroys the tooltip and cleans up
    */
   destroy(): void {
-    console.log('[IframeLauncherRenderer] Destroying tooltip');
-
     // Disconnect observer
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -397,7 +394,7 @@ export function canRenderInIframe(iframe: HTMLIFrameElement): boolean {
     return true;
   } catch (error) {
     // CORS or sandbox restrictions
-    console.log('[IframeLauncherRenderer] Cannot render in iframe:', error);
+    console.error('[IframeLauncherRenderer] Cannot render in iframe:', error);
     return false;
   }
 }

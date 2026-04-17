@@ -14,8 +14,6 @@ export const loadUsertourSDK = (): Promise<UserTourTypes.Usertour> => {
     return loadPromise;
   }
 
-  console.log('Loading usertour SDK');
-
   const win = window as UserTourTypes.WindowWithUsertour;
 
   // Check if already loaded

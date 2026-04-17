@@ -904,48 +904,28 @@ export class IframeUtils {
     return `
       window.usertourIframeSDK = {
         init: function() {
-          console.log('[IframeSDK] === INITIALIZING IFRAME SDK ===');
-          console.log('[IframeSDK] Window available:', !!window);
-          console.log('[IframeSDK] Window parent available:', !!(window && window.parent));
-          
           if (this.messageListener) {
-            console.log('[IframeSDK] Already initialized');
             return;
           }
 
           this.messageListener = (event) => {
-            console.log('[IframeSDK] === MESSAGE RECEIVED ===');
-            console.log('[IframeSDK] Event source:', event.source);
-            console.log('[IframeSDK] Event origin:', event.origin);
-            console.log('[IframeSDK] Event data:', event.data);
-            
             // Only process messages from parent window
             if (!window || event.source !== window.parent) {
-              console.log('[IframeSDK] Message not from parent, ignoring');
-              console.log('[IframeSDK] Event source:', event.source);
-              console.log('[IframeSDK] Window parent:', window?.parent);
-              console.log('[IframeSDK] Are they equal?', event.source === window?.parent);
               return;
             }
 
             try {
               const message = event.data;
-              
+
               if (!message.type || !message.type.startsWith('usertour-')) {
-                console.log('[IframeSDK] Message not a usertour message, ignoring');
                 return;
               }
 
-              console.log('[IframeSDK] Processing message type:', message.type);
               switch (message.type) {
                 case 'usertour-find-element':
-                  console.log('[IframeSDK] === HANDLING FIND ELEMENT MESSAGE ===');
-                  console.log('[IframeSDK] Message data:', message);
                   this.handleFindElement(message);
                   break;
                 case 'usertour-step-action':
-                  console.log('[IframeSDK] === HANDLING STEP ACTION MESSAGE ===');
-                  console.log('[IframeSDK] Step action data:', message);
                   this.handleStepAction(message.stepId, message.action, message.data);
                   break;
                 case 'usertour-cleanup-step':
@@ -956,70 +936,49 @@ export class IframeUtils {
                   break;
               }
             } catch (error) {
-              console.log('[IframeSDK] Error handling message:', error);
+              // Silently handle message processing errors
             }
           };
 
           if (window) {
             window.addEventListener('message', this.messageListener);
-            console.log('[IframeSDK] Message listener added');
           }
 
           // Notify parent that iframe SDK is ready
-          console.log('[IframeSDK] Notifying parent that SDK is ready');
           this.sendMessageToParent({
             type: 'usertour-iframe-ready',
           });
         },
         
         handleFindElement: function(elementInfo) {
-          console.log('[IframeSDK] === HANDLE FIND ELEMENT ===');
-          console.log('[IframeSDK] Element info received:', elementInfo);
-          console.log('[IframeSDK] Step ID:', elementInfo.stepId);
-          console.log('[IframeSDK] Actions:', elementInfo.actions);
-          console.log('[IframeSDK] Selector:', elementInfo.element);
-          
           if (!elementInfo?.element) {
-            console.log('[IframeSDK] No element selector provided');
             return;
           }
 
           try {
             const element = this.findElementBySelector(elementInfo.element);
-            console.log('[IframeSDK] Element search result:', element);
-            
+
             if (element) {
               // Check if element is in a hidden section before setting up interactions
               if (this.isElementInHiddenSection(element)) {
-                console.log('[IframeSDK] Element found but is in a hidden section, skipping interaction setup');
                 return;
               }
-              
-              console.log('[IframeSDK] Element found:', element);
-              console.log('[IframeSDK] Element tag:', element.tagName);
-              console.log('[IframeSDK] Element class:', element.className);
-              console.log('[IframeSDK] Element id:', element.id);
-              
+
               // Set up element interaction for step progression
               if (elementInfo.stepId) {
                 // Set up trigger monitoring if triggers are provided
                 if (elementInfo.triggers && elementInfo.triggers.length > 0) {
-                  console.log('[IframeSDK] Setting up trigger monitoring:', elementInfo.triggers);
-                  console.log('[IframeSDK] Triggers detected - deferring element click handler setup to allow trigger testing');
                   this.setupTriggerMonitoring(elementInfo.stepId, elementInfo.triggers, elementInfo.actions, element, elementInfo.element);
                 } else {
                   // Only set up immediate click handler if there are no triggers
                   // This allows triggers to be tested without click interference
-                  console.log('[IframeSDK] No triggers - setting up immediate element interaction with actions:', elementInfo.actions);
                   this.setupElementInteraction(element, elementInfo.stepId, elementInfo.actions, elementInfo.element);
                 }
               }
-              
+
               // Don't send usertour-element-found back to parent because the parent already found the element
               // The parent found the element through the element watcher, so this is redundant
-              console.log('[IframeSDK] Element interaction set up successfully, not sending element-found message');
             } else {
-              console.log('[IframeSDK] Element not found');
               // Only send not-found if the element truly doesn't exist
               this.sendMessageToParent({
                 type: 'usertour-element-not-found',
@@ -1031,7 +990,6 @@ export class IframeUtils {
               });
             }
           } catch (error) {
-            console.log('[IframeSDK] Error finding element:', error);
             this.sendMessageToParent({
               type: 'usertour-element-not-found',
               element: {
@@ -1042,17 +1000,9 @@ export class IframeUtils {
             });
           }
         },
-        
+
         setupElementInteraction: function(element, stepId, actions, selector) {
-          console.log('[IframeSDK] === SETUP ELEMENT INTERACTION ===');
-          console.log('[IframeSDK] Element:', element);
-          console.log('[IframeSDK] Step ID:', stepId);
-          console.log('[IframeSDK] Actions:', actions);
-          console.log('[IframeSDK] Actions length:', actions?.length || 0);
-          console.log('[IframeSDK] Selector:', selector);
-          
           if (!element) {
-            console.log('[IframeSDK] No element provided for interaction setup');
             return;
           }
           
@@ -1074,7 +1024,6 @@ export class IframeUtils {
                 }
               } catch (parseError) {
                 // If parsing fails, fall back to original selector (backward compatibility)
-                console.log('[IframeSDK] Selector parsing failed, using original selector:', parseError);
               }
               
               // Check custom selector first (original logic from commit eca4f8e8d91f7aab1cd9e1ecd0126abbd57c22f4)
@@ -1085,7 +1034,7 @@ export class IframeUtils {
                     return true;
                   }
                 } catch (e) {
-                  console.log('[IframeSDK] Error matching customSelector:', e);
+                  // ignore
                 }
               }
               
@@ -1097,7 +1046,7 @@ export class IframeUtils {
                       return true;
                     }
                   } catch (e) {
-                    console.log('[IframeSDK] Error matching selector:', mainSel.selectors[i], e);
+                    // ignore
                   }
                 }
               }
@@ -1110,7 +1059,7 @@ export class IframeUtils {
                       return true;
                     }
                   } catch (e) {
-                    console.log('[IframeSDK] Error matching selector from selectorsList:', mainSel.selectorsList[i], e);
+                    // ignore
                   }
                 }
               }
@@ -1121,7 +1070,6 @@ export class IframeUtils {
                 // Already checked above, but this ensures we don't miss anything
               }
             } catch (e) {
-              console.log('[IframeSDK] Error in elementMatchesSelector:', e);
               // Final fallback: try original selector directly
               if (sel && typeof sel === 'object') {
                 try {
@@ -1136,7 +1084,7 @@ export class IframeUtils {
                     }
                   }
                 } catch (fallbackError) {
-                  console.log('[IframeSDK] Fallback matching also failed:', fallbackError);
+                  // ignore
                 }
               }
             }
@@ -1152,54 +1100,29 @@ export class IframeUtils {
             // Check if the clicked element is our target element or a descendant
             const target = event.target;
             if (!target) {
-              console.log('[IframeSDK] No target in event');
               return;
             }
-            
-            console.log('[IframeSDK] Document-level event caught:', {
-              type: event.type,
-              target: target,
-              targetTag: target.tagName,
-              targetId: target.id,
-              targetClass: target.className,
-              targetHref: target.href || target.getAttribute('href') || 'N/A',
-              element: element,
-              elementTag: element.tagName,
-              elementId: element.id,
-              elementClass: element.className,
-              elementHref: element.href || element.getAttribute('href') || 'N/A'
-            });
-            
+
             // Check if target is the element itself or a descendant
             // IMPORTANT: We match against the specific element found, NOT all elements matching the selector
             // This ensures we only handle clicks on the exact element we're tracking
             let isTargetOrDescendant = false;
             const directMatch = target === element;
             const containsMatch = element.contains && element.contains(target);
-            
+
             // Also check if the clicked element matches the selector (for "fake links")
             // This is critical for handling elements with preventDefault() that don't navigate
             const selectorMatch = selector && elementMatchesSelector(target, selector);
-            
-            console.log('[IframeSDK] Matching check:', {
-              directMatch: directMatch,
-              containsMatch: containsMatch,
-              selectorMatch: selectorMatch,
-              elementContains: typeof element.contains === 'function' ? 'function exists' : 'no contains method'
-            });
-            
+
             if (directMatch) {
               isTargetOrDescendant = true;
-              console.log('[IframeSDK] Target matches element directly');
             } else if (containsMatch) {
               isTargetOrDescendant = true;
-              console.log('[IframeSDK] Target is descendant of element');
             } else if (selectorMatch) {
               // CRITICAL FIX: Selector matching at same priority as direct/contains checks
               // This allows "fake links" (elements with preventDefault) to trigger step progression
               // even if they're not descendants of the tracked element
               isTargetOrDescendant = true;
-              console.log('[IframeSDK] Target matches the selector (fake link support)');
             } else {
               // Check if target is an ancestor (in case element is inside the link)
               let current = element;
@@ -1207,70 +1130,46 @@ export class IframeUtils {
               while (current && current !== document.body && ancestorLevel < 10) {
                 if (current === target) {
                   isTargetOrDescendant = true;
-                  console.log('[IframeSDK] Element is descendant of target at level', ancestorLevel);
                   break;
                 }
                 current = current.parentElement;
                 ancestorLevel++;
               }
-              
+
               // Additional fallback for link clicks: check if target contains element (reverse contains)
               // This handles cases where the link wraps the element or they're closely related
               if (!isTargetOrDescendant && target.contains && target.contains(element)) {
                 isTargetOrDescendant = true;
-                console.log('[IframeSDK] Element is inside target (reverse contains match)');
-              }
-              
-              if (!isTargetOrDescendant) {
-                console.log('[IframeSDK] Checked ancestors up to level', ancestorLevel, '- no match');
               }
             }
-            
+
             if (!isTargetOrDescendant) {
-              console.log('[IframeSDK] Target does not match element, ignoring');
-              console.log('[IframeSDK] Full element comparison:', {
-                targetNode: target,
-                elementNode: element,
-                targetOuterHTML: target.outerHTML ? target.outerHTML.substring(0, 200) : 'N/A',
-                elementOuterHTML: element.outerHTML ? element.outerHTML.substring(0, 200) : 'N/A'
-              });
               return;
             }
-            
+
             // Prevent duplicate handling
             if (hasHandled) {
-              console.log('[IframeSDK] Already handled this click, ignoring duplicate');
               return;
             }
             hasHandled = true;
-            
-            console.log('[IframeSDK] === ELEMENT CLICKED ===');
-            console.log('[IframeSDK] Event type:', event.type);
-            console.log('[IframeSDK] Target:', target);
-            console.log('[IframeSDK] Element:', element);
-            console.log('[IframeSDK] Element clicked, handling step actions:', stepId);
-            console.log('[IframeSDK] Available actions:', actions);
-            
+
             // Reset flag after a short delay to allow for future clicks
             setTimeout(() => {
               hasHandled = false;
             }, 100);
-            
+
             // If there are specific actions, send them to parent
             if (actions && actions.length > 0) {
-              console.log('[IframeSDK] Sending actions to parent:', actions);
               const message = {
                 type: 'usertour-step-action',
                 stepId,
                 action: 'handleActions',
                 data: { actions }
               };
-              console.log('[IframeSDK] Message to parent:', message);
               this.sendMessageToParent(message);
             } else {
               // Default behavior: complete the step
-              console.log('[IframeSDK] No specific actions, completing step');
-              this.completeStep(stepId, { 
+              this.completeStep(stepId, {
                 action: 'click',
                 element: element.tagName,
                 timestamp: Date.now()
@@ -1280,34 +1179,21 @@ export class IframeUtils {
 
           // Listen at document level in capture phase for both mousedown and click
           // This ensures we catch events before any link handlers can interfere
-          console.log('[IframeSDK] Adding document-level mousedown listener (capture phase)');
           if (document) {
             document.addEventListener('mousedown', clickHandler, true);
           }
-          
+
           // Also add click listener as fallback
-          console.log('[IframeSDK] Adding document-level click listener (capture phase) as fallback');
           if (document) {
             document.addEventListener('click', clickHandler, true);
           }
-          
+
           // Store references for cleanup
           element.__usertour_click_handler = clickHandler;
           element.__usertour_click_handler_capture = true;
           element.__usertour_step_id = stepId;
           element.__usertour_actions = actions;
           element.__usertour_selector = selector;
-          
-          console.log('[IframeSDK] Click listener added to element');
-          console.log('[IframeSDK] Element properties set:', {
-            hasClickHandler: !!element.__usertour_click_handler,
-            stepId: element.__usertour_step_id,
-            actions: element.__usertour_actions
-          });
-          
-          // Add a debug property to track when this was set up
-          element.__usertour_setup_time = Date.now();
-          console.log('[IframeSDK] Element setup completed at:', element.__usertour_setup_time);
         },
         
         // Parse selector to handle <<< pattern
@@ -1341,22 +1227,18 @@ export class IframeUtils {
         },
         
         findElementBySelector: function(selector) {
-          console.log('[IframeSDK] === FIND ELEMENT BY SELECTOR ===');
-          console.log('[IframeSDK] Selector received:', selector);
-          
           // Use findElementBySelectorData for proper content and sequence matching
           // This ensures we find the correct element, not just any element matching the CSS selector
           return this.findElementBySelectorData(selector);
         },
         
         sendMessageToParent: function(message) {
-          console.log('[IframeSDK] Sending message to parent:', message);
           try {
             if (window && window.parent) {
               window.parent.postMessage(message, '*');
             }
           } catch (error) {
-            console.log('[IframeSDK] Error sending message to parent:', error);
+            // Silently handle postMessage errors
           }
         },
         
@@ -1369,7 +1251,6 @@ export class IframeUtils {
         },
         
         handleStepAction: function(stepId, action, data) {
-          console.log('[IframeSDK] Handling step action:', stepId, action, data);
           // Handle different step actions
           switch (action) {
             case 'complete':
@@ -1384,8 +1265,6 @@ export class IframeUtils {
             case 'skip':
               this.skipStep(stepId, data);
               break;
-            default:
-              console.log('[IframeSDK] Unknown step action:', action);
           }
         },
         
@@ -1868,32 +1747,22 @@ export class IframeUtils {
               // For visibility conditions, find the first visible element
               // For other conditions, use the default behavior (first found element)
               const isVisibilityCondition = logic === 'visible' || logic === 'unvisible';
-              
+
               let el;
               if (isVisibilityCondition) {
-                console.log('[IframeSDK] [Element Condition] Visibility condition detected, searching for visible elements');
                 el = this.findFirstVisibleElementBySelectorData(elementData);
               } else {
                 el = this.findElementBySelectorData(elementData);
               }
-              
+
               if (!el) {
                 return logic === 'unpresent';
               }
-              
+
               const isPresent = this.isElementVisible(el);
               const isDisabled = el.disabled || false;
               const isVisibleCSS = !this.isElementInHiddenSection(el);
-              
-              console.log('[IframeSDK] [Element Condition] Evaluating element condition:', {
-                logic: logic,
-                element: el,
-                elementTag: el?.tagName,
-                isPresent,
-                isDisabled,
-                isVisibleCSS,
-              });
-              
+
               switch (logic) {
                 case 'present':
                   return isPresent;
@@ -1908,10 +1777,8 @@ export class IframeUtils {
                 case 'unclicked':
                   return !this.isElementClicked(el);
                 case 'visible':
-                  console.log('[IframeSDK] Checking VISIBLE condition, result:', isVisibleCSS);
                   return isVisibleCSS;
                 case 'unvisible':
-                  console.log('[IframeSDK] Checking UNVISIBLE condition, result:', !isVisibleCSS);
                   return !isVisibleCSS;
                 default:
                   return false;
@@ -2046,11 +1913,6 @@ export class IframeUtils {
         
         // Set up trigger monitoring for a step
         setupTriggerMonitoring: function(stepId, triggers, elementActions, element, elementSelector) {
-          console.log('[IframeSDK] === SETUP TRIGGER MONITORING ===');
-          console.log('[IframeSDK] Step ID:', stepId);
-          console.log('[IframeSDK] Triggers:', triggers);
-          console.log('[IframeSDK] Element actions (will be used as fallback):', elementActions);
-          
           // Clean up any existing monitors for this step
           this.stopTriggerMonitoring(stepId);
           
@@ -2083,8 +1945,6 @@ export class IframeUtils {
                     
                     if (actionsToExecute && actionsToExecute.length > 0) {
                       this.executeTriggerActions(stepId, actionsToExecute);
-                    } else {
-                      console.log('[IframeSDK] No actions to execute for trigger', index);
                     }
                   }, waitTime);
                   
@@ -2104,12 +1964,9 @@ export class IframeUtils {
           
           // Store monitors for cleanup
           this.triggerMonitors.set(stepId, monitors);
-          console.log('[IframeSDK] Trigger monitoring set up for', monitors.length, 'triggers');
-          console.log('[IframeSDK] Element click handler NOT set up - triggers will be evaluated first');
-          
+
           // If no active triggers were found, set up element click handler as fallback
           if (!hasActiveTriggers && elementActions && elementActions.length > 0) {
-            console.log('[IframeSDK] No active triggers found, setting up element click handler');
             if (element) {
               this.setupElementInteraction(element, stepId, elementActions, elementSelector);
             } else if (elementSelector) {
@@ -2127,7 +1984,6 @@ export class IframeUtils {
           if (monitors) {
             monitors.forEach((interval) => clearInterval(interval));
             this.triggerMonitors.delete(stepId);
-            console.log('[IframeSDK] Stopped trigger monitoring for step', stepId);
           }
         },
         
@@ -2139,24 +1995,10 @@ export class IframeUtils {
         // - PAGE_NAVIGATE: Navigate to a page
         // - JAVASCRIPT_EVALUATE: Evaluate JavaScript code (executes in parent window context)
         executeTriggerActions: function(stepId, actions) {
-          console.log('[IframeSDK] === EXECUTING TRIGGER ACTIONS ===');
-          console.log('[IframeSDK] Step ID:', stepId);
-          console.log('[IframeSDK] Actions:', actions);
-          console.log('[IframeSDK] Actions count:', actions?.length || 0);
-          
           if (!actions || actions.length === 0) {
-            console.log('[IframeSDK] No actions to execute');
             return;
           }
-          
-          // Log each action type for debugging
-          actions.forEach((action, index) => {
-            console.log('[IframeSDK] Action', index + ':', {
-              type: action.type,
-              data: action.data
-            });
-          });
-          
+
           // Send actions to parent for execution (parent handles all action types)
           // The parent's handleActions() method supports:
           // - STEP_GOTO: Calls show() with stepCvid
@@ -2170,8 +2012,6 @@ export class IframeUtils {
             action: 'handleActions',
             data: { actions }
           });
-          
-          console.log('[IframeSDK] Trigger actions sent to parent for execution');
         },
         
         cleanupStep: function(stepId) {

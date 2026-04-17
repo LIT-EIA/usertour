@@ -78,9 +78,6 @@ export class ElementWatcher extends Evented {
 
     // AGGRESSIVE GUARD: If we already found an element, don't search again
     if (this.hasFoundElement) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Element already found, skipping ALL searches');
-      }
       return;
     }
 
@@ -91,16 +88,12 @@ export class ElementWatcher extends Evented {
       const exceedsTimeLimit = retryTimes * RETRY_DELAY > this.targetMissingSeconds * 1000;
 
       if (exceedsRetryLimit || exceedsTimeLimit) {
-        console.log('[ElementWatcher] Element search timeout after', retryTimes, 'retries (', (retryTimes * RETRY_DELAY / 1000).toFixed(1), 'seconds)');
         this.trigger(AppEvents.ELEMENT_FOUND_TIMEOUT);
         return;
       }
     }
 
     if (!this.isDocumentReady() || !document?.body) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Document not ready, scheduling retry', retryTimes);
-      }
       this.scheduleRetry(retryTimes);
       return;
     }
@@ -117,14 +110,8 @@ export class ElementWatcher extends Evented {
     }
 
     // First try to find element in main document
-    if (!this.isLauncher) {
-      console.log('[ElementWatcher] Searching for element in main document:', this.parsedSelector.mainSelector);
-    }
     const el = this.findVisibleElementBySelector();
     if (el) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Element found in main document:', el);
-      }
       this.element = el;
       this.iframeElementInfo = null;
       this.hasFoundElement = true;
@@ -135,9 +122,6 @@ export class ElementWatcher extends Evented {
       return;
     }
 
-    if (!this.isLauncher) {
-      console.log('[ElementWatcher] Element not found in main document, searching iframes...');
-    }
     // If not found in main document, search in iframes
     // Allow periodic re-searches to catch iframe src changes
     const now = Date.now();
@@ -159,9 +143,6 @@ export class ElementWatcher extends Evented {
       }
       await this.searchInIframes(retryTimes);
     } else {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Iframe search recently attempted, scheduling retry');
-      }
       this.scheduleRetry(retryTimes);
     }
     
@@ -269,35 +250,22 @@ export class ElementWatcher extends Evented {
   private async searchInIframes(retryTimes: number): Promise<void> {
     // ULTRA-AGGRESSIVE GUARD: Block ALL iframe searches if element already found
     if (this.hasFoundElement) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Element already found, skipping iframe search');
-        console.trace('[ElementWatcher] Stack trace for repeated call:');
-      }
       return;
     }
 
     // Prevent multiple concurrent iframe searches
     if (this.isSearchingIframes) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Already searching iframes, skipping');
-      }
       return;
     }
 
     // Prevent iframe search if already attempted
     if (this.iframeSearchDisabled) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Iframe search already attempted, skipping');
-      }
       return;
     }
 
     this.isSearchingIframes = true;
     this.iframeSearchDisabled = true; // Temporarily disable to prevent rapid re-searches
     this.lastIframeSearchTime = Date.now(); // Track when we searched
-    if (!this.isLauncher) {
-      console.log('[ElementWatcher] Starting iframe search for:', this.parsedSelector.mainSelector);
-    }
     try {
       const iframeElementInfo = await iframeUtils.searchElementInIframes(
         this.parsedSelector.mainSelector,
@@ -307,40 +275,23 @@ export class ElementWatcher extends Evented {
         // Double-check iframe visibility before triggering ELEMENT_FOUND
         // (iframe might have become hidden between search and trigger)
         if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
-          if (!this.isLauncher) {
-            console.log('[ElementWatcher] Element found in iframe but iframe is now hidden, skipping');
-          }
           // Continue searching - iframe might become visible later
           this.scheduleRetry(retryTimes);
           return;
         }
 
-        if (!this.isLauncher) {
-          console.log('[ElementWatcher] Element found in iframe:', iframeElementInfo);
-        }
         this.element = iframeElementInfo.element;
         this.iframeElementInfo = iframeElementInfo;
         this.hasFoundElement = true;
         this.trigger(AppEvents.ELEMENT_FOUND, iframeElementInfo.element);
         return;
-      } else {
-        if (!this.isLauncher) {
-          console.log('[ElementWatcher] Element not found in any iframe');
-        }
       }
     } catch (error) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Error during iframe search:', error);
-      }
       // If iframe search fails, continue with normal retry logic
     } finally {
       this.isSearchingIframes = false;
     }
 
-    // If not found in iframes either, schedule retry
-    if (!this.isLauncher) {
-      console.log('[ElementWatcher] Scheduling retry', retryTimes + 1);
-    }
     this.scheduleRetry(retryTimes);
   }
 
@@ -365,9 +316,6 @@ export class ElementWatcher extends Evented {
   private scheduleRetry(retryTimes: number) {
     // Don't schedule retry if element already found
     if (this.hasFoundElement) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Element already found, skipping retry');
-      }
       return;
     }
     
@@ -405,10 +353,6 @@ export class ElementWatcher extends Evented {
       return;
     }
 
-    if (!this.isLauncher) {
-      console.log('[ElementWatcher] Starting iframe src change monitoring');
-    }
-
     // Store current iframe srcs to detect changes
     const iframeSrcs = new Map<HTMLIFrameElement, string>();
 
@@ -424,10 +368,6 @@ export class ElementWatcher extends Evented {
         const previousSrc = iframeSrcs.get(iframe);
 
         if (previousSrc !== undefined && previousSrc !== currentSrc) {
-          if (!this.isLauncher) {
-            console.log('[ElementWatcher] Detected iframe src change:', previousSrc, '->', currentSrc);
-          }
-
           // Re-enable iframe search when src changes
           this.iframeSearchDisabled = false;
           this.lastIframeSearchTime = 0; // Force immediate re-search
@@ -435,9 +375,6 @@ export class ElementWatcher extends Evented {
           // Trigger a new search after a short delay to allow new content to start loading
           setTimeout(() => {
             if (!this.hasFoundElement) {
-              if (!this.isLauncher) {
-                console.log('[ElementWatcher] Re-searching iframes after src change');
-              }
               this.findElement(0).catch((error) => {
                 console.error('[ElementWatcher] Error in findElement after iframe src change:', error);
               }); // Reset retry count for new search
@@ -499,9 +436,6 @@ export class ElementWatcher extends Evented {
    */
   private stopIframeMonitoring(): void {
     if (this.iframeMonitor) {
-      if (!this.isLauncher) {
-        console.log('[ElementWatcher] Stopping iframe src change monitoring');
-      }
       this.iframeMonitor.disconnect();
 
       // Clear any intervals
@@ -572,7 +506,6 @@ export class ElementWatcher extends Evented {
       try {
         const iframeDoc = this.iframeElementInfo.iframe.contentDocument;
         if (!iframeDoc || !iframeDoc.body) {
-          console.log('[ElementWatcher] Cannot access iframe document for visibility check');
           return false;
         }
         
@@ -588,11 +521,10 @@ export class ElementWatcher extends Evented {
         }
         return true;
       } catch (error) {
-        console.log('[ElementWatcher] Error checking iframe element visibility:', error);
         return false;
       }
     }
-    
+
     // For main document elements, use the standard isVisible function
     return await isVisible(element);
   }
@@ -626,7 +558,6 @@ export class ElementWatcher extends Evented {
         return true;
       } catch (error) {
         // If we can't access the iframe document, assume element is invalid
-        console.log('[ElementWatcher] Cannot access iframe document, element invalid:', error);
         return false;
       }
     }
@@ -706,7 +637,7 @@ export class ElementWatcher extends Evented {
           }
         }
       } catch (error) {
-        console.log('[ElementWatcher] Error querying customSelector, falling back to finderV2:', error);
+        // fall through to finderV2
       }
     }
     

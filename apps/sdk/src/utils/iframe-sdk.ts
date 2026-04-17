@@ -40,61 +40,41 @@ export class IframeSDK {
    * Initialize the iframe SDK
    */
   init(): void {
-    console.log('[IframeSDK] === INITIALIZING IFRAME SDK ===');
-    console.log('[IframeSDK] Window available:', !!window);
-    console.log('[IframeSDK] Window parent available:', !!(window && window.parent));
-    
     if (this.messageListener) {
-      console.log('[IframeSDK] Already initialized');
       return; // Already initialized
     }
 
     this.messageListener = (event: MessageEvent) => {
-      console.log('[IframeSDK] === MESSAGE RECEIVED ===');
-      console.log('[IframeSDK] Event source:', event.source);
-      console.log('[IframeSDK] Event origin:', event.origin);
-      console.log('[IframeSDK] Event data:', event.data);
-      
       // Only process messages from parent window
       if (!window || event.source !== window.parent) {
-        console.log('[IframeSDK] Message not from parent, ignoring');
         return;
       }
 
       try {
         const message = event.data;
-        
+
         if (!message.type || !message.type.startsWith('usertour-')) {
-          console.log('[IframeSDK] Message not a usertour message, ignoring');
           return;
         }
 
-        console.log('[IframeSDK] Processing message type:', message.type);
         switch (message.type) {
           case 'usertour-find-element':
-            console.log('[IframeSDK] === HANDLING FIND ELEMENT MESSAGE ===');
-            console.log('[IframeSDK] Message data:', message);
             this.handleFindElement(message);
             break;
           case 'usertour-step-action':
-            console.log('[IframeSDK] === HANDLING STEP ACTION MESSAGE ===');
-            console.log('[IframeSDK] Step action data:', message);
             this.handleStepAction(message.stepId, message.action, message.data);
             break;
         }
       } catch (error) {
-        console.log('[IframeSDK] Error handling message:', error);
         logger.error('Error processing message in iframe SDK:', error);
       }
     };
 
     if (window) {
       window.addEventListener('message', this.messageListener);
-      console.log('[IframeSDK] Message listener added');
     }
 
     // Notify parent that iframe SDK is ready
-    console.log('[IframeSDK] Notifying parent that SDK is ready');
     this.sendMessageToParent({
       type: 'usertour-iframe-ready',
     });
@@ -104,16 +84,11 @@ export class IframeSDK {
    * Send message to parent window
    */
   sendMessageToParent(message: IframeSDKMessage): void {
-    console.log('[IframeSDK] Sending message to parent:', message);
     try {
       if (window && window.parent) {
         window.parent.postMessage(message, '*');
-        console.log('[IframeSDK] Message sent successfully');
-      } else {
-        console.log('[IframeSDK] Window or parent not available');
       }
     } catch (error) {
-      console.log('[IframeSDK] Error sending message to parent:', error);
       logger.error('Error sending message to parent:', error);
     }
   }
@@ -122,33 +97,18 @@ export class IframeSDK {
    * Find element in iframe and notify parent
    */
   private handleFindElement(elementInfo: any): void {
-    console.log('[IframeSDK] === HANDLE FIND ELEMENT ===');
-    console.log('[IframeSDK] Element info received:', elementInfo);
-    console.log('[IframeSDK] Step ID:', elementInfo.stepId);
-    console.log('[IframeSDK] Actions:', elementInfo.actions);
-    console.log('[IframeSDK] Selector:', elementInfo.selector);
-    
     if (!elementInfo?.selector) {
-      console.log('[IframeSDK] No selector provided');
       return;
     }
 
     try {
       const element = this.findElementBySelector(elementInfo.selector);
-      console.log('[IframeSDK] Element search result:', element);
-      
+
       if (element) {
-        console.log('[IframeSDK] Element found:', element);
-        console.log('[IframeSDK] Element tag:', element.tagName);
-        console.log('[IframeSDK] Element class:', element.className);
-        console.log('[IframeSDK] Element id:', element.id);
-        
-        // Set up element interaction for step progression
         if (elementInfo.stepId) {
-          console.log('[IframeSDK] Setting up element interaction with actions:', elementInfo.actions);
           this.setupElementInteraction(element, elementInfo.stepId, elementInfo.actions);
         }
-        
+
         this.sendMessageToParent({
           type: 'usertour-element-found',
           element: {
@@ -158,7 +118,6 @@ export class IframeSDK {
           },
         });
       } else {
-        console.log('[IframeSDK] Element not found');
         this.sendMessageToParent({
           type: 'usertour-element-not-found',
           element: {
@@ -169,7 +128,6 @@ export class IframeSDK {
         });
       }
     } catch (error) {
-      console.log('[IframeSDK] Error finding element:', error);
       logger.error('Error finding element in iframe:', error);
       this.sendMessageToParent({
         type: 'usertour-element-not-found',
@@ -261,38 +219,23 @@ export class IframeSDK {
    * This mimics the useTargetActions hook from the parent page
    */
   setupElementInteraction(element: Element, stepId: string, actions?: any[]): void {
-    console.log('[IframeSDK] === SETUP ELEMENT INTERACTION ===');
-    console.log('[IframeSDK] Element:', element);
-    console.log('[IframeSDK] Step ID:', stepId);
-    console.log('[IframeSDK] Actions:', actions);
-    console.log('[IframeSDK] Actions length:', actions?.length || 0);
-    
     if (!element) {
-      console.log('[IframeSDK] No element provided for interaction setup');
       return;
     }
 
     // Set up click listener to handle step actions
     const clickHandler = (_event: Event) => {
-      console.log('[IframeSDK] === ELEMENT CLICKED ===');
-      console.log('[IframeSDK] Element clicked, handling step actions:', stepId);
-      console.log('[IframeSDK] Available actions:', actions);
-      
-      // If there are specific actions, send them to parent
       if (actions && actions.length > 0) {
-        console.log('[IframeSDK] Sending actions to parent:', actions);
         const message = {
           type: 'usertour-step-action' as const,
           stepId,
           action: 'handleActions',
           data: { actions }
         };
-        console.log('[IframeSDK] Message to parent:', message);
         this.sendMessageToParent(message);
       } else {
         // Default behavior: complete the step
-        console.log('[IframeSDK] No specific actions, completing step');
-        this.completeStep(stepId, { 
+        this.completeStep(stepId, {
           action: 'click',
           element: element.tagName,
           timestamp: Date.now()
@@ -301,31 +244,19 @@ export class IframeSDK {
     };
 
     // Add click listener
-    console.log('[IframeSDK] Adding click listener to element');
     element.addEventListener('click', clickHandler);
-    
+
     // Store reference for cleanup
     (element as any).__usertour_click_handler = clickHandler;
     (element as any).__usertour_step_id = stepId;
     (element as any).__usertour_actions = actions;
-    
-    console.log('[IframeSDK] Click listener added to element');
-    console.log('[IframeSDK] Element properties set:', {
-      hasClickHandler: !!(element as any).__usertour_click_handler,
-      stepId: (element as any).__usertour_step_id,
-      actions: (element as any).__usertour_actions
-    });
   }
 
   /**
    * Find element by selector in iframe
    */
   private findElementBySelector(selector: ElementSelectorPropsData): Element | null {
-    console.log('[IframeSDK] === FIND ELEMENT BY SELECTOR ===');
-    console.log('[IframeSDK] Selector received:', selector);
-    
     if (!document) {
-      console.log('[IframeSDK] Document not available');
       return null;
     }
 
@@ -333,35 +264,24 @@ export class IframeSDK {
       // Parse selector to handle <<< pattern
       const parsed = parseSelectorWithCondition(selector);
       const mainSelector = parsed.mainSelector;
-      
+
       // Use custom selector if available
       if (mainSelector.customSelector) {
-        console.log('[IframeSDK] Using custom selector:', mainSelector.customSelector);
-        const element = document.querySelector(mainSelector.customSelector);
-        console.log('[IframeSDK] Custom selector result:', element);
-        return element;
+        return document.querySelector(mainSelector.customSelector);
       }
 
       // Use first selector from selectors array
       if (mainSelector.selectors && mainSelector.selectors.length > 0) {
-        console.log('[IframeSDK] Using first selector from array:', mainSelector.selectors[0]);
-        const element = document.querySelector(mainSelector.selectors[0]);
-        console.log('[IframeSDK] Selector array result:', element);
-        return element;
+        return document.querySelector(mainSelector.selectors[0]);
       }
-      
+
       // Use selectorsList if available
       if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
-        console.log('[IframeSDK] Using first selector from selectorsList:', mainSelector.selectorsList[0]);
-        const element = document.querySelector(mainSelector.selectorsList[0]);
-        console.log('[IframeSDK] SelectorsList result:', element);
-        return element;
+        return document.querySelector(mainSelector.selectorsList[0]);
       }
-      
-      console.log('[IframeSDK] No valid selector found');
+
       return null;
     } catch (error) {
-      console.log('[IframeSDK] Error in findElementBySelector:', error);
       logger.error('Error finding element by selector:', error);
       return null;
     }

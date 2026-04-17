@@ -55,8 +55,6 @@ export class Launcher extends BaseContent<LauncherStore> {
 
       // If element is detached or has zero dimensions, re-find it
       if (!this.isRefindingElement && (!isConnected || (boundingRect && boundingRect.top === 0 && boundingRect.left === 0 && boundingRect.width === 0 && boundingRect.height === 0))) {
-        console.log('[Launcher] Detected stale element, re-activating auto-start conditions and re-finding element');
-
         // Set flag to prevent multiple simultaneous re-find operations
         this.isRefindingElement = true;
 
@@ -166,7 +164,6 @@ export class Launcher extends BaseContent<LauncherStore> {
       if (iframeElementInfo) {
         // Check if iframe is CSS-visible before processing
         if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
-          console.log('[Launcher] Iframe is not CSS-visible, skipping element processing');
           // Reset element watcher state so it continues searching
           if (this.watcher) {
             this.watcher.reset();
@@ -191,20 +188,17 @@ export class Launcher extends BaseContent<LauncherStore> {
         // Scroll iframe and element into view
         const { smoothScroll } = await import('@usertour-packages/dom');
         // First scroll the iframe itself into view on the main page
-        console.log('[Launcher] Scrolling iframe into view');
         await smoothScroll(iframeElementInfo.iframe, { block: 'center' });
 
         // Then scroll the element inside the iframe into view and wait for it to complete
         try {
           const targetElement = iframeElementInfo.element;
           if (targetElement && targetElement.isConnected) {
-            console.log('[Launcher] Scrolling element inside iframe into view');
             await this.waitForIframeElementScroll(targetElement, iframeElementInfo, {
               behavior: 'smooth',
               block: 'center',
               inline: 'nearest'
             });
-            console.log('[Launcher] Element inside iframe finished scrolling');
 
             // Update the virtual element position after scrolling completes
             // The element's position relative to the iframe has changed, so we need to recalculate
@@ -215,7 +209,6 @@ export class Launcher extends BaseContent<LauncherStore> {
             await new Promise(resolve => requestAnimationFrame(resolve));
           }
         } catch (error) {
-          console.log('[Launcher] Error scrolling element inside iframe:', error);
           // Element might be in cross-origin iframe, which is fine - we already scrolled the iframe
         }
       } else {
@@ -430,7 +423,7 @@ export class Launcher extends BaseContent<LauncherStore> {
           iframeWindow = iframeElementInfo.iframe.contentWindow;
           iframeDoc = iframeElementInfo.iframe.contentDocument;
         } catch (error) {
-          console.log('[Launcher] Cannot access iframe window for scroll detection');
+          // Cross-origin iframe, cannot access contentWindow
         }
       }
 
@@ -459,7 +452,6 @@ export class Launcher extends BaseContent<LauncherStore> {
           if (scrollTop === lastScrollTop && scrollLeft === lastScrollLeft) {
             if (same++ > 2) {
               clearTimeout(timeoutId);
-              console.log('[Launcher] Iframe scroll completed, scroll position stabilized');
               resolve();
               return;
             }
@@ -476,7 +468,6 @@ export class Launcher extends BaseContent<LauncherStore> {
           if (elementTop === lastScrollTop) {
             if (same++ > 5) {
               clearTimeout(timeoutId);
-              console.log('[Launcher] Iframe element scroll completed, position stabilized');
               resolve();
               return;
             }
@@ -512,7 +503,6 @@ export class Launcher extends BaseContent<LauncherStore> {
       // Get the target element's position within the iframe
       const targetElement = iframeElementInfo.element;
       if (!targetElement || !targetElement.isConnected) {
-        console.log('[Launcher] Target element no longer connected, skipping position update');
         return;
       }
 
@@ -533,8 +523,6 @@ export class Launcher extends BaseContent<LauncherStore> {
 
       // Update the stored iframe rect to keep it in sync
       iframeElementInfo.iframeRect = iframeRect;
-    } else {
-      console.log('[Launcher] Virtual element not found for position update');
     }
   }
 
@@ -545,8 +533,6 @@ export class Launcher extends BaseContent<LauncherStore> {
    * @private
    */
   private setupIframePositionUpdate(iframeElementInfo: IframeElementInfo): void {
-    console.log('[Launcher] Setting up iframe position update listeners');
-    
     // Clean up any existing listeners first
     this.cleanupIframePositionUpdate();
     
@@ -661,17 +647,13 @@ export class Launcher extends BaseContent<LauncherStore> {
           (iframeElementInfo.iframe as any).__usertour_body_scroll_handler = bodyScrollHandler;
         }
         
-        console.log('[Launcher] Set up scroll/resize listeners on iframe window');
       }
     } catch (error) {
       // Cross-origin iframe, cannot access contentWindow
-      console.log('[Launcher] Cannot access iframe contentWindow for scroll listeners (cross-origin)');
     }
     
     // Store cleanup function
     this.iframePositionUpdateCleanup = () => {
-      console.log('[Launcher] Cleaning up iframe position update listeners');
-      
       // Stop the update loop
       stopUpdateLoop();
       
@@ -706,7 +688,6 @@ export class Launcher extends BaseContent<LauncherStore> {
           }
         } catch (error) {
           // Cross-origin iframe, ignore cleanup errors
-          console.log('[Launcher] Error cleaning up iframe listeners (cross-origin):', error);
         }
       }
       

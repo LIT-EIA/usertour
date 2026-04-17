@@ -253,10 +253,8 @@ const pendingSelectors = new Set<string>();
  * are properly re-evaluated on the next auto-start cycle.
  */
 export const clearClickCache = () => {
-  console.log('[CLICK-CACHE] Clearing click cache, size before:', cache.size);
   cache.clear();
   pendingSelectors.clear();
-  console.log('[CLICK-CACHE] Click cache cleared');
 };
 
 /**
@@ -290,9 +288,7 @@ export const attachPendingClickListeners = () => {
     const el = document.querySelector(selector) as HTMLElement;
     if (el) {
       // Found the element! Attach click listener
-      console.log('[CLICK-PENDING] Found pending element, attaching listener');
       const onClick = () => {
-        console.log('[CLICK-CONDITION] ✓✓ CLICK EVENT FIRED');
         cache.set(el, true);
         cache.set(selectorKey, true);
         pendingSelectors.delete(selectorKey);
@@ -330,9 +326,7 @@ const isClicked = (el: HTMLElement, elementData?: any) => {
   }
 
   // Element hasn't been clicked yet - attach listener
-  console.log('[CLICK-CONDITION] Attaching new click listener to element');
   const onClick = () => {
-    console.log('[CLICK-CONDITION] ✓✓ CLICK EVENT FIRED');
     cache.set(el, true);
     // Also cache by selector if available
     if (elementData) {
@@ -393,11 +387,6 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
         el = iframeElementInfo.element as HTMLElement;
       }
     }
-  }
-
-  // Only log when element is NOT found (this indicates a potential issue)
-  if (!el && data.logic === 'clicked') {
-    console.log('[ELEMENT-FINDER] Click condition element NOT FOUND');
   }
 
   const isPresent = el ? await isVisible(el) : false;
