@@ -50,3 +50,5 @@ stats.html
 
 # Claude Code
 .claude/
+
+/apps/server/node-compile-cache
