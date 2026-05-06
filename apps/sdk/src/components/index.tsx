@@ -14,7 +14,7 @@ import '../index.css';
  * Error handler for widget errors
  * Logs the error but does not crash the customer's site
  */
-const handleWidgetError = (error: Error, info: React.ErrorInfo) => {
+const handleWidgetError = (error: unknown, info: React.ErrorInfo) => {
   logger.error('Widget error:', error, info.componentStack);
 };
 
