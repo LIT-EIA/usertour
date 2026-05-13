@@ -1,8 +1,7 @@
-import { PopperMadeWith } from '@usertour-packages/sdk';
+import { PopperContentFrame, PopperMadeWith } from '@usertour-packages/sdk';
 import {
   LauncherContentWrapper,
   LauncherPopper,
-  LauncherPopperContent,
   LauncherPopperContentPotal,
   LauncherRoot,
 } from '@usertour-packages/sdk/src/launcher';
@@ -10,6 +9,7 @@ import {
   ContentEditorClickableElement,
   ContentEditorSerialize,
 } from '@usertour-packages/shared-editor';
+import { AssetAttributes } from '@usertour-packages/frame';
 import {
   BizUserInfo,
   LauncherActionType,
@@ -39,6 +39,7 @@ type LauncherWidgetCoreProps = {
   userInfo: BizUserInfo;
   handleActive: () => void;
   removeBranding: boolean;
+  assets: AssetAttributes[] | undefined;
 };
 
 type LauncherHandlers = {
@@ -115,6 +116,7 @@ const usePopperMouseLeave = (
   popperRef: React.RefObject<HTMLDivElement>,
   actionType: LauncherActionType,
   setOpen: (open: boolean) => void,
+  open: boolean,
 ) => {
   useEffect(() => {
     const popper = popperRef.current;
@@ -130,7 +132,7 @@ const usePopperMouseLeave = (
     return () => {
       off(popper, 'mouseleave', handlePopperMouseLeave);
     };
-  }, [actionType, setOpen]);
+  }, [actionType, setOpen, open]);
 };
 
 // Components
@@ -148,14 +150,14 @@ const LauncherTooltip = ({
   popperRef: React.RefObject<HTMLDivElement>;
 }) => (
   <LauncherPopperContentPotal ref={popperRef}>
-    <LauncherPopperContent>
+    <PopperContentFrame>
       <ContentEditorSerialize
         contents={data.tooltip.content}
         onClick={handleOnClick}
         userInfo={userInfo}
       />
       {!removeBranding && <PopperMadeWith />}
-    </LauncherPopperContent>
+    </PopperContentFrame>
   </LauncherPopperContentPotal>
 );
 
@@ -169,6 +171,7 @@ const LauncherWidgetCore = ({
   userInfo,
   handleActive,
   removeBranding,
+  assets,
 }: LauncherWidgetCoreProps) => {
   const actionType = data?.behavior?.actionType;
   const [open, setOpen] = useState(false);
@@ -186,7 +189,7 @@ const LauncherWidgetCore = ({
   );
   useEventHandlers(data, launcherRef, triggerRef, handlers);
   useClickOutside(open, popperRef, setOpen);
-  usePopperMouseLeave(popperRef, actionType, setOpen);
+  usePopperMouseLeave(popperRef, actionType, setOpen, open);
 
   return (
     <LauncherRoot themeSettings={themeSettings} data={data}>
@@ -198,6 +201,8 @@ const LauncherWidgetCore = ({
         }
         zIndex={zIndex}
         open={open}
+        assets={assets}
+        isIframeMode={true}
       >
         <LauncherTooltip
           data={data}
@@ -220,7 +225,7 @@ export const LauncherWidget = ({ launcher }: LauncherWidgetProps) => {
   if (!store) {
     return <></>;
   }
-  const { userInfo, content, zIndex, themeSettings, triggerRef, openState, sdkConfig } = store;
+  const { userInfo, content, zIndex, themeSettings, triggerRef, openState, sdkConfig, assets } = store;
 
   const data = content?.data as LauncherData | undefined;
 
@@ -239,6 +244,7 @@ export const LauncherWidget = ({ launcher }: LauncherWidgetProps) => {
       userInfo={userInfo as BizUserInfo}
       el={triggerRef}
       removeBranding={sdkConfig.removeBranding}
+      assets={assets}
     />
   );
 };

@@ -3,7 +3,7 @@ import { finderV2 } from '@usertour-packages/finder';
 import { ElementSelectorPropsData } from '@usertour/types';
 import { isVisible } from '../utils/conditions';
 import { AppEvents } from '../utils/event';
-import { document } from '../utils/globals';
+import { document, window } from '../utils/globals';
 import { Evented } from './evented';
 import { DEFAULT_TARGET_MISSING_SECONDS } from './common';
 import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
@@ -296,6 +296,26 @@ export class ElementWatcher extends Evented {
   }
 
   /**
+   * Synchronous launcher-visibility check exposed for scroll listeners.
+   * Returns false when the target element is no longer sufficiently visible.
+   */
+  checkLauncherVisibilitySync(): boolean {
+    if (!this.isLauncher) return true;
+    if (!this.element) return false;
+    return this.checkLauncherTargetVisible(this.element as HTMLElement);
+  }
+
+  /**
+   * Returns true when the element has been found but is no longer connected to
+   * the document (i.e. it was removed from the DOM). Returns false when the
+   * element has not been found yet (null) so callers can distinguish "missing"
+   * from "removed".
+   */
+  isTargetDisconnected(): boolean {
+    return !!this.element && !this.element.isConnected;
+  }
+
+  /**
    * Gets iframe element information if element is in iframe
    */
   getIframeElementInfo(): IframeElementInfo | null {
@@ -496,11 +516,108 @@ export class ElementWatcher extends Evented {
   }
 
   /**
+   * Returns true when more than 50 % of the launcher's target element is visible.
+   *
+   * Samples a 4×4 grid of points across the element.  A point counts as visible
+   * when it lies inside the viewport AND document.elementFromPoint returns the
+   * target element (or a descendant) rather than an overlapping element such as
+   * a sticky header or an open dropdown.
+   *
+   * For iframe targets every point is translated from iframe-relative coordinates
+   * to main-document viewport coordinates before both checks are applied.
+   */
+  private checkLauncherTargetVisible(element: HTMLElement): boolean {
+    if (!document || !window) return true;
+
+    try {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let elLeft: number;
+      let elTop: number;
+      let elWidth: number;
+      let elHeight: number;
+
+      if (this.iframeElementInfo) {
+        const iframeRect = this.iframeElementInfo.iframe.getBoundingClientRect();
+        const elRect = element.getBoundingClientRect();
+        elLeft = iframeRect.left + elRect.left;
+        elTop = iframeRect.top + elRect.top;
+        elWidth = elRect.width;
+        elHeight = elRect.height;
+      } else {
+        const rect = element.getBoundingClientRect();
+        elLeft = rect.left;
+        elTop = rect.top;
+        elWidth = rect.width;
+        elHeight = rect.height;
+      }
+
+      if (elWidth <= 0 || elHeight <= 0) return false;
+
+      const GRID = 4;
+      const totalCount = GRID * GRID;
+      let visibleCount = 0;
+
+      for (let row = 0; row < GRID; row++) {
+        for (let col = 0; col < GRID; col++) {
+          const x = elLeft + (col + 0.5) * (elWidth / GRID);
+          const y = elTop + (row + 0.5) * (elHeight / GRID);
+
+          // Points outside the viewport are never visible
+          if (x < 0 || x > viewportWidth || y < 0 || y > viewportHeight) {
+            continue;
+          }
+
+          const topEl = document.elementFromPoint(x, y);
+          if (!topEl) continue;
+
+          if (this.iframeElementInfo) {
+            if (topEl !== this.iframeElementInfo.iframe) continue;
+            // The main document sees the iframe element, but something inside
+            // the iframe (a modal, sticky header, nested iframe, …) may still
+            // be covering the target.  Check inside the iframe's own document.
+            try {
+              const iframeDoc = this.iframeElementInfo.iframe.contentDocument;
+              if (iframeDoc) {
+                const iframeRect = this.iframeElementInfo.iframe.getBoundingClientRect();
+                const ix = x - iframeRect.left;
+                const iy = y - iframeRect.top;
+                const innerEl = iframeDoc.elementFromPoint(ix, iy);
+                if (innerEl && (element === innerEl || element.contains(innerEl))) visibleCount++;
+              } else {
+                // Can't inspect the iframe (cross-origin) — treat as visible.
+                visibleCount++;
+              }
+            } catch {
+              // Cross-origin iframe — fall back to treating the point as visible.
+              visibleCount++;
+            }
+          } else {
+            if (element === topEl || element.contains(topEl)) visibleCount++;
+          }
+        }
+      }
+
+      // Visible when strictly more than 50 % of sample points are unoccluded
+      return visibleCount / totalCount > 0.5;
+    } catch {
+      return true;
+    }
+  }
+
+  /**
    * Checks element visibility in the correct document context
    * For iframe elements, checks visibility within the iframe's document
    * For main document elements, uses the standard isVisible function
    */
   private async checkElementVisibilityInContext(element: HTMLElement): Promise<boolean> {
+    // Launchers use a dedicated viewport + occlusion check instead of the
+    // floating-ui referenceHidden middleware (which only handles scroll clipping).
+    if (this.isLauncher) {
+      return this.checkLauncherTargetVisible(element);
+    }
+
     // For iframe elements, check visibility within the iframe's document
     if (this.iframeElementInfo) {
       try {
@@ -508,14 +625,14 @@ export class ElementWatcher extends Evented {
         if (!iframeDoc || !iframeDoc.body) {
           return false;
         }
-        
+
         // Use computePosition with the iframe's document body as reference
         const { computePosition, hide } = await import('@floating-ui/dom');
         const { middlewareData } = await computePosition(element, iframeDoc.body, {
           strategy: 'fixed',
           middleware: [hide()],
         });
-        
+
         if (middlewareData?.hide?.referenceHidden) {
           return false;
         }
