@@ -4,7 +4,7 @@ FROM node:22.13-alpine AS server-builder
 WORKDIR /app
 
 # Set npm registry and install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 
 # Copy server files directly
 COPY apps/server ./

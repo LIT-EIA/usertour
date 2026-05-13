@@ -22,6 +22,7 @@ export default async function compileEmailTemplate({ fileName, data }: Props): P
       : join('src/email-templates', fileName);
 
   const mjMail = await promises.readFile(templatePath, 'utf8');
-  const template = mjml2html(mjMail).html;
+  const result = await mjml2html(mjMail);
+  const template = result.html;
   return handlebars.compile(template)(data).toString();
 }
