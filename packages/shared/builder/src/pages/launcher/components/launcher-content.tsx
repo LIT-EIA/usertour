@@ -1,4 +1,5 @@
 import { EXTENSION_CONTENT_POPPER } from '@usertour-packages/constants';
+import { useContentListContext } from '@usertour-packages/contexts';
 import { PopperMadeWith } from '@usertour-packages/sdk';
 import {
   LauncherContainer,
@@ -32,6 +33,7 @@ export const LauncherContentMain = forwardRef<HTMLDivElement, LauncherContentPro
     const { zIndex, triggerRef, theme, data, onValueChange, onCustomUploadRequest } = props;
     const launcherRef = useRef<HTMLDivElement>(null);
     const { projectId } = useBuilderContext();
+    const { contents } = useContentListContext();
 
     const triggerReference = useMemo(
       () => (data.tooltip.reference === LauncherPositionType.TARGET ? triggerRef : launcherRef),
@@ -55,6 +57,7 @@ export const LauncherContentMain = forwardRef<HTMLDivElement, LauncherContentPro
                     ContentActionsItemType.PAGE_NAVIGATE,
                     ContentActionsItemType.FLOW_START,
                   ]}
+                  contentList={contents}
                   projectId={projectId}
                   initialValue={
                     data.tooltip.content.length > 0
