@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@usertour-packages/dropdown-menu';
-import { ArrowRightIcon, CloseCircleIcon, PlusIcon } from '@usertour-packages/icons';
+import { ArrowRightIcon, CloseCircleIcon, CloseIcon, PlusIcon } from '@usertour-packages/icons';
 import { hasActionError } from '@usertour/helpers';
 import { ContentActionsItemType, RulesCondition } from '@usertour/types';
 import { ReactNode, useCallback, useEffect } from 'react';
@@ -17,6 +17,7 @@ import { ContentActionsCode } from './actions-code';
 import { ContentActionsContents } from './actions-content';
 import { ContentActionsDismiss } from './actions-dismis';
 import { ContentActionsNavigate } from './actions-navigate';
+import { ContentActionsSkip } from './actions-skip';
 import { ContentActionsStep } from './actions-step';
 
 const contentActionsItem = [
@@ -25,6 +26,12 @@ const contentActionsItem = [
     text: 'Go to step',
     IconElement: ArrowRightIcon,
     RulesElement: ContentActionsStep,
+  },
+  {
+    type: ContentActionsItemType.SKIP,
+    text: 'Skip',
+    IconElement: CloseIcon,
+    RulesElement: ContentActionsSkip,
   },
   {
     type: ContentActionsItemType.FLOW_DISMIS,
@@ -134,6 +141,7 @@ export const ContentActionsGroup = () => {
         if (conditions.find((cond) => cond.type === ContentActionsItemType.STEP_GOTO)) {
           return (
             item.type !== ContentActionsItemType.FLOW_DISMIS &&
+            item.type !== ContentActionsItemType.SKIP &&
             item.type !== ContentActionsItemType.FLOW_START
           );
         }
@@ -141,6 +149,7 @@ export const ContentActionsGroup = () => {
           conditions.find(
             (cond) =>
               cond.type === ContentActionsItemType.FLOW_DISMIS ||
+              cond.type === ContentActionsItemType.SKIP ||
               cond.type === ContentActionsItemType.FLOW_START,
           )
         ) {

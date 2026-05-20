@@ -2,7 +2,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { Button } from '@usertour-packages/button';
 import {
   ArrowRightIcon,
-  CloseCircleIcon,
+  CloseIcon,
   DeleteIcon,
   InsertColumnLeftIcon,
   InsertColumnRightIcon,
@@ -167,9 +167,15 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                         Go to step
                       </div>
                     </SelectItem>
+                    <SelectItem value="skip">
+                      <div className="flex">
+                        <CloseIcon className="flex-none mx-2 my-1" />
+                        <div className="grow">Skip</div>
+                      </div>
+                    </SelectItem>
                     <SelectItem value="dismiss">
                       <div className="flex">
-                        <CloseCircleIcon className="flex-none mx-2 my-1" />
+                        <CloseIcon className="flex-none mx-2 my-1" />
                         <div className="grow">Dismiss flow</div>
                       </div>
                     </SelectItem>

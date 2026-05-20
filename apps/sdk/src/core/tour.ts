@@ -1433,6 +1433,8 @@ export class Tour extends BaseContent<TourStore> {
         await this.show(action.data.stepCvid);
       } else if (action.type === ContentActionsItemType.FLOW_START) {
         await this.startNewContent(action.data.contentId, action.data.stepCvid);
+      } else if (action.type === ContentActionsItemType.SKIP) {
+        await this.handleClose(contentEndReason.USER_CLOSED);
       } else if (action.type === ContentActionsItemType.FLOW_DISMIS) {
         const currentStep = this.getCurrentStep();
         if (currentStep && !this.flowCompletedReported) {

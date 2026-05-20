@@ -232,6 +232,7 @@ export type ElementSelectorPropsData = {
 
 export enum ContentActionsItemType {
   STEP_GOTO = 'step-goto',
+  SKIP = 'skip',
   FLOW_DISMIS = 'flow-dismis',
   LAUNCHER_DISMIS = 'launcher-dismis',
   CHECKLIST_DISMIS = 'checklist-dismis',
