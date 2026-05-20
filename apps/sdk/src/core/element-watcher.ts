@@ -572,6 +572,14 @@ export class ElementWatcher extends Evented {
           const topEl = document.elementFromPoint(x, y);
           if (!topEl) continue;
 
+          // A usertour element (modal, tooltip, etc.) covering the launcher target
+          // should not be treated as an external overlay — count the point as visible.
+          const usertourWidget = document.getElementById('usertour-widget');
+          if (usertourWidget && usertourWidget.contains(topEl)) {
+            visibleCount++;
+            continue;
+          }
+
           if (this.iframeElementInfo) {
             if (topEl !== this.iframeElementInfo.iframe) continue;
             // The main document sees the iframe element, but something inside
