@@ -5,7 +5,9 @@ import { useContentBuilder } from '@/hooks/useContentBuilder';
 import { ArrowLeftIcon, DotsHorizontalIcon, EnterIcon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { EditIcon, PlaneIcon, SpinnerIcon } from '@usertour-packages/icons';
-import { cn } from '@usertour/helpers';
+import { buildConfig, cn, isPublishedInAllEnvironments } from '@usertour/helpers';
+import { ContentDataType } from '@usertour/types';
+import { useToast } from '@usertour-packages/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -13,7 +15,6 @@ import { ContentEditDropdownMenu } from '../shared/content-edit-dropmenu';
 import { ContentPublishForm } from '../shared/content-publish-form';
 import { ContentRenameForm } from '../shared/content-rename-form';
 import { useEnvironmentListContext } from '@/contexts/environment-list-context';
-import { isPublishedInAllEnvironments } from '@usertour/helpers';
 import { ContentDetailHeaderSkeleton } from './content-detail-header-skeleton';
 
 const navigations = [
@@ -72,6 +73,7 @@ export const ContentDetailHeader = () => {
   const { openBuilder } = useContentBuilder();
   const { environmentList } = useEnvironmentListContext();
   const [_, setSearchParams] = useSearchParams();
+  const { toast } = useToast();
 
   // Show skeleton if content is loading
   if (loading) {
@@ -81,6 +83,25 @@ export const ContentDetailHeader = () => {
   if (!contentType || !content) return null;
 
   const isDisabled = isPublishedInAllEnvironments(content, environmentList, version);
+
+  const handlePublishClick = () => {
+    if (
+      (content.type === ContentDataType.FLOW || content.type === ContentDataType.LAUNCHER) &&
+      version
+    ) {
+      const config = buildConfig(version.config);
+      if (config.enabledAutoStartRules && !config.autoStartRules.length) {
+        toast({
+          variant: 'destructive',
+          title: 'Auto-start condition required',
+          description:
+            'Please add at least one condition to the auto-start rule before publishing.',
+        });
+        return;
+      }
+    }
+    setOpenPublish(true);
+  };
 
   const handleBack = () => {
     navigator(`/env/${environment?.id}/${contentType}`);
@@ -133,9 +154,7 @@ export const ContentDetailHeader = () => {
               </Button>
               <Button
                 disabled={isDisabled || isViewOnly}
-                onClick={() => {
-                  setOpenPublish(true);
-                }}
+                onClick={handlePublishClick}
               >
                 <PlaneIcon className="mr-1" width={20} height={20} />
                 Publish
