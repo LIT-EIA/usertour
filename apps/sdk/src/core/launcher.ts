@@ -642,7 +642,7 @@ export class Launcher extends BaseContent<LauncherStore> {
     };
 
     const scheduleCheck = () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
+      if (rafId !== null) return;
       rafId = requestAnimationFrame(check);
     };
 
