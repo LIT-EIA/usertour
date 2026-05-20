@@ -28,6 +28,7 @@ export const defaultRulesItems: string[] = [
   'content',
   'element',
   'text-input',
+  'page-name',
   'text-fill',
   'time',
   'group',

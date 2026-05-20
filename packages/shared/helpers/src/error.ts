@@ -100,6 +100,15 @@ export const getTextInputError = (data: any) => {
   return ret;
 };
 
+export const getPageNameError = (data: any) => {
+  const ret = { showError: false, errorInfo: '' };
+  if (data.logic !== 'any' && data.logic !== 'empty' && data.value === '') {
+    ret.showError = true;
+    ret.errorInfo = 'Please enter a value';
+  }
+  return ret;
+};
+
 export const getTextFillError = (data: any) => {
   const ret = { showError: false, errorInfo: '' };
   if (!isValidSelector(data.elementData)) {
@@ -161,6 +170,7 @@ const errorHandlerMapping = {
   wait: getWaitError,
   element: getElementError,
   'text-input': getTextInputError,
+  'page-name': getPageNameError,
   'text-fill': getTextFillError,
   segment: getSegmentError,
   content: getContentError,

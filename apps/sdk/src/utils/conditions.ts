@@ -489,6 +489,42 @@ const isActiveRulesByTextInput = async (rules: RulesCondition) => {
   }
 };
 
+const isActiveRulesByPageName = (rules: RulesCondition) => {
+  const {
+    data: { logic, value },
+  } = rules;
+  if (!document) {
+    return false;
+  }
+
+  const pageTitle = document.title || '';
+
+  switch (logic) {
+    case StringConditionLogic.IS:
+      return pageTitle === value;
+    case StringConditionLogic.NOT:
+      return pageTitle !== value;
+    case StringConditionLogic.CONTAINS:
+      return pageTitle.includes(value);
+    case StringConditionLogic.NOT_CONTAIN:
+      return !pageTitle.includes(value);
+    case StringConditionLogic.STARTS_WITH:
+      return pageTitle.startsWith(value);
+    case StringConditionLogic.ENDS_WITH:
+      return pageTitle.endsWith(value);
+    case StringConditionLogic.MATCH:
+      return pageTitle.search(value) !== -1;
+    case StringConditionLogic.UNMATCH:
+      return pageTitle.search(value) === -1;
+    case StringConditionLogic.ANY:
+      return true;
+    case StringConditionLogic.EMPTY:
+      return !pageTitle;
+    default:
+      return false;
+  }
+};
+
 const fillCache = new Map();
 
 const isActiveRulesByTextFill = async (rules: RulesCondition) => {
@@ -557,6 +593,8 @@ const isActiveRules = async (rules: RulesCondition) => {
       return await isActiveRulesByElement(rules);
     case RulesType.TEXT_INPUT:
       return await isActiveRulesByTextInput(rules);
+    case RulesType.PAGE_NAME:
+      return isActiveRulesByPageName(rules);
     case RulesType.TEXT_FILL:
       return await isActiveRulesByTextFill(rules);
     default:
