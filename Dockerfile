@@ -42,7 +42,8 @@ RUN echo "window.ENV = {" > ./apps/web/public/config.js && \
     done && \
     echo "};" >> ./apps/web/public/config.js
 
-RUN pnpm install 
+RUN pnpm install
+RUN pnpm --filter @usertour/types build
 RUN pnpm --filter @usertour/web build
 RUN pnpm --filter @usertour/sdk build
 RUN pnpm --filter @usertour/sdk build:iife
