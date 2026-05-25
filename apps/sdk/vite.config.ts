@@ -80,8 +80,13 @@ export default defineConfig(({ command }) => {
     },
   };
 
+  const typeAliases = {
+    '@usertour/types': resolve(__dirname, '../../packages/shared/types/src/index.ts'),
+  };
+
   const devConfig: UserConfigExport = {
     plugins: [react(), mkcert()],
+    resolve: { alias: typeAliases },
     define: {
       ...defaultConfig.define,
     },
@@ -126,6 +131,7 @@ export default defineConfig(({ command }) => {
     }
     return {
       ...defaultConfig,
+      resolve: { alias: typeAliases },
       build: {
         ...defaultConfig.build,
         rollupOptions: {

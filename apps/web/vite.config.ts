@@ -9,12 +9,17 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@usertour/types': path.resolve(__dirname, '../../packages/shared/types/src/index.ts'),
     },
+  },
+  optimizeDeps: {
+    include: ['@remixicon/react'],
   },
   server: {
     port: 5174,
     open: true,
     https: false,
+    hmr: false,
     proxy: {
       '/graphql': {
         target: 'http://localhost:3000/graphql',

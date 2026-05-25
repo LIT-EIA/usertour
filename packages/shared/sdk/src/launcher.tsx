@@ -3,9 +3,15 @@ import { useComposedRefs } from '@usertour-packages/react-compose-refs';
 import { autoUpdate, ReferenceElement } from '@floating-ui/dom';
 import { useFloating, offset, shift, limitShift, hide, flip, size } from '@floating-ui/react-dom';
 import type { Placement } from '@floating-ui/dom';
-import { UserIcon } from '@usertour-packages/icons';
-import { InfoCircledIcon, RocketIcon } from '@radix-ui/react-icons';
-import { Align, LauncherData, LauncherDataType, Side, ThemeTypesSetting } from '@usertour/types';
+import { getRegisteredIconNames, getIcon } from '@usertour-packages/icons';
+import {
+  Align,
+  LauncherData,
+  LauncherDataType,
+  LauncherIconSource,
+  Side,
+  ThemeTypesSetting,
+} from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import {
   Popper,
@@ -22,11 +28,35 @@ function isNotNull<T>(value: T | null): value is T {
 
 type Boundary = Element | null;
 
-export const IconsList = [
-  { ICON: InfoCircledIcon, text: 'Info Circled', name: 'info-circled' },
-  { ICON: RocketIcon, text: 'Rocket', name: 'rocket' },
-  { ICON: UserIcon, text: 'User', name: 'user' },
-];
+const formatIconName = (name: string): string => {
+  return name
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const generateIconsList = () => {
+  const registeredNames = getRegisteredIconNames();
+  const icons = registeredNames
+    .map((name) => {
+      const icon = getIcon(name);
+      if (!icon) {
+        return null;
+      }
+      return {
+        ICON: icon,
+        text: formatIconName(name),
+        name,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+
+  return icons;
+};
+
+export const IconsList = generateIconsList();
 
 interface LauncherContentProps {
   type?: LauncherDataType;
@@ -46,6 +76,9 @@ interface LauncherContentProps {
   updatePositionStrategy?: 'optimized' | 'always';
   referenceRef?: React.RefObject<any>;
   iconType?: string;
+  iconSource?: LauncherIconSource;
+  iconUrl?: string;
+  buttonText?: string;
   zIndex: number;
 }
 
@@ -102,40 +135,68 @@ const LauncherContainer = forwardRef<HTMLDivElement, LauncherContainerProps>(
 
 LauncherContainer.displayName = 'LauncherContainer';
 
-// Add interfaces before the component definitions
 interface LauncherIconProps {
   type: LauncherDataType;
   iconType?: string;
-  ref?: React.Ref<HTMLDivElement>;
+  iconSource?: LauncherIconSource;
+  iconUrl?: string;
   width?: number;
   height?: number;
 }
 
-// UI Components
-const LauncherIcon = forwardRef<HTMLDivElement, LauncherIconProps>(
-  ({ type, iconType, width, height }, ref) => {
+const IconPreview = ({
+  iconUrl,
+  size,
+}: {
+  iconUrl: string;
+  size: number;
+}) => {
+  return (
+    <img
+      src={iconUrl}
+      alt="Custom icon"
+      width={size}
+      height={size}
+      style={{ objectFit: 'contain' }}
+    />
+  );
+};
+
+const LauncherIcon = ({
+  type,
+  iconType,
+  iconSource,
+  iconUrl,
+  width,
+  height,
+}: LauncherIconProps) => {
+  const iconSize = width ?? height ?? 24;
+
+  if (type === LauncherDataType.BEACON) {
+    return (
+      <>
+        <div className="usertour-widget-beacon__ping" />
+        <div className="usertour-widget-beacon__pong" />
+      </>
+    );
+  }
+
+  if (type === LauncherDataType.ICON) {
+    if (
+      (iconSource === LauncherIconSource.UPLOAD || iconSource === LauncherIconSource.URL) &&
+      iconUrl
+    ) {
+      return <IconPreview iconUrl={iconUrl} size={iconSize} />;
+    }
+
     const ActiveIcon = IconsList.find((item) => item.name === iconType)?.ICON;
-
-    if (type === LauncherDataType.BEACON) {
-      return (
-        <div ref={ref}>
-          <div className="usertour-widget-beacon__ping" />
-          <div className="usertour-widget-beacon__pong" />
-        </div>
-      );
+    if (ActiveIcon) {
+      return <ActiveIcon size={iconSize} />;
     }
+  }
 
-    if (type === LauncherDataType.ICON && ActiveIcon) {
-      return (
-        <div ref={ref}>
-          <ActiveIcon width={width} height={height} />
-        </div>
-      );
-    }
-
-    return null;
-  },
-);
+  return null;
+};
 
 LauncherIcon.displayName = 'LauncherIcon';
 
@@ -145,28 +206,71 @@ interface LauncherViewProps {
   dir?: string;
   type: LauncherDataType;
   iconType?: string;
+  iconSource?: LauncherIconSource;
+  iconUrl?: string;
+  buttonText?: string;
 }
 
+const BUTTON_INLINE_STYLES: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: 'var(--usertour-font-family)',
+  fontSize: 'var(--usertour-font-size)',
+  lineHeight: 'var(--usertour-line-height)',
+  fontWeight: 'var(--usertour-primary-font-weight)' as React.CSSProperties['fontWeight'],
+  borderRadius: 'var(--usertour-button-border-radius)',
+  minWidth: 'var(--usertour-button-min-width)',
+  paddingLeft: 'var(--usertour-button-px)',
+  paddingRight: 'var(--usertour-button-px)',
+  paddingTop:
+    'calc((var(--usertour-button-height) - var(--usertour-line-height)) / 2 - var(--usertour-primary-border-width))',
+  paddingBottom:
+    'calc((var(--usertour-button-height) - var(--usertour-line-height)) / 2 - var(--usertour-primary-border-width))',
+  backgroundColor: 'var(--usertour-primary)',
+  color: 'var(--usertour-primary-foreground)',
+  border: 'var(--usertour-primary-border-width) solid var(--usertour-primary-border-color)',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+  boxSizing: 'border-box',
+};
+
 const LauncherView = forwardRef<HTMLDivElement, LauncherViewProps>(
-  ({ className, style, dir, type, iconType }, ref) => {
+  ({ className, style, dir, type, iconType, iconSource, iconUrl, buttonText }, ref) => {
     const { themeSetting } = useLauncherContext();
-    let iconClass = 'usertour-widget-launcher--icon';
-    if (type === LauncherDataType.BEACON) {
-      iconClass = 'usertour-widget-beacon ';
-    }
     const isClick = true;
-    const classes = `usertour-widget-launcher ${iconClass} ${
-      isClick ? 'usertour-widget-launcher--activate-on-click' : ''
-    }`;
+
+    let classes = 'usertour-widget-launcher';
+
+    if (type === LauncherDataType.BUTTON) {
+      classes = `${classes} usertour-widget-launcher--button`;
+    } else if (type === LauncherDataType.BEACON) {
+      classes = `${classes} usertour-widget-beacon`;
+    } else {
+      classes = `${classes} usertour-widget-launcher--icon`;
+    }
+
+    if (isClick) {
+      classes = `${classes} usertour-widget-launcher--activate-on-click`;
+    }
+
+    const mergedStyle =
+      type === LauncherDataType.BUTTON ? { ...BUTTON_INLINE_STYLES, ...style } : style;
 
     return (
-      <div className={cn(classes, className)} ref={ref} style={style} dir={dir}>
-        <LauncherIcon
-          type={type}
-          iconType={iconType}
-          width={themeSetting?.launcherIcon.size}
-          height={themeSetting?.launcherIcon.size}
-        />
+      <div className={cn(classes, className)} ref={ref} style={mergedStyle} dir={dir}>
+        {type === LauncherDataType.BUTTON ? (
+          buttonText
+        ) : (
+          <LauncherIcon
+            type={type}
+            iconType={iconType}
+            iconSource={iconSource}
+            iconUrl={iconUrl}
+            width={themeSetting?.launcherIcon.size}
+            height={themeSetting?.launcherIcon.size}
+          />
+        )}
       </div>
     );
   },
@@ -191,6 +295,9 @@ const LauncherContent = forwardRef<HTMLDivElement, LauncherContentProps>((props,
     zIndex,
     type = LauncherDataType.ICON,
     iconType,
+    iconSource,
+    iconUrl,
+    buttonText,
   } = props;
 
   const referenceEl = referenceRef?.current as ReferenceElement;
@@ -208,12 +315,10 @@ const LauncherContent = forwardRef<HTMLDivElement, LauncherContentProps>((props,
   const detectOverflowOptions = {
     padding: collisionPadding,
     boundary: boundary.filter(isNotNull),
-    // with `strategy: 'fixed'`, this is the only way to get it to respect boundaries
     altBoundary: hasExplicitBoundaries,
   };
 
   const { refs, floatingStyles, isPositioned } = useFloating({
-    // default to `fixed` strategy so users don't have to pick and we also avoid focus scroll issues
     strategy: 'fixed',
     placement: desiredPlacement,
     whileElementsMounted: (...args) => {
@@ -251,14 +356,10 @@ const LauncherContent = forwardRef<HTMLDivElement, LauncherContentProps>((props,
   );
 
   function parseStyleString(styleString: string): Record<string, string> {
-    // Initialize result object
     const result: Record<string, string> = {};
-
-    // Split by semicolon and filter out empty strings
     const declarations = styleString.split(';').filter((declaration) => declaration.trim());
 
     for (const declaration of declarations) {
-      // Find the first colon to separate property and value
       const colonIndex = declaration.indexOf(':');
       if (colonIndex === -1) continue;
 
@@ -288,6 +389,9 @@ const LauncherContent = forwardRef<HTMLDivElement, LauncherContentProps>((props,
       dir={dir}
       type={type}
       iconType={iconType}
+      iconSource={iconSource}
+      iconUrl={iconUrl}
+      buttonText={buttonText}
     />
   );
 });
@@ -353,6 +457,9 @@ const LauncherContentWrapper = forwardRef<HTMLDivElement, LauncherContentProps>(
         avoidCollisions={alignType === 'auto'}
         type={data.type}
         iconType={data.iconType}
+        iconSource={data.iconSource}
+        iconUrl={data.iconUrl}
+        buttonText={data.buttonText}
         ref={ref}
         {...props}
       />

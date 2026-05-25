@@ -50,9 +50,19 @@ export enum LauncherPositionType {
   LAUNCHER = 'launcher',
 }
 
+export enum LauncherIconSource {
+  BUILTIN = 'builtin',
+  UPLOAD = 'upload',
+  URL = 'url',
+  NONE = 'none',
+}
+
 export type LauncherData = {
   type: LauncherDataType;
   iconType: string;
+  iconSource?: LauncherIconSource;
+  iconUrl?: string;
+  buttonText?: string;
   zIndex?: number;
   target: {
     element: ElementSelectorPropsData | undefined;
@@ -73,6 +83,7 @@ export type LauncherData = {
 export const DEFAULT_LAUNCHER_DATA: LauncherData = {
   type: LauncherDataType.ICON,
   iconType: 'user',
+  iconSource: LauncherIconSource.BUILTIN,
   target: {
     element: undefined,
     screenshot: undefined,

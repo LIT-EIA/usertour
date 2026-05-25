@@ -18,8 +18,12 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@usertour/types": ["../../packages/shared/types/src/index.ts"]
+    }
   },
-  "include": ["src"],
+  "include": ["src", "../../packages/shared/sdk/src", "../../packages/shared/editor/src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

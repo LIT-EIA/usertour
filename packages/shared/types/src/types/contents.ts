@@ -215,6 +215,7 @@ export enum LauncherDataType {
   BEACON = 'beacon',
   ICON = 'icon',
   HIDDEN = 'hidden',
+  BUTTON = 'button',
 }
 
 export type ElementSelectorPropsData = {

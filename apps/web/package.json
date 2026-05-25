@@ -25,6 +25,7 @@
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-slot": "^1.0.2",
     "@reduxjs/toolkit": "^1.9.5",
+    "@remixicon/react": "^4.6.0",
     "@tanstack/react-table": "^8.9.3",
     "@uiw/react-codemirror": "^4.23.0",
     "@usertour-packages/alert": "workspace:^",
