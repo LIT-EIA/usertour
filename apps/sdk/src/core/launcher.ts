@@ -53,7 +53,6 @@ export class Launcher extends BaseContent<LauncherStore> {
     // Check if triggerRef is stale (element detached from DOM)
     if (store?.triggerRef) {
       const isConnected = (store.triggerRef as any).isConnected;
-      const boundingRect = (store.triggerRef as any).getBoundingClientRect?.();
 
       // Also detect stale virtual iframe elements: the virtual div stays connected to
       // document.body even after the real element inside the iframe is removed, so
@@ -72,11 +71,11 @@ export class Launcher extends BaseContent<LauncherStore> {
         })()
       );
 
-      // If element is detached or has zero dimensions, re-find it.
-      // For virtual iframe elements the top/left reflect the iframe's position (not 0,0),
-      // so we check width===0 && height===0 alone — a disconnected target always produces
-      // a zero-size bounding rect regardless of the iframe's position on the page.
-      if (!this.isRefindingElement && (iframeElementGone || !isConnected || (boundingRect && boundingRect.width === 0 && boundingRect.height === 0))) {
+      // Re-find only when the element is truly removed from the DOM.
+      // A zero bounding rect alone (e.g. modal CSS-hidden) is not enough —
+      // the scroll listener already hides the launcher in that case, and
+      // triggering a re-find would create a new virtual element unnecessarily.
+      if (!this.isRefindingElement && (iframeElementGone || !isConnected)) {
         // Set flag to prevent multiple simultaneous re-find operations
         this.isRefindingElement = true;
 
@@ -207,6 +206,15 @@ export class Launcher extends BaseContent<LauncherStore> {
             }, 100);
           }
           return;
+        }
+
+        // Remove any stale virtual element before creating a new one
+        const currentStore = this.getStore().getSnapshot();
+        if (
+          currentStore?.triggerRef &&
+          (currentStore.triggerRef as any).__usertour_virtual_iframe
+        ) {
+          document?.body?.removeChild(currentStore.triggerRef as HTMLElement);
         }
 
         // For iframe elements, create a virtual element for positioning
@@ -394,6 +402,11 @@ export class Launcher extends BaseContent<LauncherStore> {
   async close() {
     this.cleanupScrollVisibilityListener();
     this.cleanupIframePositionUpdate();
+    this.cleanupDomRemovalObserver();
+    if (this.watcher) {
+      this.watcher.destroy();
+      this.watcher = null;
+    }
     this.setDismissed(true);
     this.setStarted(false);
     this.hide();
@@ -404,7 +417,10 @@ export class Launcher extends BaseContent<LauncherStore> {
    * Updates iframe element position
    * @private
    */
-  private updateIframeElementPosition(iframeElementInfo: IframeElementInfo, virtualElement?: HTMLElement): void {
+  private updateIframeElementPosition(
+    iframeElementInfo: IframeElementInfo,
+    virtualElement?: HTMLElement,
+  ): void {
     // Get virtual element from parameter or store
     let elementToUpdate: HTMLElement | null = null;
 
@@ -453,7 +469,7 @@ export class Launcher extends BaseContent<LauncherStore> {
   private setupIframePositionUpdate(iframeElementInfo: IframeElementInfo): void {
     // Clean up any existing listeners first
     this.cleanupIframePositionUpdate();
-    
+
     // Run a continuous RAF loop so the virtual element always tracks the real element,
     // even when the page layout shifts without a scroll event (e.g. images loading,
     // dynamic content pushing the iframe down after element discovery).
@@ -508,7 +524,7 @@ export class Launcher extends BaseContent<LauncherStore> {
         mainWindowScrollTimeout = null;
       }, 100);
     };
-    
+
     const handleIframeScroll = () => {
       // Synchronous update so floating-ui's RAF reads the current frame's position
       this.updateIframeElementPosition(iframeElementInfo);
@@ -525,46 +541,51 @@ export class Launcher extends BaseContent<LauncherStore> {
       // Loop is always running; nothing extra needed for resize
       this.updateIframeElementPosition(iframeElementInfo);
     };
-    
+
     // Set up scroll listeners on main window
     window?.addEventListener('scroll', handleMainWindowScroll, { passive: true, capture: true });
     window?.addEventListener('resize', handleResize, { passive: true });
-    
+
     // Set up scroll listeners on iframe's contentWindow if accessible
     let iframeScrollHandler: (() => void) | null = null;
     let iframeResizeHandler: (() => void) | null = null;
-    
+
     try {
       const iframeWindow = iframeElementInfo.iframe.contentWindow;
       const iframeDoc = iframeElementInfo.iframe.contentDocument;
-      
+
       if (iframeWindow && iframeDoc) {
         iframeScrollHandler = handleIframeScroll;
         iframeResizeHandler = handleResize;
-        
+
         // Listen to scroll events on iframe's window
-        iframeWindow.addEventListener('scroll', iframeScrollHandler, { passive: true, capture: true });
+        iframeWindow.addEventListener('scroll', iframeScrollHandler, {
+          passive: true,
+          capture: true,
+        });
         iframeWindow.addEventListener('resize', iframeResizeHandler, { passive: true });
-        
+
         // Also listen to scroll events on iframe's document body if it exists
         if (iframeDoc.body) {
           const bodyScrollHandler = handleIframeScroll;
-          iframeDoc.body.addEventListener('scroll', bodyScrollHandler, { passive: true, capture: true });
-          
+          iframeDoc.body.addEventListener('scroll', bodyScrollHandler, {
+            passive: true,
+            capture: true,
+          });
+
           // Store body scroll handler for cleanup
           (iframeElementInfo.iframe as any).__usertour_body_scroll_handler = bodyScrollHandler;
         }
-        
       }
-    } catch (error) {
+    } catch (_error) {
       // Cross-origin iframe, cannot access contentWindow
     }
-    
+
     // Store cleanup function
     this.iframePositionUpdateCleanup = () => {
       // Stop the update loop
       stopUpdateLoop();
-      
+
       // Clear scroll timeouts
       if (mainWindowScrollTimeout !== null) {
         clearTimeout(mainWindowScrollTimeout);
@@ -574,31 +595,32 @@ export class Launcher extends BaseContent<LauncherStore> {
         clearTimeout(iframeScrollTimeout);
         iframeScrollTimeout = null;
       }
-      
+
       window?.removeEventListener('scroll', handleMainWindowScroll, { capture: true });
       window?.removeEventListener('resize', handleResize);
-      
+
       if (iframeScrollHandler && iframeResizeHandler) {
         try {
           const iframeWindow = iframeElementInfo.iframe.contentWindow;
           const iframeDoc = iframeElementInfo.iframe.contentDocument;
-          
+
           if (iframeWindow) {
             iframeWindow.removeEventListener('scroll', iframeScrollHandler, { capture: true });
             iframeWindow.removeEventListener('resize', iframeResizeHandler);
           }
-          
+
           // Clean up body scroll handler if it exists
-          const bodyScrollHandler = (iframeElementInfo.iframe as any).__usertour_body_scroll_handler;
+          const bodyScrollHandler = (iframeElementInfo.iframe as any)
+            .__usertour_body_scroll_handler;
           if (bodyScrollHandler && iframeDoc?.body) {
             iframeDoc.body.removeEventListener('scroll', bodyScrollHandler, { capture: true });
-            delete (iframeElementInfo.iframe as any).__usertour_body_scroll_handler;
+            (iframeElementInfo.iframe as any).__usertour_body_scroll_handler = undefined;
           }
-        } catch (error) {
+        } catch (_error) {
           // Cross-origin iframe, ignore cleanup errors
         }
       }
-      
+
       this.iframePositionUpdateCleanup = null;
     };
   }
@@ -626,7 +648,8 @@ export class Launcher extends BaseContent<LauncherStore> {
 
     const check = () => {
       rafId = null;
-      if (!this.watcher || this.isTemporarilyHidden() || !this.hasStarted() || this.hasDismissed()) return;
+      if (!this.watcher || this.isTemporarilyHidden() || !this.hasStarted() || this.hasDismissed())
+        return;
 
       const store = this.getStore().getSnapshot();
       if (!store) return;
@@ -658,7 +681,8 @@ export class Launcher extends BaseContent<LauncherStore> {
       attributeFilter: ['class', 'style'],
     };
     const mainObserver = new MutationObserver(() => {
-      if (this.watcher?.isTargetDisconnected()) {
+      const disconnected = this.watcher?.isTargetDisconnected();
+      if (disconnected) {
         const store = this.getStore().getSnapshot();
         if (store?.openState) {
           this.hide();
@@ -667,7 +691,8 @@ export class Launcher extends BaseContent<LauncherStore> {
       }
       scheduleCheck();
     });
-    if (typeof document !== 'undefined' && document.body) mainObserver.observe(document.body, mutationOpts);
+    if (typeof document !== 'undefined' && document.body)
+      mainObserver.observe(document.body, mutationOpts);
 
     let iframeScrollHandler: (() => void) | null = null;
     let iframeObserver: MutationObserver | null = null;
@@ -676,7 +701,10 @@ export class Launcher extends BaseContent<LauncherStore> {
         const iframeWindow = iframeElementInfo.iframe.contentWindow;
         if (iframeWindow) {
           iframeScrollHandler = scheduleCheck;
-          iframeWindow.addEventListener('scroll', iframeScrollHandler, { passive: true, capture: true });
+          iframeWindow.addEventListener('scroll', iframeScrollHandler, {
+            passive: true,
+            capture: true,
+          });
         }
         const iframeDoc = iframeElementInfo.iframe.contentDocument;
         if (iframeDoc?.body) {
@@ -689,7 +717,10 @@ export class Launcher extends BaseContent<LauncherStore> {
     }
 
     this.scrollVisibilityCleanup = () => {
-      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       window?.removeEventListener('scroll', scheduleCheck, { capture: true });
       window?.removeEventListener('resize', scheduleCheck);
       mainObserver.disconnect();
@@ -697,9 +728,13 @@ export class Launcher extends BaseContent<LauncherStore> {
       if (iframeScrollHandler && iframeElementInfo) {
         try {
           iframeElementInfo.iframe.contentWindow?.removeEventListener(
-            'scroll', iframeScrollHandler, { capture: true },
+            'scroll',
+            iframeScrollHandler,
+            { capture: true },
           );
-        } catch { /* cross-origin */ }
+        } catch {
+          /* cross-origin */
+        }
       }
     };
   }
@@ -741,6 +776,12 @@ export class Launcher extends BaseContent<LauncherStore> {
    * 3. Cleans up any remaining references
    */
   destroy() {
+    // Remove virtual iframe element from document.body if present
+    const store = this.getStore().getSnapshot();
+    if (store?.triggerRef && (store.triggerRef as any).__usertour_virtual_iframe) {
+      document?.body?.removeChild(store.triggerRef as HTMLElement);
+    }
+
     // Reset store to default state
     this.setStore(undefined);
 

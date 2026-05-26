@@ -145,7 +145,7 @@ export class ElementWatcher extends Evented {
     } else {
       this.scheduleRetry(retryTimes);
     }
-    
+
     // Start monitoring iframes for src changes if not already monitoring
     if (!this.iframeMonitor && !this.hasFoundElement) {
       this.startIframeMonitoring();
@@ -185,13 +185,12 @@ export class ElementWatcher extends Evented {
     if (this.iframeElementInfo) {
       const iframeVisible = iframeUtils.isIframeVisible(this.iframeElementInfo.iframe);
       if (!iframeVisible) {
-        const now = Date.now();
         return {
           isHidden: true,
           isTimeout: this.checker?.isTimeout || false,
         };
       }
-      
+
       // Also check if element is in a hidden section within the iframe
       try {
         const iframeDoc = this.iframeElementInfo.iframe.contentDocument;
@@ -199,7 +198,7 @@ export class ElementWatcher extends Evented {
           // Use the iframe-specific visibility check
           const isHiddenInIframe = iframeUtils.isElementInHiddenSectionInIframe(
             this.element,
-            iframeDoc
+            iframeDoc,
           );
           if (isHiddenInIframe) {
             const now = Date.now();
@@ -210,7 +209,7 @@ export class ElementWatcher extends Evented {
             };
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // If we can't access iframe document, continue with main document check
       }
     }
@@ -286,7 +285,7 @@ export class ElementWatcher extends Evented {
         this.trigger(AppEvents.ELEMENT_FOUND, iframeElementInfo.element);
         return;
       }
-    } catch (error) {
+    } catch (_error) {
       // If iframe search fails, continue with normal retry logic
     } finally {
       this.isSearchingIframes = false;
@@ -299,6 +298,10 @@ export class ElementWatcher extends Evented {
    * Synchronous launcher-visibility check exposed for scroll listeners.
    * Returns false when the target element is no longer sufficiently visible.
    */
+  get currentElement(): Element | null {
+    return this.element;
+  }
+
   checkLauncherVisibilitySync(): boolean {
     if (!this.isLauncher) return true;
     if (!this.element) return false;
@@ -338,7 +341,7 @@ export class ElementWatcher extends Evented {
     if (this.hasFoundElement) {
       return;
     }
-    
+
     this.timer = setTimeout(() => {
       this.findElement(retryTimes + 1).catch((error) => {
         console.error('[ElementWatcher] Error in findElement retry:', error);
@@ -396,7 +399,10 @@ export class ElementWatcher extends Evented {
           setTimeout(() => {
             if (!this.hasFoundElement) {
               this.findElement(0).catch((error) => {
-                console.error('[ElementWatcher] Error in findElement after iframe src change:', error);
+                console.error(
+                  '[ElementWatcher] Error in findElement after iframe src change:',
+                  error,
+                );
               }); // Reset retry count for new search
             }
           }, 500); // Give iframe time to start loading new content
@@ -410,7 +416,7 @@ export class ElementWatcher extends Evented {
     this.iframeMonitor = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
-          const iframe = mutation.target as HTMLIFrameElement;
+          const _iframe = mutation.target as HTMLIFrameElement;
           updateIframeTracking();
         } else if (mutation.type === 'childList') {
           // Check if any iframes were added or removed
@@ -555,9 +561,15 @@ export class ElementWatcher extends Evented {
 
       if (elWidth <= 0 || elHeight <= 0) return false;
 
+      // Reject elements hidden via CSS (visibility:hidden, opacity:0, display:none on ancestor).
+      // The bounding-rect check above already catches display:none; this handles the rest.
+      if (!isVisibleNode(element)) return false;
+
       const GRID = 4;
       const totalCount = GRID * GRID;
       let visibleCount = 0;
+      // Look up once — getElementById on every iteration is wasteful.
+      const usertourWidget = document.getElementById('usertour-widget');
 
       for (let row = 0; row < GRID; row++) {
         for (let col = 0; col < GRID; col++) {
@@ -572,19 +584,21 @@ export class ElementWatcher extends Evented {
           const topEl = document.elementFromPoint(x, y);
           if (!topEl) continue;
 
-          // A usertour element (modal, tooltip, etc.) covering the launcher target
-          // should not be treated as an external overlay — count the point as visible.
-          const usertourWidget = document.getElementById('usertour-widget');
-          if (usertourWidget && usertourWidget.contains(topEl)) {
-            visibleCount++;
-            continue;
-          }
+          const isUsertourEl = !!usertourWidget?.contains(topEl);
 
           if (this.iframeElementInfo) {
-            if (topEl !== this.iframeElementInfo.iframe) continue;
-            // The main document sees the iframe element, but something inside
-            // the iframe (a modal, sticky header, nested iframe, …) may still
-            // be covering the target.  Check inside the iframe's own document.
+            const isOurIframe = topEl === this.iframeElementInfo.iframe;
+            // A non-iframe, non-usertour element is blocking this point.
+            if (!isOurIframe && !isUsertourEl) continue;
+            // A usertour overlay (backdrop, modal) is on top. Respect it as
+            // transparent to our own UI, but only if the iframe itself is still
+            // present in the hit stack — if not, the target isn't at this point.
+            if (!isOurIframe) {
+              const stack = document.elementsFromPoint(x, y);
+              if (!stack.includes(this.iframeElementInfo.iframe)) continue;
+            }
+            // The main document sees the iframe element. Something inside the
+            // iframe may still be covering the target — check its own document.
             try {
               const iframeDoc = this.iframeElementInfo.iframe.contentDocument;
               if (iframeDoc) {
@@ -602,13 +616,15 @@ export class ElementWatcher extends Evented {
               visibleCount++;
             }
           } else {
-            if (element === topEl || element.contains(topEl)) visibleCount++;
+            // Non-iframe: usertour overlays are transparent; anything else must be the target.
+            if (isUsertourEl || element === topEl || element.contains(topEl)) visibleCount++;
           }
         }
       }
 
       // Visible when strictly more than 50 % of sample points are unoccluded
-      return visibleCount / totalCount > 0.5;
+      const result = visibleCount / totalCount > 0.5;
+      return result;
     } catch {
       return true;
     }
@@ -645,7 +661,7 @@ export class ElementWatcher extends Evented {
           return false;
         }
         return true;
-      } catch (error) {
+      } catch (_error) {
         return false;
       }
     }
@@ -672,16 +688,16 @@ export class ElementWatcher extends Evented {
         if (!iframeDoc || !iframeDoc.body) {
           return false;
         }
-        
+
         // Check if element is still in the iframe's DOM
         if (!iframeDoc.body.contains(this.element)) {
           return false;
         }
-        
+
         // For iframe elements, we don't need to verify the selector match
         // because the element was found through iframe search
         return true;
-      } catch (error) {
+      } catch (_error) {
         // If we can't access the iframe document, assume element is invalid
         return false;
       }
@@ -735,13 +751,13 @@ export class ElementWatcher extends Evented {
     }
 
     const target = this.parsedSelector.mainSelector;
-    
+
     // If we have a customSelector, we can find all matches and filter by visibility
     if (target.customSelector) {
       try {
         const selector = target.customSelector.replace(/\\/g, '\\');
         const allMatches = document.body.querySelectorAll(selector);
-        
+
         // Check each match for visibility
         for (const match of Array.from(allMatches)) {
           if (!iframeUtils.isElementInHiddenSection(match)) {
@@ -751,9 +767,10 @@ export class ElementWatcher extends Evented {
               const targetText = target.content.trim();
               // Default to 'exact' match if not specified
               const textMatchMode = (target as any).textMatchMode || 'exact';
-              const textMatch = textMatchMode === 'exact' 
-                ? matchText === targetText 
-                : matchText.includes(targetText);
+              const textMatch =
+                textMatchMode === 'exact'
+                  ? matchText === targetText
+                  : matchText.includes(targetText);
               if (!textMatch) {
                 continue;
               }
@@ -761,17 +778,17 @@ export class ElementWatcher extends Evented {
             return match;
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // fall through to finderV2
       }
     }
-    
+
     // If we have selectorsList, try each selector and find first visible match
     if (target.selectorsList && target.selectorsList.length > 0) {
       for (const selectorStr of target.selectorsList) {
         try {
           const allMatches = document.body.querySelectorAll(selectorStr);
-          
+
           // Check each match for visibility
           for (const match of Array.from(allMatches)) {
             if (!iframeUtils.isElementInHiddenSection(match)) {
@@ -781,9 +798,10 @@ export class ElementWatcher extends Evented {
                 const targetText = target.content.trim();
                 // Default to 'exact' match if not specified
                 const textMatchMode = (target as any).textMatchMode || 'exact';
-                const textMatch = textMatchMode === 'exact' 
-                  ? matchText === targetText 
-                  : matchText.includes(targetText);
+                const textMatch =
+                  textMatchMode === 'exact'
+                    ? matchText === targetText
+                    : matchText.includes(targetText);
                 if (!textMatch) {
                   continue;
                 }
@@ -791,19 +809,18 @@ export class ElementWatcher extends Evented {
               return match;
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Continue to next selector if this one fails
-          continue;
         }
       }
     }
-    
+
     // Fallback to original finderV2 method
     const el = finderV2(this.parsedSelector.mainSelector, document.body);
     if (el && !iframeUtils.isElementInHiddenSection(el)) {
       return el;
     }
-    
+
     // If the found element is hidden, return null so we can retry
     // This allows the retry logic to potentially find a visible element later
     return null;
@@ -817,10 +834,10 @@ export class ElementWatcher extends Evented {
     if (!document) {
       return false;
     }
-    
+
     try {
       const iframes = iframeUtils.getAllIframes();
-      return iframes.some(iframe => {
+      return iframes.some((iframe) => {
         try {
           const doc = iframe.contentDocument;
           return doc && doc.readyState !== 'complete';
