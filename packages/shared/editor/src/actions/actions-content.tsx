@@ -60,6 +60,7 @@ interface ContentActionsContentsContextValue {
   setSelectedPreset: Dispatch<SetStateAction<SelectItemType | null>>;
   stepCvid: string | undefined;
   setStepCvid: Dispatch<SetStateAction<string | undefined>>;
+  onContentSelected: (item: SelectItemType) => void;
 }
 
 const ContentActionsContentsContext = createContext<ContentActionsContentsContextValue | undefined>(
@@ -145,15 +146,15 @@ const PopoverWrapper = ({
 
 const ContentActionsContentsName = () => {
   const [open, setOpen] = useState(false);
-  const { selectedPreset, setSelectedPreset } = useContentActionsContentsContext();
+  const { selectedPreset, onContentSelected } = useContentActionsContentsContext();
   const { contents, zIndex } = useContentActionsContext();
 
   const handleOnSelected = useCallback(
     (item: SelectItemType) => {
-      setSelectedPreset(item);
+      onContentSelected(item);
       setOpen(false);
     },
-    [setSelectedPreset],
+    [onContentSelected],
   );
 
   const handleFilter = useCallback(
@@ -354,17 +355,6 @@ export const ContentActionsContents = (props: ContentActionsContentsProps) => {
   const [stepCvid, setStepCvid] = useState<string | undefined>(data?.stepCvid);
   const [open, setOpen] = useState(false);
 
-  // Memoize context value
-  const contextValue = useMemo(
-    () => ({
-      selectedPreset,
-      setSelectedPreset,
-      stepCvid,
-      setStepCvid,
-    }),
-    [selectedPreset, stepCvid],
-  );
-
   // Memoize selected content and step index
   const selectedContent = useMemo(
     () => contents?.find((c) => c.id === selectedPreset?.id),
@@ -374,6 +364,39 @@ export const ContentActionsContents = (props: ContentActionsContentsProps) => {
   const stepIndex = useMemo(
     () => selectedContent?.steps?.findIndex((step) => step.cvid === stepCvid) ?? -1,
     [selectedContent?.steps, stepCvid],
+  );
+
+  useEffect(() => {
+    if (selectedPreset || !data?.contentId || !contents?.length) return;
+    const item = contents.find((c) => c.id === data.contentId);
+    if (item) {
+      setSelectedPreset({ id: item.id, name: item.name || '' });
+    }
+  }, [contents, data?.contentId]);
+
+  const handleContentSelected = useCallback(
+    (item: SelectItemType) => {
+      setSelectedPreset(item);
+      updateConditionData(index, {
+        contentId: item.id,
+        stepCvid: undefined, // reset step when flow changes
+        type: 'flow',
+        logic: 'and',
+      });
+    },
+    [updateConditionData, index],
+  );
+
+  // Memoize context value
+  const contextValue = useMemo(
+    () => ({
+      selectedPreset,
+      setSelectedPreset,
+      stepCvid,
+      setStepCvid,
+      onContentSelected: handleContentSelected,
+    }),
+    [selectedPreset, stepCvid, handleContentSelected],
   );
 
   const { openError, setOpenError, errorInfo, setErrorInfo } = useErrorHandling(
