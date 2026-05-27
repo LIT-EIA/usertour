@@ -15,13 +15,14 @@ import {
   LauncherActionType,
   LauncherData,
   LauncherTriggerElement,
+  LauncherTriggerEvent,
   RulesCondition,
   ThemeTypesSetting,
 } from '@usertour/types';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Launcher } from '../core/launcher';
 import { useEventHandlers } from '../hooks/use-event-handlers';
-import { document } from '../utils/globals';
+import { document, window } from '../utils/globals';
 import { on, off } from '../utils/listener';
 
 // Types
@@ -97,17 +98,30 @@ const useClickOutside = (
   useEffect(() => {
     if (!open || !document) return;
 
+    // Handles clicks within the SDK's own document (outside the tooltip)
     const handleClickOutside = (event: MouseEvent) => {
       if (popperRef.current && !popperRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
 
+    // Handles clicks on the parent page when the SDK is running inside an iframe.
+    const handleWindowBlur = () => {
+      requestAnimationFrame(() => {
+        if (popperRef.current && !popperRef.current.contains(document!.activeElement)) {
+          setOpen(false);
+        }
+      });
+    };
+
     on(document, 'mousedown', handleClickOutside);
+    window?.addEventListener('blur', handleWindowBlur);
+
     return () => {
       if (document) {
         off(document, 'mousedown', handleClickOutside);
       }
+      window?.removeEventListener('blur', handleWindowBlur);
     };
   }, [open, setOpen]);
 };
@@ -115,6 +129,7 @@ const useClickOutside = (
 const usePopperMouseLeave = (
   popperRef: React.RefObject<HTMLDivElement>,
   actionType: LauncherActionType,
+  triggerEvent: LauncherTriggerEvent,
   setOpen: (open: boolean) => void,
   open: boolean,
 ) => {
@@ -123,7 +138,10 @@ const usePopperMouseLeave = (
     if (!popper) return;
 
     const handlePopperMouseLeave = () => {
-      if (actionType === LauncherActionType.SHOW_TOOLTIP) {
+      if (
+        actionType === LauncherActionType.SHOW_TOOLTIP &&
+        triggerEvent === LauncherTriggerEvent.HOVERED
+      ) {
         setOpen(false);
       }
     };
@@ -132,7 +150,7 @@ const usePopperMouseLeave = (
     return () => {
       off(popper, 'mouseleave', handlePopperMouseLeave);
     };
-  }, [actionType, setOpen, open]);
+  }, [actionType, triggerEvent, setOpen, open]);
 };
 
 // Components
@@ -189,7 +207,7 @@ const LauncherWidgetCore = ({
   );
   useEventHandlers(data, launcherRef, triggerRef, handlers);
   useClickOutside(open, popperRef, setOpen);
-  usePopperMouseLeave(popperRef, actionType, setOpen, open);
+  usePopperMouseLeave(popperRef, actionType, data.behavior.triggerEvent, setOpen, open);
 
   return (
     <LauncherRoot themeSettings={themeSettings} data={data}>
@@ -225,7 +243,8 @@ export const LauncherWidget = ({ launcher }: LauncherWidgetProps) => {
   if (!store) {
     return <></>;
   }
-  const { userInfo, content, zIndex, themeSettings, triggerRef, openState, sdkConfig, assets } = store;
+  const { userInfo, content, zIndex, themeSettings, triggerRef, openState, sdkConfig, assets } =
+    store;
 
   const data = content?.data as LauncherData | undefined;
 
