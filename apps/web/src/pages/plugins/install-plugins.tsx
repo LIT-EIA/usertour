@@ -1,6 +1,6 @@
 import { useEnvironmentListContext } from '@/contexts/environment-list-context';
 import { Button } from '@usertour-packages/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@usertour-packages/card';
+import { Card, CardContent } from '@usertour-packages/card';
 import { Label } from '@usertour-packages/label';
 import {
   Select,
@@ -32,9 +32,7 @@ export const InstallPlugins = () => {
     }
 
     const url =
-      typeof window !== 'undefined'
-        ? `${window.location.protocol}//${window.location.host}`
-        : '';
+      typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : '';
     const baseCode = `const iframe = document.createElement("iframe");
 
 iframe.style.display = "none";
@@ -136,7 +134,10 @@ if (usertour && !usertour.isIdentified()) {
                 <Card className="rounded-md border bg-card text-card-foreground shadow-none flex-1">
                   <CardContent className="p-6">
                     <div className="space-y-4">
-                      <p className="text-md">Select your environments, then drag the buttons to your <em>Bookmarks Bar</em>.</p>
+                      <p className="text-md">
+                        Select your environments, then drag the buttons to your{' '}
+                        <em>Bookmarks Bar</em>.
+                      </p>
                       <p className="text-sm">
                         If the bar is hidden, press{' '}
                         <img
@@ -185,12 +186,22 @@ if (usertour && !usertour.isIdentified()) {
                 <Card className="rounded-md border bg-card text-card-foreground shadow-none w-[35%] min-w-[200px]">
                   <CardContent className="h-full flex items-center justify-center p-0">
                     <div className="flex flex-col gap-4">
-                      <Button asChild className="w-full text-center whitespace-normal break-words p-5">
-                        <a href="javascript:(function(){  var s=document.createElement('script');  s.src='https://cdn.jsdelivr.net/gh/lit-eia/usertour-extended/dist/bookmarklet.min.js';  s.type='text/javascript';  s.async=true;  document.body.appendChild(s);})();" draggable className="text-center">
+                      <Button
+                        asChild
+                        className="w-full text-center whitespace-normal break-words p-5"
+                      >
+                        <a
+                          href="javascript:(function(){  var s=document.createElement('script');  s.src='https://cdn.jsdelivr.net/gh/lit-eia/usertour-extended/dist/bookmarklet.min.js?_='+Date.now();  s.type='text/javascript';  s.async=true;  document.body.appendChild(s);})();"
+                          draggable
+                          className="text-center"
+                        >
                           UserTour Helper
                         </a>
                       </Button>
-                      <Button asChild className="w-full text-center whitespace-normal break-words p-5">
+                      <Button
+                        asChild
+                        className="w-full text-center whitespace-normal break-words p-5"
+                      >
                         <a href={generateBookmarklet} draggable className="text-center">
                           Start UserTour
                         </a>
