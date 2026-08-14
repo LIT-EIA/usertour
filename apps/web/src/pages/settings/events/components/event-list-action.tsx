@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EventDeleteForm } from './event-delete-form';
 import { EventEditForm } from './event-edit-form';
 import { useAppContext } from '@/contexts/app-context';
@@ -29,6 +30,7 @@ export const EventListAction = (props: EventListActionProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const { refetch } = useEventListContext();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
   const handleOpen = () => {
     setOpen(true);
   };
@@ -58,7 +60,7 @@ export const EventListAction = (props: EventListActionProps) => {
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-slate-700">
-            <p>Predefned events can't be edited.</p>
+            <p>{t('settings.common.predefinedTooltip', { resource: t('settings.events.predefinedResource') })}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -80,7 +82,7 @@ export const EventListAction = (props: EventListActionProps) => {
         <DropdownMenuContent align="start" className="w-[200px]">
           <DropdownMenuItem onClick={handleOpen}>
             <EditIcon className="w-6" width={12} height={12} />
-            Edit event
+            {t('settings.events.editMenuItem')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -88,7 +90,7 @@ export const EventListAction = (props: EventListActionProps) => {
             className="text-destructive focus:bg-destructive/10 focus:text-destructive"
           >
             <Delete2Icon className="w-6" width={16} height={16} />
-            Delete event
+            {t('settings.events.deleteMenuItem')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -11,6 +11,7 @@ import {
 } from '@usertour-packages/dropdown-menu';
 import { Delete2Icon, EditIcon } from '@usertour-packages/icons';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EnvironmentDeleteForm } from './environment-delete-form';
 import { EnvironmentEditForm } from './environment-edit-form';
 import { useAppContext } from '@/contexts/app-context';
@@ -23,6 +24,7 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const { refetch } = useEnvironmentListContext();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
   const handleOpen = () => {
     setOpen(true);
   };
@@ -52,7 +54,7 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
         <DropdownMenuContent align="start" className="w-[200px]">
           <DropdownMenuItem onClick={handleOpen}>
             <EditIcon className="w-6" width={12} height={12} />
-            Rename environment
+            {t('settings.environments.renameMenuItem')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -60,7 +62,7 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
             className="text-destructive focus:bg-destructive/10 focus:text-destructive"
           >
             <Delete2Icon className="w-4 h-4 mr-2" />
-            Delete
+            {t('settings.environments.deleteMenuItem')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

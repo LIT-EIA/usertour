@@ -11,9 +11,11 @@ import {
 } from '@usertour-packages/table';
 import { AnalyticsViewsByTask } from '@usertour/types';
 import { AnalyticsTasksSkeleton } from './analytics-skeleton';
+import { useTranslation } from 'react-i18next';
 
 export const AnalyticsTasks = () => {
   const { analyticsData, loading } = useAnalyticsContext();
+  const { t } = useTranslation();
 
   if (loading) {
     return <AnalyticsTasksSkeleton />;
@@ -31,16 +33,16 @@ export const AnalyticsTasks = () => {
       <Card>
         <CardHeader>
           <CardTitle className="space-between flex flex-row  items-center">
-            <div className="grow">Task breakdown</div>
+            <div className="grow">{t('contents.analytics.tasks.title')}</div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Task</TableHead>
-                <TableHead className="w-32">Unique views</TableHead>
-                <TableHead className="w-32">Completion rate</TableHead>
+                <TableHead>{t('contents.analytics.tasks.task')}</TableHead>
+                <TableHead className="w-32">{t('contents.analytics.tasks.uniqueViews')}</TableHead>
+                <TableHead className="w-32">{t('contents.analytics.tasks.completionRate')}</TableHead>
                 <TableHead className="w-3/5" />
               </TableRow>
             </TableHeader>
@@ -67,7 +69,7 @@ export const AnalyticsTasks = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
-                    No results.
+                    {t('contents.analytics.common.noResults')}
                   </TableCell>
                 </TableRow>
               )}

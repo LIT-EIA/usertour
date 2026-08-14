@@ -1,7 +1,9 @@
 import { ButtonIcon, ImageIcon, TextIcon, VideoIcon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import { PlusIcon3 } from '@usertour-packages/icons';
-import { CSSProperties, createContext, useContext, useEffect, useState } from 'react';
+import { TFunction } from 'i18next';
+import { CSSProperties, createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Node, Path } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
 import { inertColumnBlock, inertGroupBlockV2, updateNodeStatus } from '../../lib/editorHelper';
@@ -161,9 +163,9 @@ type SideBarButton = {
   node: CustomElement;
 };
 
-const sidebarButtons: SideBarButton[] = [
+const buildSidebarButtons = (t: TFunction): SideBarButton[] => [
   {
-    name: 'Text',
+    name: t('contentBuilder.editor.sidebar.elementTypes.text'),
     icon: TextIcon,
     node: {
       type: 'paragraph',
@@ -171,16 +173,16 @@ const sidebarButtons: SideBarButton[] = [
     },
   },
   {
-    name: 'Button',
+    name: t('contentBuilder.editor.sidebar.elementTypes.button'),
     icon: ButtonIcon,
     node: {
       type: 'button',
-      data: { text: 'Button', type: 'default', action: 'goto' },
+      data: { text: t('contentBuilder.editor.defaultContent.buttonText'), type: 'default', action: 'goto' },
       children: [{ text: '' }],
     },
   },
   {
-    name: 'Image',
+    name: t('contentBuilder.editor.sidebar.elementTypes.image'),
     icon: ImageIcon,
     node: {
       type: 'image',
@@ -190,7 +192,7 @@ const sidebarButtons: SideBarButton[] = [
     },
   },
   {
-    name: 'Embed',
+    name: t('contentBuilder.editor.sidebar.elementTypes.embed'),
     icon: VideoIcon,
     node: {
       type: 'embed',
@@ -201,6 +203,8 @@ const sidebarButtons: SideBarButton[] = [
   },
 ];
 const SideBar = (props: SideBarProps) => {
+  const { t } = useTranslation();
+  const sidebarButtons = useMemo(() => buildSidebarButtons(t), [t]);
   const { onClick, type, element } = props;
   const [isHover, setHover] = useState(false);
   const [customStyle, setCustomStyle] = useState<CSSProperties>();

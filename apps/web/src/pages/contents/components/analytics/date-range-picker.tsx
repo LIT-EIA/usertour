@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarIcon } from '@radix-ui/react-icons';
-import { format } from 'date-fns';
+import { formatDate as format } from '@/utils/common';
 import * as React from 'react';
 
 import { useAnalyticsContext } from '@/contexts/analytics-context';
@@ -9,6 +9,7 @@ import { Button } from '@usertour-packages/button';
 import { Calendar } from '@usertour-packages/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@usertour-packages/popover';
 import { cn } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTMLDivElement>) {
   // const [date, setDate] = React.useState<DateRange | undefined>({
@@ -16,6 +17,7 @@ export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTML
   //   to: addDays(new Date(2023, 0, 20), 20),
   // })
   const { dateRange: date, setDateRange: setDate } = useAnalyticsContext();
+  const { t } = useTranslation();
   return (
     <div className={cn('grid gap-2', className)}>
       <Popover>
@@ -38,7 +40,7 @@ export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTML
                 format(date.from, 'LLL dd, y')
               )
             ) : (
-              <span>Pick a date</span>
+              <span>{t('common.pickADate')}</span>
             )}
           </Button>
         </PopoverTrigger>

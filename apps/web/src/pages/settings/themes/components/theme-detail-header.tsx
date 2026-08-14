@@ -12,6 +12,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ThemeEditDropdownMenu } from './theme-edit-dropmenu';
 import { ThemeRenameForm } from './theme-rename-form';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeDetailHeader = () => {
   const { theme, settings, refetch, variations } = useThemeDetailContext();
@@ -21,6 +22,7 @@ export const ThemeDetailHeader = () => {
   const navigator = useNavigate();
   const { toast } = useToast();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
   const handleSaveTheme = async () => {
     if (!theme) {
       return;
@@ -67,7 +69,7 @@ export const ThemeDetailHeader = () => {
           <>
             <InfoCircledIcon className="ml-4 mr-0.5 text-muted-foreground" />
             <span className="text-sm text-muted-foreground ">
-              This is a standard theme, managed by Usertour
+              {t('themeBuilder.chrome.systemPillTooltip')}
             </span>
           </>
         )}
@@ -87,11 +89,11 @@ export const ThemeDetailHeader = () => {
         <div className="ml-auto flex items-center space-x-4">
           <Button onClick={handleSaveTheme} disabled={theme?.isSystem || isViewOnly}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            Save
+            {t('themeBuilder.chrome.save')}
           </Button>
           <ThemeEditDropdownMenu theme={theme!} onSubmit={handleOnSubmit}>
             <Button variant="secondary" disabled={isViewOnly}>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t('themeBuilder.aria.themeActions')}</span>
               <DotsHorizontalIcon className="h-4 w-4" />
             </Button>
           </ThemeEditDropdownMenu>

@@ -2,7 +2,8 @@ import { useAnalyticsContext } from '@/contexts/analytics-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@usertour-packages/card';
 import { ContentEditorElementType } from '@usertour-packages/shared-editor';
 import { useQueryContentQuestionAnalyticsQuery } from '@usertour-packages/shared-hooks';
-import { format } from 'date-fns';
+import { formatDate as formatDateLocalized } from '@/utils/common';
+import { useTranslation } from 'react-i18next';
 
 import {
   Table,
@@ -26,6 +27,7 @@ interface AnalyticsMultipleChoiceProps {
 
 export const AnalyticsMultipleChoice = (props: AnalyticsMultipleChoiceProps) => {
   const { questionAnalytics, totalViews } = props;
+  const { t } = useTranslation();
 
   const totalResponses = questionAnalytics.totalResponse ?? 0;
   const responseRate = totalViews > 0 ? Math.round((totalResponses / totalViews) * 100) : 0;
@@ -35,26 +37,26 @@ export const AnalyticsMultipleChoice = (props: AnalyticsMultipleChoiceProps) => 
       <Card>
         <CardHeader>
           <CardTitle className="space-between flex flex-row  items-center">
-            <div className="grow	">{questionAnalytics.question.data.name} - Multiple choice</div>
+            <div className="grow	">{t('contents.analytics.multipleChoice.title', { name: questionAnalytics.question.data.name })}</div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-row items-center justify-center w-full py-2">
             <div className="flex flex-row w-fit gap-16">
               <div>
-                {totalResponses} <span className="text-sm text-muted-foreground">responses</span>
+                {totalResponses} <span className="text-sm text-muted-foreground">{t('contents.analytics.multipleChoice.responses')}</span>
               </div>
               <div>
-                {responseRate}% <span className="text-sm text-muted-foreground">response rate</span>
+                {responseRate}% <span className="text-sm text-muted-foreground">{t('contents.analytics.multipleChoice.responseRate')}</span>
               </div>
             </div>
           </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Answer</TableHead>
-                <TableHead className="w-32">Responses</TableHead>
-                <TableHead className="w-24">Share</TableHead>
+                <TableHead>{t('contents.analytics.multipleChoice.answer')}</TableHead>
+                <TableHead className="w-32">{t('contents.analytics.multipleChoice.responsesHeader')}</TableHead>
+                <TableHead className="w-24">{t('contents.analytics.multipleChoice.share')}</TableHead>
                 <TableHead className="w-3/5" />
               </TableRow>
             </TableHeader>
@@ -82,7 +84,7 @@ export const AnalyticsMultipleChoice = (props: AnalyticsMultipleChoiceProps) => 
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
-                    No results.
+                    {t('contents.analytics.common.noResults')}
                   </TableCell>
                 </TableRow>
               )}
@@ -116,7 +118,7 @@ export const AnalyticsQuestion = (props: { contentId: string }) => {
   const totalViews = analyticsData?.totalViews ?? 0;
 
   // Helper function to format dates
-  const formatDate = (date: string) => format(new Date(date), 'PP');
+  const formatDate = (date: string) => formatDateLocalized(new Date(date), 'PP');
 
   // Process questionAnalytics data to format all dates
   const formattedQuestionAnalytics = questionAnalytics?.map((analytics) => ({

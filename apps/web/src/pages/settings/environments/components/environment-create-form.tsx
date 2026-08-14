@@ -30,6 +30,7 @@ import { PlanType } from '@usertour/types';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@usertour-packages/alert';
 import { AlertCircle } from 'lucide-react';
@@ -60,6 +61,7 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { project, globalConfig } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { planType } = useSubscriptionContext();
   const { environmentList } = useEnvironmentListContext();
   const navigate = useNavigate();
@@ -98,7 +100,7 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
       const ret = await createMutation({ variables: data });
 
       if (!ret.data?.createEnvironments?.id) {
-        showError('Create environment failed.');
+        showError(t('settings.environments.createFailure'));
       }
       onClose();
     } catch (error) {
@@ -112,14 +114,13 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
       <Dialog open={isOpen} onOpenChange={(op) => !op && onClose()}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Create New Environment</DialogTitle>
+            <DialogTitle>{t('settings.environments.createTitle')}</DialogTitle>
           </DialogHeader>
           <Alert className="bg-primary/10 border-primary/5">
             <AlertCircle className="h-4 w-4 !text-primary" />
-            <AlertTitle>Maximum environments reached</AlertTitle>
+            <AlertTitle>{t('settings.environments.limitTitle')}</AlertTitle>
             <AlertDescription>
-              You have reached the maximum number of environments allowed on your current plan. To
-              add more environments, you'll have to{' '}
+              {t('settings.environments.limitDescription')}{' '}
               <Button
                 variant="link"
                 className="p-0 h-auto font-normal inline"
@@ -128,7 +129,7 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                   navigate(`/project/${project?.id}/settings/billing`);
                 }}
               >
-                Upgrade your plan
+                {t('settings.environments.upgradeLink')}
               </Button>
             </AlertDescription>
           </Alert>
@@ -140,7 +141,7 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                 navigate(`/project/${project?.id}/settings/billing`);
               }}
             >
-              Upgrade
+              {t('settings.environments.upgrade')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -154,7 +155,7 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Environment</DialogTitle>
+              <DialogTitle>{t('settings.environments.createTitle')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2 pb-4 pt-4">
               <div className="space-y-2">
@@ -163,9 +164,9 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Environment name</FormLabel>
+                      <FormLabel>{t('settings.environments.nameLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter environment name" {...field} />
+                        <Input placeholder={t('settings.environments.namePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -175,11 +176,11 @@ export const EnvironmentCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('settings.environments.createButton')}
               </Button>
             </DialogFooter>
           </form>

@@ -3,6 +3,7 @@ import { HelpTooltip } from '@usertour-packages/shared-components';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@usertour-packages/tabs';
 import { Align, AlignType, ContentAlignmentData, Side } from '@usertour/types';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alignment } from './shared/alignment';
 import { InputNumber } from './shared/input';
 
@@ -13,7 +14,9 @@ export interface ContentAlignmentProps {
 }
 
 export const ContentAlignment = (props: ContentAlignmentProps) => {
-  const { initialValue, onChange, title = 'Alignment' } = props;
+  const { t } = useTranslation();
+  const { initialValue, onChange, title = t('contentBuilder.shared.alignment') } =
+    props;
   const [data, setData] = useState<ContentAlignmentData>(initialValue);
 
   const handleDataChange = (newData: Partial<ContentAlignmentData>) => {
@@ -42,28 +45,24 @@ export const ContentAlignment = (props: ContentAlignmentProps) => {
     <div className="space-y-3">
       <div className="flex justify-start items-center space-x-1	">
         <h1 className="text-sm">{title}</h1>
-        <HelpTooltip>
-          Customize which side of the target element the hen tooltip should appear on. By default,
-          tooltips Ad are placed on the optimal side depending on the target's position and your
-          user's screen size.
-        </HelpTooltip>
+        <HelpTooltip>{t('contentBuilder.shared.alignmentTooltip')}</HelpTooltip>
       </div>
       <Tabs defaultValue={data.alignType} onValueChange={handleAlignTypeChange}>
         <TabsList
           className="grid w-full grid-cols-2 bg-background-700"
-          aria-label="Alignment options"
+          aria-label={t('contentBuilder.shared.alignmentOptionsAriaLabel')}
         >
           <TabsTrigger
             value="auto"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            Auto
+            {t('contentBuilder.shared.auto')}
           </TabsTrigger>
           <TabsTrigger
             value="fixed"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            Fixed
+            {t('contentBuilder.shared.fixed')}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="auto">
@@ -80,12 +79,16 @@ export const ContentAlignment = (props: ContentAlignmentProps) => {
       </Tabs>
 
       <div className="flex flex-col space-y-2">
-        <Label htmlFor="button-distance-element">The distance in pixels from the element</Label>
+        <Label htmlFor="button-distance-element">
+          {t('contentBuilder.shared.distanceFromElement')}
+        </Label>
         <InputNumber defaultNumber={data.sideOffset} onValueChange={handleSideOffsetChange} />
       </div>
       {data.align !== 'center' && (
         <div className="flex flex-col space-y-2">
-          <Label htmlFor="button-distance-alignment">An offset in pixels from the alignment</Label>
+          <Label htmlFor="button-distance-alignment">
+            {t('contentBuilder.shared.offsetFromAlignment')}
+          </Label>
           <InputNumber defaultNumber={data.alignOffset} onValueChange={handleAlignOffsetChange} />
         </div>
       )}

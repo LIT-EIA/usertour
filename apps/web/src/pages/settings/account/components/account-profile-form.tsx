@@ -20,6 +20,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
 
 const accountFormSchema = z.object({
@@ -44,6 +45,7 @@ export const AccountProfileForm = () => {
     defaultValues: { name: user?.name },
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const onSubmit = async (data: AccountFormValues) => {
     if (!data.name) {
@@ -61,7 +63,7 @@ export const AccountProfileForm = () => {
       setIsLoading(false);
       toast({
         variant: 'success',
-        title: 'The profile name has been successfully updated',
+        title: t('settings.account.profile.successToast'),
       });
     } catch (error) {
       toast({
@@ -75,7 +77,7 @@ export const AccountProfileForm = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-row justify-between items-center h-10">
-        <h3 className="text-2xl font-semibold tracking-tight">Profile</h3>
+        <h3 className="text-2xl font-semibold tracking-tight">{t('settings.account.profile.title')}</h3>
         {/* <p className="text-sm text-muted-foreground">
           Update your profile name.
         </p> */}
@@ -88,9 +90,9 @@ export const AccountProfileForm = () => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>{t('settings.account.profile.nameLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your name" {...field} />
+                  <Input placeholder={t('settings.account.profile.namePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -99,7 +101,7 @@ export const AccountProfileForm = () => {
 
           <Button type="submit" disabled={form.watch('name') === user?.name}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            Save
+            {t('settings.common.save')}
           </Button>
         </form>
       </Form>

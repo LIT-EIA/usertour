@@ -9,6 +9,7 @@ import { useState } from 'react';
 
 import { Icons } from '@/components/atoms/icons';
 import { getErrorMessage } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 export type SignUpSuccessProps = {
   registerId: string;
@@ -19,6 +20,7 @@ export const SignUpSuccess = ({ registerId, email }: SignUpSuccessProps) => {
   const [resendMutation] = useMutation(resendMagicLink);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   async function onSubmit() {
     try {
@@ -28,7 +30,7 @@ export const SignUpSuccess = ({ registerId, email }: SignUpSuccessProps) => {
       if (!data?.resendMagicLink?.id) {
         toast({
           variant: 'destructive',
-          title: 'Uh oh! Something went wrong.',
+          title: t('auth.errors.genericFailure'),
         });
       }
     } catch (error) {
@@ -43,16 +45,16 @@ export const SignUpSuccess = ({ registerId, email }: SignUpSuccessProps) => {
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl  font-semibold tracking-tight">Check your inbox</CardTitle>
+        <CardTitle className="text-2xl  font-semibold tracking-tight">{t('auth.magicLink.success.title')}</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
-          Click the email verification link we just send to <br />
+          {t('auth.magicLink.success.descriptionPrefix')} <br />
           {email}
         </CardDescription>
       </CardHeader>
       <CardFooter className="flex flex-col">
         <Button className="w-full" onClick={onSubmit} disabled={isLoading}>
           {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          Resend verification link
+          {t('auth.magicLink.success.resendButton')}
         </Button>
       </CardFooter>
     </Card>

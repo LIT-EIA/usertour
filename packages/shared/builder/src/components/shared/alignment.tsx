@@ -1,5 +1,7 @@
 import { cn } from '@usertour-packages/button/src/utils';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 const circleHoveredClassName =
   "bg-primary before:content-[''] before:border before:border-indigo-900 before:cursor-pointer before:h-2 before:w-2 before:rounded-[50%] before:border-solid before:scale-100 items-center cursor-pointer flex justify-center h-2.5 relative transition-transform duration-200 w-2.5 rounded-[50%] scale-[1.6] hover:bg-primary hover:scale-[1.6]";
@@ -27,56 +29,62 @@ interface PositionConfig {
   text: string;
 }
 
-const positionMapping: Record<string, PositionConfig> = {
+const alwaysShowFrom = (t: TFunction, side: Position, align: Alignment) =>
+  t('contentBuilder.shared.alwaysShowFrom', {
+    side: t(`contentBuilder.shared.sides.${side}`),
+    align: t(`contentBuilder.shared.aligns.${align}`),
+  });
+
+const buildPositionMapping = (t: TFunction): Record<string, PositionConfig> => ({
   'bottom-start': {
     className: 'border-b-slate-400 left-[12px] bottom-full',
-    text: 'Always show from bottom-start',
+    text: alwaysShowFrom(t, POSITIONS.BOTTOM, ALIGNMENTS.START),
   },
   'bottom-center': {
     className: 'border-b-slate-400 left-[calc(50%_-_6px)] bottom-full',
-    text: 'Always show from bottom-center',
+    text: alwaysShowFrom(t, POSITIONS.BOTTOM, ALIGNMENTS.CENTER),
   },
   'bottom-end': {
     className: 'border-b-slate-400 right-[12px]  bottom-full',
-    text: 'Always show from bottom-end',
+    text: alwaysShowFrom(t, POSITIONS.BOTTOM, ALIGNMENTS.END),
   },
   'right-start': {
     className: 'border-r-slate-400 top-[12px]  right-full',
-    text: 'Always show from right-start',
+    text: alwaysShowFrom(t, POSITIONS.RIGHT, ALIGNMENTS.START),
   },
   'right-center': {
     className: 'border-r-slate-400 top-[calc(50%_-_6px)]  right-full',
-    text: 'Always show from right-center',
+    text: alwaysShowFrom(t, POSITIONS.RIGHT, ALIGNMENTS.CENTER),
   },
   'right-end': {
     className: 'border-r-slate-400 bottom-[12px]  right-full',
-    text: 'Always show from right-end',
+    text: alwaysShowFrom(t, POSITIONS.RIGHT, ALIGNMENTS.END),
   },
   'left-start': {
     className: 'border-l-slate-400 top-[12px]  left-full',
-    text: 'Always show from left-start',
+    text: alwaysShowFrom(t, POSITIONS.LEFT, ALIGNMENTS.START),
   },
   'left-center': {
     className: 'border-l-slate-400 top-[calc(50%_-_6px)]  left-full',
-    text: 'Always show from left-center',
+    text: alwaysShowFrom(t, POSITIONS.LEFT, ALIGNMENTS.CENTER),
   },
   'left-end': {
     className: 'border-l-slate-400 bottom-[12px]  left-full',
-    text: 'Always show from left-end',
+    text: alwaysShowFrom(t, POSITIONS.LEFT, ALIGNMENTS.END),
   },
   'top-start': {
     className: 'border-t-slate-400 left-[12px]  top-full',
-    text: 'Always show from top-start',
+    text: alwaysShowFrom(t, POSITIONS.TOP, ALIGNMENTS.START),
   },
   'top-center': {
     className: 'border-t-slate-400 left-[calc(50%_-_6px)]  top-full',
-    text: 'Always show from top-center',
+    text: alwaysShowFrom(t, POSITIONS.TOP, ALIGNMENTS.CENTER),
   },
   'top-end': {
     className: 'border-t-slate-400 right-[12px]  top-full',
-    text: 'Always show from top-end',
+    text: alwaysShowFrom(t, POSITIONS.TOP, ALIGNMENTS.END),
   },
-};
+});
 
 interface AlignmentProps {
   className?: string;
@@ -124,6 +132,8 @@ export const Alignment = ({
   align = ALIGNMENTS.CENTER,
   side = POSITIONS.BOTTOM,
 }: AlignmentProps) => {
+  const { t } = useTranslation();
+  const positionMapping = useMemo(() => buildPositionMapping(t), [t]);
   const [arrowCls, setArrowCls] = useState('');
   const [text, setText] = useState('');
   const [currentSide, setCurrentSide] = useState<Position>(side);
@@ -131,7 +141,7 @@ export const Alignment = ({
 
   useEffect(() => {
     if (type === 'auto') {
-      setText('Automatically choose the optimal position');
+      setText(t('contentBuilder.shared.autoPosition'));
       return;
     }
 
@@ -141,7 +151,7 @@ export const Alignment = ({
       setArrowCls(config.className);
       setText(config.text);
     }
-  }, [type, currentSide, currentAlign]);
+  }, [type, currentSide, currentAlign, positionMapping, t]);
 
   const handleAlignmentChange = useCallback(
     (side: Position, align: Alignment) => {

@@ -11,10 +11,12 @@ import {
 } from '@usertour-packages/select';
 import { ScrollArea } from '@usertour-packages/scroll-area';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PluginsSidebar } from './components/sidebar';
 
 export const InstallPlugins = () => {
   const { environmentList } = useEnvironmentListContext();
+  const { t } = useTranslation();
   const [testEnvironmentId, setTestEnvironmentId] = useState<string>('');
   const [prodEnvironmentId, setProdEnvironmentId] = useState<string>('');
   const [activeView, setActiveView] = useState<string>('bookmarklets');
@@ -134,26 +136,30 @@ if (usertour && !usertour.isIdentified()) {
                 <Card className="rounded-md border bg-card text-card-foreground shadow-none flex-1">
                   <CardContent className="p-6">
                     <div className="space-y-4">
-                      <p className="text-md">
-                        Select your environments, then drag the buttons to your{' '}
-                        <em>Bookmarks Bar</em>.
-                      </p>
+                      <p
+                        className="text-md"
+                        dangerouslySetInnerHTML={{
+                          __html: t('plugins.install.bookmarkletsInstructions'),
+                        }}
+                      />
                       <p className="text-sm">
-                        If the bar is hidden, press{' '}
+                        {t('plugins.install.bookmarkBarHintPrefix')}{' '}
                         <img
                           src="/images/plugins/keyboard-shortcut.png"
                           alt="Shift + Ctrl + B"
                           className="h-9 inline-block align-middle"
                         />{' '}
-                        to display it.
+                        {t('plugins.install.bookmarkBarHintSuffix')}
                       </p>
 
                       <div className="flex flex-col min-[971px]:flex-row gap-4">
                         <div className="space-y-2 flex-1">
-                          <Label htmlFor="test-environment">Test Environment</Label>
+                          <Label htmlFor="test-environment">
+                            {t('plugins.install.testEnvironmentLabel')}
+                          </Label>
                           <Select value={testEnvironmentId} onValueChange={setTestEnvironmentId}>
                             <SelectTrigger id="test-environment" className="w-full">
-                              <SelectValue placeholder="Select test environment" />
+                              <SelectValue placeholder={t('plugins.install.testEnvironmentPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                               {environmentList?.map((env) => (
@@ -165,10 +171,12 @@ if (usertour && !usertour.isIdentified()) {
                           </Select>
                         </div>
                         <div className="space-y-2 flex-1">
-                          <Label htmlFor="prod-environment">Prod Environment</Label>
+                          <Label htmlFor="prod-environment">
+                            {t('plugins.install.prodEnvironmentLabel')}
+                          </Label>
                           <Select value={prodEnvironmentId} onValueChange={setProdEnvironmentId}>
                             <SelectTrigger id="prod-environment" className="w-full">
-                              <SelectValue placeholder="Select prod environment" />
+                              <SelectValue placeholder={t('plugins.install.prodEnvironmentPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                               {environmentList?.map((env) => (
@@ -195,7 +203,7 @@ if (usertour && !usertour.isIdentified()) {
                           draggable
                           className="text-center"
                         >
-                          UserTour Helper
+                          {t('plugins.install.helperBookmarklet')}
                         </a>
                       </Button>
                       <Button
@@ -203,7 +211,7 @@ if (usertour && !usertour.isIdentified()) {
                         className="w-full text-center whitespace-normal break-words p-5"
                       >
                         <a href={generateBookmarklet} draggable className="text-center">
-                          Start UserTour
+                          {t('plugins.install.startBookmarklet')}
                         </a>
                       </Button>
                     </div>
@@ -214,7 +222,9 @@ if (usertour && !usertour.isIdentified()) {
           )}
           {activeView === 'browser-extension' && (
             <div className="flex items-center justify-center min-h-[400px]">
-              <p className="text-lg text-muted-foreground">Not available yet.</p>
+              <p className="text-lg text-muted-foreground">
+                {t('plugins.install.notAvailableYet')}
+              </p>
             </div>
           )}
         </div>

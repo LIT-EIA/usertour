@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext } from './builder-context';
 import { useUpdateContentVersionMutation } from '@usertour-packages/shared-hooks';
 
@@ -65,6 +66,7 @@ export function ChecklistProvider(props: ChecklistProviderProps): JSX.Element {
 
   const { invoke: updateContentVersionMutation } = useUpdateContentVersionMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [localData, setLocalData] = useState<ChecklistData | null>(data);
   const [currentItem, setCurrentItem] = useState<ChecklistItemType | null>(null);
 
@@ -92,13 +94,21 @@ export function ChecklistProvider(props: ChecklistProviderProps): JSX.Element {
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: error instanceof Error ? error.message : 'Failed to save checklist!',
+          title:
+            error instanceof Error ? error.message : t('contentBuilder.checklist.saveFailed'),
         });
       } finally {
         setIsLoading(false);
       }
     },
-    [currentVersion, updateContentVersionMutation, fetchContentAndVersion, toast, setIsLoading],
+    [
+      currentVersion,
+      updateContentVersionMutation,
+      fetchContentAndVersion,
+      toast,
+      setIsLoading,
+      t,
+    ],
   );
 
   // Create a debounced save function that only triggers when data actually changes

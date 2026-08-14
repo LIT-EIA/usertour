@@ -9,6 +9,7 @@ import {
 } from '@usertour-packages/dropdown-menu';
 import { Delete2Icon, EditIcon } from '@usertour-packages/icons';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { TeamMember } from '@usertour/types';
 import { TeamMemberRole } from '@usertour/types';
 import { CancelInviteDialog } from './member-cancel-dialog';
@@ -28,6 +29,7 @@ export const MemberListAction = (props: MemberListActionProps) => {
   const [open, setOpen] = useState(false);
   const { project } = useAppContext();
   const { refetch } = useMemberContext();
+  const { t } = useTranslation();
   const [openChangeRoleDialog, setOpenChangeRoleDialog] = useState(false);
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [openTransferOwnerDialog, setOpenTransferOwnerDialog] = useState(false);
@@ -47,7 +49,7 @@ export const MemberListAction = (props: MemberListActionProps) => {
               onClick={() => setOpen(true)}
             >
               <Delete2Icon className="w-6" width={16} height={16} />
-              <span>Cancel invite</span>
+              <span>{t('settings.team.cancelInviteMenuItem')}</span>
             </DropdownMenuItem>
           )}
           {!data.isInvite && (
@@ -58,7 +60,7 @@ export const MemberListAction = (props: MemberListActionProps) => {
                 onClick={() => setOpenChangeRoleDialog(true)}
               >
                 <EditIcon className="w-6" width={16} height={16} />
-                Change role
+                {t('settings.team.changeRoleMenuItem')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -66,7 +68,7 @@ export const MemberListAction = (props: MemberListActionProps) => {
                 onClick={() => setOpenTransferOwnerDialog(true)}
               >
                 <ArrowLeftRightIcon className="w-6" width={16} height={16} />
-                Transfer ownership to this user
+                {t('settings.team.transferOwnerMenuItem')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -75,7 +77,7 @@ export const MemberListAction = (props: MemberListActionProps) => {
                 onClick={() => setOpenRemoveDialog(true)}
               >
                 <Delete2Icon className="w-6" width={16} height={16} />
-                Remove member
+                {t('settings.team.removeMenuItem')}
               </DropdownMenuItem>
             </>
           )}

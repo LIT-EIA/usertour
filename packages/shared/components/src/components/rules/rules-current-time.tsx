@@ -13,6 +13,7 @@ import {
 import { cn } from '@usertour/helpers';
 import { format } from 'date-fns';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@usertour-packages/button';
 import { EXTENSION_CONTENT_RULES } from '@usertour-packages/constants';
@@ -25,6 +26,7 @@ import { RulesPopover, RulesPopoverContent, RulesPopoverTrigger } from './rules-
 import { RulesRemove } from './rules-remove';
 import { RulesConditionIcon, RulesConditionRightContent } from './rules-template';
 import { useRulesContext } from './rules-context';
+import { useDateFnsLocale } from '../../utils/date-locale';
 
 // Types
 export interface TimeData {
@@ -90,6 +92,8 @@ const RulesCurrentTimeDatePicker = (props: {
   setDate: Dispatch<SetStateAction<Date | undefined>>;
 }) => {
   const { date, setDate } = props;
+  const { t } = useTranslation();
+  const locale = useDateFnsLocale();
 
   return (
     <Popover>
@@ -102,7 +106,7 @@ const RulesCurrentTimeDatePicker = (props: {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, 'PPP') : <span>Pick a date</span>}
+          {date ? format(date, 'PPP', { locale }) : <span>{t('common.datePicker.pickDate')}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -149,6 +153,8 @@ const RulesCurrentTimeTimer = (props: {
 // Main Component
 export const RulesCurrentTime = (props: RulesCurrentTimeProps) => {
   const { index, data } = props;
+  const { t } = useTranslation();
+  const locale = useDateFnsLocale();
   const [openError, setOpenError] = useState(false);
   const [open, setOpen] = useState(false);
   const [errorInfo, setErrorInfo] = useState('');
@@ -214,23 +220,23 @@ export const RulesCurrentTime = (props: RulesCurrentTimeProps) => {
             <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
               <RulesPopoverTrigger>
                 <div className="grow pr-6 text-sm text-wrap break-all">
-                  Current time is {endDate ? 'between' : 'after'}{' '}
+                  {endDate ? t('conditions.types.time.between') : t('conditions.types.time.after')}{' '}
                   {startDate && (
                     <span className="font-bold">
-                      {`${format(startDate, 'PPP')}, ${startDateHour}:${startDateMinute}`}
+                      {`${format(startDate, 'PPP', { locale })}, ${startDateHour}:${startDateMinute}`}
                     </span>
                   )}
-                  {endDate && ' and '}
+                  {endDate && ` ${t('conditions.operators.and')} `}
                   {endDate && (
                     <span className="font-bold">
-                      {`${format(endDate, 'PPP')}, ${endDateHour}:${endDateMinute}`}
+                      {`${format(endDate, 'PPP', { locale })}, ${endDateHour}:${endDateMinute}`}
                     </span>
                   )}
                 </div>
               </RulesPopoverTrigger>
               <RulesPopoverContent>
                 <div className="flex flex-col space-y-1">
-                  <div>Start time</div>
+                  <div>{t('conditions.types.time.startLabel')}</div>
                   <div className="flex flex-row space-x-2 items-center">
                     <RulesCurrentTimeDatePicker date={startDate} setDate={setStartDate} />
                     <RulesCurrentTimeTimer
@@ -245,7 +251,7 @@ export const RulesCurrentTime = (props: RulesCurrentTimeProps) => {
                       onValueChange={setStartDateMinute}
                     />
                   </div>
-                  <div>End time</div>
+                  <div>{t('conditions.types.time.endLabel')}</div>
                   <div className="flex flex-row space-x-2 items-center">
                     <RulesCurrentTimeDatePicker date={endDate} setDate={setEndDate} />
                     <RulesCurrentTimeTimer

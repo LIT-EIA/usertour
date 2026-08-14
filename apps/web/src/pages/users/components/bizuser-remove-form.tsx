@@ -14,6 +14,7 @@ import { Segment } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback } from 'react';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 interface BizUserRemoveFormProps {
   bizUserIds: string[];
@@ -28,6 +29,7 @@ export const BizUserRemoveForm = (props: BizUserRemoveFormProps) => {
   const { invoke: deleteBizUserOnSegment, loading } = useDeleteBizUserOnSegmentMutation();
   const { refetch } = useUserListContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = useCallback(async () => {
     if (bizUserIds.length === 0) {
@@ -42,7 +44,7 @@ export const BizUserRemoveForm = (props: BizUserRemoveFormProps) => {
       if (ret.success) {
         toast({
           variant: 'success',
-          title: `${ret.count} users has been successfully removed`,
+          title: t('users.toast.segments.usersRemoved', { count: ret.count }),
         });
         onSubmit(true);
         refetch();
@@ -61,13 +63,13 @@ export const BizUserRemoveForm = (props: BizUserRemoveFormProps) => {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm removing users from segment</AlertDialogTitle>
+          <AlertDialogTitle>{t('users.dialogs.removeUsersFromSegment.title')}</AlertDialogTitle>
           <AlertDialogDescription>
             Confirm removing the selected users from {segment.name}?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t('users.actions.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleSubmit} loading={loading}>
             Yes, remove {bizUserIds.length} users
           </LoadingButton>

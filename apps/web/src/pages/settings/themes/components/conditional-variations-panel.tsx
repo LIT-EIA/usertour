@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DragHandleDots2Icon } from '@radix-ui/react-icons';
+import { useTranslation } from 'react-i18next';
 
 interface ConditionalVariationsPanelProps {
   variations: ThemeVariation[];
@@ -39,6 +40,7 @@ const SortableVariationItem = ({
   index: number;
   onClick: () => void;
 }) => {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: index.toString(),
   });
@@ -57,7 +59,9 @@ const SortableVariationItem = ({
         onClick={onClick}
       >
         <DragHandleDots2Icon className="h-4 w-4 cursor-move" {...attributes} {...listeners} />
-        <span className="text-sm font-medium">{variation.name || `Variation ${index + 1}`}</span>
+        <span className="text-sm font-medium">
+          {variation.name || t('themeBuilder.chrome.variationWithIndex', { index: index + 1 })}
+        </span>
       </Button>
     </div>
   );
@@ -68,6 +72,7 @@ export const ConditionalVariationsPanel = ({
   onVariationsChange,
   attributeList,
 }: ConditionalVariationsPanelProps) => {
+  const { t } = useTranslation();
   const [openModal, setOpenModal] = useState(false);
   const [editingVariation, setEditingVariation] = useState<ThemeVariation | null>(null);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
@@ -136,13 +141,18 @@ export const ConditionalVariationsPanel = ({
     <div className="space-y-4">
       <div className="flex flex-col justify-between space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Conditional variations</span>
+          <span className="text-sm font-medium">
+            {t('themeBuilder.chrome.conditionalVariationsLabel')}
+          </span>
           <QuestionTooltip>
-            Create theme variations that automatically apply based on user attributes. All matching
-            variations will be applied in the order shown below. <br />
-            Examples:
-            <br />• Apply dark theme when user has dark mode enabled
-            <br />• Use premium colors for paid users
+            {t('themeBuilder.tooltips.variations')
+              .split('\n')
+              .map((line, index) => (
+                <span key={index}>
+                  {index > 0 && <br />}
+                  {line}
+                </span>
+              ))}
           </QuestionTooltip>
         </div>
 
@@ -177,7 +187,7 @@ export const ConditionalVariationsPanel = ({
           className="gap-2 hover:no-underline w-fit p-0"
         >
           <PlusIcon className="h-4 w-4" />
-          Add Conditional Variation
+          {t('themeBuilder.actions.addVariation')}
         </Button>
       </div>
 

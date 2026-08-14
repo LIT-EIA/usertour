@@ -17,6 +17,7 @@ import {
   useGetAuthConfigQuery,
   useLoginMutation,
 } from '@usertour-packages/shared-hooks';
+import { useTranslation } from 'react-i18next';
 
 // Form validation schema
 const signinFormSchema = z.object({
@@ -176,6 +177,7 @@ const SignInSocialProviders = () => {
     isGoogleAuthEnabled,
     isGithubAuthEnabled,
   } = useSignInContext();
+  const { t } = useTranslation();
 
   if (!isGoogleAuthEnabled && !isGithubAuthEnabled) return null;
 
@@ -191,7 +193,7 @@ const SignInSocialProviders = () => {
         >
           {isGoogleAuthLoading && <SpinnerIcon className="w-4 h-4 animate-spin mr-1" />}
           <GoogleIcon className="w-4 h-4 mr-2" />
-          {isGoogleAuthLoading ? 'Signing in...' : 'Continue with Google'}
+          {isGoogleAuthLoading ? t('auth.social.signingIn') : t('auth.social.continueWithGoogle')}
         </Button>
       )}
       {isGithubAuthEnabled && (
@@ -204,7 +206,7 @@ const SignInSocialProviders = () => {
         >
           {isGithubAuthLoading && <SpinnerIcon className="w-4 h-4 animate-spin mr-1" />}
           <GithubIcon className="w-4 h-4 mr-2" />
-          {isGithubAuthLoading ? 'Signing in...' : 'Continue with Github'}
+          {isGithubAuthLoading ? t('auth.social.signingIn') : t('auth.social.continueWithGithub')}
         </Button>
       )}
     </div>
@@ -216,6 +218,7 @@ SignInSocialProviders.displayName = 'SignInSocialProviders';
 // Divider component
 const SignInDivider = () => {
   const { isGoogleAuthEnabled, isGithubAuthEnabled, isEmailAuthEnabled } = useSignInContext();
+  const { t } = useTranslation();
 
   // Only show divider if we have both social providers and email auth enabled
   if (!(isGoogleAuthEnabled || isGithubAuthEnabled) || !isEmailAuthEnabled) return null;
@@ -227,7 +230,7 @@ const SignInDivider = () => {
       </div>
       <div className="relative flex justify-center text-sm leading-5">
         <span className="px-2 font-medium bg-white text-background-accent dark:text-foreground/60 dark:bg-background">
-          Or login with email
+          {t('auth.social.divider')}
         </span>
       </div>
     </div>
@@ -242,7 +245,8 @@ interface SignInFormProps {
 }
 
 const SignInForm = (props: SignInFormProps) => {
-  const { buttonText = 'Login' } = props;
+  const { t } = useTranslation();
+  const { buttonText = t('auth.signIn.submitButton') } = props;
   const { form, isLoading, isEmailAuthEnabled } = useSignInContext();
 
   // Don't render form if email auth is disabled
@@ -257,7 +261,7 @@ const SignInForm = (props: SignInFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input placeholder="Enter your email" type="email" {...field} />
+                <Input placeholder={t('auth.signIn.emailPlaceholder')} type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -271,13 +275,13 @@ const SignInForm = (props: SignInFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input placeholder="Enter your password" type="password" {...field} />
+                <Input placeholder={t('auth.signIn.passwordPlaceholder')} type="password" {...field} />
               </FormControl>
               <FormMessage />
               <div className="flex flex-row justify-end">
                 <span className="text-sm font-medium text-muted-foreground leading-none">
                   <Link to="/auth/reset-password" className="hover:text-primary">
-                    Forgot your password?
+                    {t('auth.signIn.forgotPassword')}
                   </Link>
                 </span>
               </div>

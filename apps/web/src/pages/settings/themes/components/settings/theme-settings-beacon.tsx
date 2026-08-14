@@ -1,8 +1,10 @@
 import { ThemeSelectColor } from '@/components/molecules/theme/theme-select-color';
 import { ThemeSettingInput } from '@/components/molecules/theme/theme-setting-input';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsBeacon = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
   const update = (data: Partial<typeof settings.launcherBeacon>) => {
     const { launcherBeacon } = settings;
@@ -15,7 +17,7 @@ export const ThemeSettingsBeacon = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
         <ThemeSelectColor
-          text="Beacon color"
+          text={t('themeBuilder.fields.beacon.color')}
           name="beacon-color"
           defaultColor={settings.launcherBeacon.color}
           showAutoButton={true}
@@ -26,7 +28,7 @@ export const ThemeSettingsBeacon = () => {
           }}
         />
         <ThemeSettingInput
-          text="Beacon size"
+          text={t('themeBuilder.fields.beacon.size')}
           name="beacon-size"
           defaultValue={String(settings.launcherBeacon.size)}
           onChange={(value: string) => {

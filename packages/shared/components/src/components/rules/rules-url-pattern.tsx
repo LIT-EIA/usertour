@@ -10,6 +10,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { useCallback, useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
 import { RulesError, RulesErrorAnchor, RulesErrorContent } from './rules-error';
 import { RulesLogic } from './rules-logic';
@@ -30,6 +31,7 @@ export interface RulesUrlPatternProps {
 
 export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
   const { data = {}, index } = props;
+  const { t } = useTranslation();
   const { excludes = [], includes = [] } = data;
   const [excludesValues, setExcludesValues] = useState(excludes);
   const [includesValues, setIncludesValues] = useState(includes);
@@ -119,14 +121,16 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
             </RulesConditionIcon>
             <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
               <RulesPopoverTriggerWrapper>
-                Current page matches <span className="font-bold">{includesValues.join(',')}</span>{' '}
-                and does not match <span className="font-bold">{excludesValues.join(',')}</span>
+                {t('conditions.types.currentPage.prefix')} {t('conditions.types.currentPage.matches')}{' '}
+                <span className="font-bold">{includesValues.join(',')}</span>{' '}
+                {t('conditions.operators.and')} {t('conditions.types.currentPage.notMatches')}{' '}
+                <span className="font-bold">{excludesValues.join(',')}</span>
               </RulesPopoverTriggerWrapper>
               <RulesPopoverContent>
                 <div className=" flex flex-col space-y-2">
                   <div className=" flex flex-col space-y-1">
                     <div className="flex flex-row">
-                      <div className="grow">URL matches</div>
+                      <div className="grow">{t('conditions.types.currentPage.urlMatches')}</div>
                       <div className="flex-none inline-flex px-2 items-center">
                         <TooltipProvider>
                           <Tooltip>
@@ -141,7 +145,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                               />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-foreground text-background">
-                              Add URL pattern
+                              {t('conditions.types.currentPage.addPattern')}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -177,7 +181,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                                   />
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs bg-foreground text-background">
-                                  Remove URL pattern
+                                  {t('conditions.types.currentPage.removePattern')}
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -188,7 +192,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                   </div>
                   <div className=" flex flex-col space-y-1">
                     <div className="flex flex-row">
-                      <div className="grow">URL does not match</div>
+                      <div className="grow">{t('conditions.types.currentPage.urlNotMatches')}</div>
                       <div className="flex-none inline-flex px-2 items-center">
                         <TooltipProvider>
                           <Tooltip>
@@ -203,7 +207,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                               />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-foreground text-background">
-                              Add URL pattern
+                              {t('conditions.types.currentPage.addPattern')}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -239,7 +243,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                                   />
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs bg-foreground text-background">
-                                  Remove URL pattern
+                                  {t('conditions.types.currentPage.removePattern')}
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -254,7 +258,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <span>Read full URL pattern matching guide</span>
+                    <span>{t('conditions.types.currentPage.docsLink')}</span>
                     <OpenInNewWindowIcon className="size-3.5" />
                   </a>
                 </div>

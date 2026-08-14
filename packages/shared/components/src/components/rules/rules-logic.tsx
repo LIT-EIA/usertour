@@ -1,6 +1,7 @@
 import { Button } from '@usertour-packages/button';
 import { Tabs, TabsList, TabsTrigger } from '@usertour-packages/tabs';
 import { cn } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 import { useRulesContext } from './rules-context';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
 
@@ -12,6 +13,7 @@ export const RulesLogic = (props: RulesLogicProps) => {
   const { index, disabled = false } = props;
   const { conditionType, setConditionType } = useRulesGroupContext();
   const { isHorizontal, isShowIf } = useRulesContext();
+  const { t } = useTranslation();
 
   const className1 = isHorizontal ? 'w-1/2 h-auto' : 'w-1/2 h-6';
   if (index === 0 && isShowIf) {
@@ -21,7 +23,7 @@ export const RulesLogic = (props: RulesLogicProps) => {
         disabled={disabled}
         className={cn('flex-none py-2 w-[88px]', isHorizontal ? 'h-auto' : 'h-7')}
       >
-        If
+        {t('conditions.logic.if')}
       </Button>
     );
   }
@@ -33,10 +35,10 @@ export const RulesLogic = (props: RulesLogicProps) => {
       <Tabs className="h-auto flex-none">
         <TabsList className="h-auto  w-[88px]">
           <TabsTrigger value="and" className={className1} disabled={true}>
-            and
+            {t('conditions.operators.and')}
           </TabsTrigger>
           <TabsTrigger value="or" className={className1} disabled={true}>
-            or
+            {t('conditions.operators.or')}
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -57,10 +59,10 @@ export const RulesLogic = (props: RulesLogicProps) => {
       >
         <TabsList className="h-auto  w-[88px]">
           <TabsTrigger value="and" className={className1}>
-            and
+            {t('conditions.operators.and')}
           </TabsTrigger>
           <TabsTrigger value="or" className={className1}>
-            or
+            {t('conditions.operators.or')}
           </TabsTrigger>
         </TabsList>
       </Tabs>

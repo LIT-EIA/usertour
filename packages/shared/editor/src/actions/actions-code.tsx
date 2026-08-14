@@ -4,6 +4,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { EDITOR_RICH_ACTION_CONTENT } from '@usertour-packages/constants';
 import { getCodeError } from '@usertour/helpers';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useActionsGroupContext } from '../contexts/actions-group-context';
 import { useContentActionsContext } from '../contexts/content-actions-context';
 import {
@@ -85,18 +86,20 @@ const CodeEditor = ({ value, onChange }: { value: string; onChange: (value: stri
 
 // Memoized display text component
 const CodeDisplayText = ({ value }: { value: string }) => {
+  const { t } = useTranslation();
   const displayText = useMemo(() => {
     if (!value.trim()) {
-      return 'Evaluate code...';
+      return t('actions.types.javascriptEvaluate.placeholder');
     }
 
     // Truncate long code for display
     const maxLength = 50;
     const trimmedValue = value.trim();
+    const prefix = t('actions.types.javascriptEvaluate.prefix');
     return trimmedValue.length > maxLength
-      ? `Evaluate ${trimmedValue.substring(0, maxLength)}...`
-      : `Evaluate ${trimmedValue}`;
-  }, [value]);
+      ? `${prefix} ${trimmedValue.substring(0, maxLength)}...`
+      : `${prefix} ${trimmedValue}`;
+  }, [value, t]);
 
   return (
     <span className="break-words" style={{ wordBreak: 'break-word' }}>

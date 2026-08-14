@@ -29,6 +29,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useResetUserPasswordByCodeMutation } from '@usertour-packages/shared-hooks';
+import { useTranslation } from 'react-i18next';
 
 const formSchema = z.object({
   password: z
@@ -58,6 +59,7 @@ export const PasswordReset = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const { code } = useParams();
+  const { t } = useTranslation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -70,13 +72,13 @@ export const PasswordReset = () => {
     if (password !== repassword) {
       return toast({
         variant: 'destructive',
-        title: 'The passwords entered twice are inconsistent.',
+        title: t('auth.errors.passwordsDoNotMatch'),
       });
     }
     if (!code) {
       return toast({
         variant: 'destructive',
-        title: 'Reset code is missing.',
+        title: t('auth.errors.resetCodeMissing'),
       });
     }
     try {
@@ -88,7 +90,7 @@ export const PasswordReset = () => {
       }
       toast({
         variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
+        title: t('auth.errors.genericFailure'),
       });
     } catch (error) {
       toast({
@@ -105,11 +107,10 @@ export const PasswordReset = () => {
         <Card>
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl  font-semibold tracking-tight">
-              Reset your password
+              {t('auth.passwordReset.title')}
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
-              So, you forgot your password? No biggie, it happens to all of us Just pick a new one
-              below.
+              {t('auth.passwordReset.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -119,9 +120,9 @@ export const PasswordReset = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New password</FormLabel>
+                    <FormLabel>{t('auth.passwordReset.newPasswordLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Pick a strong password" type="password" {...field} />
+                      <Input placeholder={t('auth.passwordReset.newPasswordPlaceholder')} type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,9 +135,9 @@ export const PasswordReset = () => {
                 name="repassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Repeat New password</FormLabel>
+                    <FormLabel>{t('auth.passwordReset.repeatPasswordLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Try the same password again" type="password" {...field} />
+                      <Input placeholder={t('auth.passwordReset.repeatPasswordPlaceholder')} type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -147,7 +148,7 @@ export const PasswordReset = () => {
           <CardFooter className="flex flex-col">
             <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-              Change password
+              {t('auth.passwordReset.submitButton')}
             </Button>
           </CardFooter>
         </Card>

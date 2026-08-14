@@ -5,6 +5,7 @@ import { EXTENSION_SIDEBAR_MAIN } from '@usertour-packages/constants';
 import { cn } from '@usertour/helpers';
 import { useRef } from 'react';
 import { useBuilderContext } from '../../contexts';
+import { useSidebarWidthClass } from '../../hooks/use-sidebar-width';
 
 interface SidebarContainerProps {
   children: React.ReactNode;
@@ -13,11 +14,13 @@ interface SidebarContainerProps {
 export const SidebarContainer = ({ children, className }: SidebarContainerProps) => {
   const { position, zIndex } = useBuilderContext();
   const sidbarRef = useRef<HTMLDivElement | null>(null);
+  const widthClass = useSidebarWidthClass();
   return (
     <div
       style={{ zIndex: zIndex + EXTENSION_SIDEBAR_MAIN }}
       className={cn(
-        'w-80 h-screen p-2 fixed top-0',
+        widthClass,
+        'h-screen p-2 fixed top-0',
         position === 'left' ? 'left-0' : 'right-0',
         className,
       )}

@@ -25,12 +25,14 @@ import { useNavigate } from 'react-router-dom';
 import { IntegrationObjectMappingModel } from '@usertour/types';
 import { ObjectMappingReadonly } from './object-mapping/object-mapping-readonly';
 import { ObjectMappingDialog } from './object-mapping/object-mapping-dialog';
+import { useTranslation } from 'react-i18next';
 
 const INTEGRATION_PROVIDER = 'salesforce' as const;
 
 export const SalesforceIntegration = () => {
   const { environment } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -69,35 +71,35 @@ export const SalesforceIntegration = () => {
   const handleConnect = useCallback(async () => {
     if (!authUrl) {
       toast({
-        title: 'Error',
-        description: 'Failed to get Salesforce auth URL',
+        title: t('common.error'),
+        description: t('settings.integrations.salesforce.authUrlFailedToast'),
         variant: 'destructive',
       });
       return;
     }
 
     window.location.href = authUrl;
-  }, [authUrl, toast]);
+  }, [authUrl, toast, t]);
 
   const handleDisconnect = useCallback(async () => {
     try {
       setIsDisconnecting(true);
       await disconnectIntegration(environmentId, INTEGRATION_PROVIDER);
       toast({
-        title: 'Success',
-        description: 'Successfully disconnected from Salesforce',
+        title: t('common.success'),
+        description: t('settings.integrations.salesforce.disconnectSuccessToast'),
       });
       navigate('/project/1/settings/integrations');
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to disconnect from Salesforce',
+        title: t('common.error'),
+        description: t('settings.integrations.salesforce.disconnectFailureToast'),
         variant: 'destructive',
       });
     } finally {
       setIsDisconnecting(false);
     }
-  }, [environmentId, disconnectIntegration, toast, navigate]);
+  }, [environmentId, disconnectIntegration, toast, navigate, t]);
 
   if (isDataLoading || isMappingsLoading) {
     return (
@@ -126,21 +128,24 @@ export const SalesforceIntegration = () => {
           <CardTitle className="space-between flex items-center gap-4 flex-row items-center relative">
             <img
               src={integrationInfo?.imagePath}
-              alt={`${integrationInfo?.name} logo`}
+              alt={t('settings.integrations.list.logoAlt', { name: integrationInfo?.name })}
               className="w-12 h-12"
             />
             <div className="flex flex-col gap-1">
-              <span className="text-lg font-semibold">{integrationInfo?.name} connection</span>
-              <div className="text-sm text-muted-foreground font-normal">
-                Connected as{' '}
-                <span className="font-bold text-foreground ">
-                  {currentIntegration?.integrationOAuth?.data?.email}
-                </span>{' '}
-                at{' '}
-                <span className="font-bold text-foreground">
-                  {currentIntegration?.integrationOAuth?.data?.organizationName}
-                </span>
-              </div>
+              <span className="text-lg font-semibold">
+                {t('settings.integrations.salesforce.connectionTitle', {
+                  name: integrationInfo?.name,
+                })}
+              </span>
+              <div
+                className="text-sm text-muted-foreground font-normal"
+                dangerouslySetInnerHTML={{
+                  __html: t('settings.integrations.salesforce.connectedAs', {
+                    email: currentIntegration?.integrationOAuth?.data?.email,
+                    organization: currentIntegration?.integrationOAuth?.data?.organizationName,
+                  }),
+                }}
+              />
             </div>
 
             <DropdownMenu>
@@ -156,7 +161,7 @@ export const SalesforceIntegration = () => {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem className="cursor-pointer" onClick={handleConnect}>
                   <ConnectIcon className="mr-1 w-4 h-4" />
-                  Reconnect
+                  {t('settings.integrations.salesforce.reconnect')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-red-600 cursor-pointer"
@@ -168,7 +173,7 @@ export const SalesforceIntegration = () => {
                   ) : (
                     <DisconnectIcon className="mr-1 w-4 h-4" />
                   )}
-                  Disconnect
+                  {t('settings.integrations.salesforce.disconnect')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -179,7 +184,9 @@ export const SalesforceIntegration = () => {
       {/* Existing Object Mappings */}
       {existingMappings && existingMappings.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">Existing Object Mappings</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            {t('settings.integrations.salesforce.existingMappingsTitle')}
+          </h3>
           {existingMappings.map((mapping: IntegrationObjectMappingModel) => (
             <ObjectMappingReadonly
               key={mapping.id}
@@ -200,7 +207,7 @@ export const SalesforceIntegration = () => {
           <div className="flex items-center gap-2">
             <PlusIcon className="h-6 w-6" />
             <span className="text-sm text-muted-foreground">
-              Set up a new mapping between Salesforce and Usertour objects
+              {t('settings.integrations.salesforce.newMappingCta')}
             </span>
           </div>
         </CardContent>

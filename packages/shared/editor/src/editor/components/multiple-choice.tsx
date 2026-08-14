@@ -10,6 +10,7 @@ import { TooltipContent } from '@usertour-packages/tooltip';
 import { Tooltip, TooltipTrigger } from '@usertour-packages/tooltip';
 import { TooltipProvider } from '@usertour-packages/tooltip';
 import { useCallback, useEffect, useState, useMemo, useRef, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../../actions';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import {
@@ -23,10 +24,6 @@ import { isEmptyString } from '@usertour/helpers';
 import { cn } from '@usertour/helpers';
 import { BindAttribute } from './bind-attribute';
 import { BizAttributeTypes } from '@usertour/types';
-
-// Constants
-const DEFAULT_BUTTON_TEXT = 'Submit';
-const DEFAULT_OPTION_PREFIX = 'Option';
 
 interface ContentEditorMultipleChoiceProps {
   element: ContentEditorMultipleChoiceElement;
@@ -79,19 +76,24 @@ const CheckboxOption = memo(
       field: keyof ContentEditorMultipleChoiceOption,
       value: string | boolean,
     ) => void;
-  }) => (
-    <div className={itemBaseClass} key={index}>
-      <Checkbox
-        checked={option.checked}
-        id={`c1${index}`}
-        className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background"
-        onCheckedChange={(checked) => handleOptionChange(index, 'checked', checked)}
-      />
-      <Label htmlFor={`c1${index}`} className="grow cursor-pointer text-sm">
-        {option.label || option.value || `${DEFAULT_OPTION_PREFIX} ${index + 1}`}
-      </Label>
-    </div>
-  ),
+  }) => {
+    const { t } = useTranslation();
+    return (
+      <div className={itemBaseClass} key={index}>
+        <Checkbox
+          checked={option.checked}
+          id={`c1${index}`}
+          className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background"
+          onCheckedChange={(checked) => handleOptionChange(index, 'checked', checked)}
+        />
+        <Label htmlFor={`c1${index}`} className="grow cursor-pointer text-sm">
+          {option.label ||
+            option.value ||
+            `${t('contentBuilder.editor.multipleChoice.optionPrefix')} ${index + 1}`}
+        </Label>
+      </div>
+    );
+  },
 );
 
 CheckboxOption.displayName = 'CheckboxOption';
@@ -104,22 +106,27 @@ const OtherOptionEditor = memo(
   }: {
     itemBaseClass: string;
     isRadio?: boolean;
-  }) => (
-    <div className={cn(itemBaseClass)}>
-      {isRadio ? (
-        <RadioGroupItem
-          value="other"
-          id="other-radio"
-          className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background"
-        />
-      ) : (
-        <Checkbox className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background" />
-      )}
-      <div className="flex items-center grow gap-2 relative">
-        <span className="grow cursor-pointer leading-none">Other...</span>
+  }) => {
+    const { t } = useTranslation();
+    return (
+      <div className={cn(itemBaseClass)}>
+        {isRadio ? (
+          <RadioGroupItem
+            value="other"
+            id="other-radio"
+            className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background"
+          />
+        ) : (
+          <Checkbox className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background" />
+        )}
+        <div className="flex items-center grow gap-2 relative">
+          <span className="grow cursor-pointer leading-none">
+            {t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
+          </span>
+        </div>
       </div>
-    </div>
-  ),
+    );
+  },
 );
 
 OtherOptionEditor.displayName = 'OtherOptionEditor';
@@ -138,58 +145,63 @@ const OptionsEditor = memo(
       value: string | boolean,
     ) => void;
     handleDataChange: (data: Partial<ContentEditorMultipleChoiceElement['data']>) => void;
-  }) => (
-    <div className="space-y-2">
-      <Label>Options</Label>
-      {options.map((option, index) => (
-        <div key={index} className="flex gap-2">
-          <Input
-            value={option.value}
-            onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
-            placeholder="Value"
-          />
-          <Input
-            value={option.label}
-            onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
-            placeholder="Option label"
-          />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  className="flex-none hover:bg-red-200"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleDataChange({
-                      options: options.filter((_, i) => i !== index),
-                    })
-                  }
-                >
-                  <DeleteIcon className="fill-red-500" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">Remove option</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      ))}
+  }) => {
+    const { t } = useTranslation();
+    return (
+      <div className="space-y-2">
+        <Label>{t('contentBuilder.editor.multipleChoice.options')}</Label>
+        {options.map((option, index) => (
+          <div key={index} className="flex gap-2">
+            <Input
+              value={option.value}
+              onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
+              placeholder={t('contentBuilder.editor.multipleChoice.optionValue')}
+            />
+            <Input
+              value={option.label}
+              onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
+              placeholder={t('contentBuilder.editor.multipleChoice.optionLabel')}
+            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="flex-none hover:bg-red-200"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      handleDataChange({
+                        options: options.filter((_, i) => i !== index),
+                      })
+                    }
+                  >
+                    <DeleteIcon className="fill-red-500" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  {t('contentBuilder.editor.multipleChoice.removeOption')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ))}
 
-      <Button
-        onClick={() =>
-          handleDataChange({
-            options: [...options, { label: '', value: '', checked: false }],
-          })
-        }
-        size="sm"
-        variant={'link'}
-        className="hover:no-underline"
-      >
-        <PlusIcon width={16} height={16} />
-        Add answer option
-      </Button>
-    </div>
-  ),
+        <Button
+          onClick={() =>
+            handleDataChange({
+              options: [...options, { label: '', value: '', checked: false }],
+            })
+          }
+          size="sm"
+          variant={'link'}
+          className="hover:no-underline"
+        >
+          <PlusIcon width={16} height={16} />
+          {t('contentBuilder.editor.multipleChoice.addOption')}
+        </Button>
+      </div>
+    );
+  },
 );
 
 OptionsEditor.displayName = 'OptionsEditor';
@@ -202,35 +214,40 @@ const MultipleSelectionSettings = memo(
   }: {
     localData: ContentEditorMultipleChoiceElement['data'];
     handleDataChange: (data: Partial<ContentEditorMultipleChoiceElement['data']>) => void;
-  }) => (
-    <>
-      <Label className="flex items-center gap-1">Number of options required</Label>
-      <div className="flex flex-row gap-2 items-center">
-        <Input
-          type="number"
-          value={localData.lowRange}
-          placeholder="Default"
-          onChange={(e) => handleDataChange({ lowRange: Number(e.target.value) })}
-        />
-        <p>-</p>
-        <Input
-          type="number"
-          value={localData.highRange}
-          placeholder="Default"
-          onChange={(e) => handleDataChange({ highRange: Number(e.target.value) })}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="button-text">Submit button text</Label>
-        <Input
-          id="button-text"
-          value={localData.buttonText}
-          onChange={(e) => handleDataChange({ buttonText: e.target.value })}
-          placeholder="Enter button text"
-        />
-      </div>
-    </>
-  ),
+  }) => {
+    const { t } = useTranslation();
+    return (
+      <>
+        <Label className="flex items-center gap-1">
+          {t('contentBuilder.editor.multipleChoice.numberRequired')}
+        </Label>
+        <div className="flex flex-row gap-2 items-center">
+          <Input
+            type="number"
+            value={localData.lowRange}
+            placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
+            onChange={(e) => handleDataChange({ lowRange: Number(e.target.value) })}
+          />
+          <p>-</p>
+          <Input
+            type="number"
+            value={localData.highRange}
+            placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
+            onChange={(e) => handleDataChange({ highRange: Number(e.target.value) })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="button-text">{t('contentBuilder.editor.multipleChoice.submitButton')}</Label>
+          <Input
+            id="button-text"
+            value={localData.buttonText}
+            onChange={(e) => handleDataChange({ buttonText: e.target.value })}
+            placeholder={t('contentBuilder.editor.multipleChoice.submitButtonPlaceholder')}
+          />
+        </div>
+      </>
+    );
+  },
 );
 
 MultipleSelectionSettings.displayName = 'MultipleSelectionSettings';
@@ -250,6 +267,7 @@ const SettingsSwitches = memo(
     };
   }) => {
     const { zIndex, projectId } = contextProps;
+    const { t } = useTranslation();
 
     return (
       <div className="space-y-2">
@@ -260,7 +278,7 @@ const SettingsSwitches = memo(
             className="data-[state=unchecked]:bg-muted"
             onCheckedChange={(checked) => handleDataChange({ shuffleOptions: checked })}
           />
-          <Label htmlFor="shuffle">Shuffle option order</Label>
+          <Label htmlFor="shuffle">{t('contentBuilder.editor.multipleChoice.shuffle')}</Label>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -270,7 +288,7 @@ const SettingsSwitches = memo(
             className="data-[state=unchecked]:bg-muted"
             onCheckedChange={(checked) => handleDataChange({ enableOther: checked })}
           />
-          <Label htmlFor="other">Enable "Other" option</Label>
+          <Label htmlFor="other">{t('contentBuilder.editor.multipleChoice.enableOther')}</Label>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -280,7 +298,9 @@ const SettingsSwitches = memo(
             className="data-[state=unchecked]:bg-muted"
             onCheckedChange={(checked) => handleDataChange({ allowMultiple: checked })}
           />
-          <Label htmlFor="multiple">Allow multiple selection</Label>
+          <Label htmlFor="multiple">
+            {t('contentBuilder.editor.multipleChoice.allowMultiple')}
+          </Label>
         </div>
         <BindAttribute
           zIndex={zIndex}
@@ -300,6 +320,7 @@ SettingsSwitches.displayName = 'SettingsSwitches';
 
 export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoiceProps) => {
   const { element, id } = props;
+  const { t } = useTranslation();
   const {
     updateElement,
     zIndex,
@@ -392,11 +413,13 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
             onCheckedChange={(checked) => handleOptionChange(index, 'checked', checked)}
           />
           <Label htmlFor={`c1${index}`} className="grow cursor-pointer text-sm">
-            {option.label || option.value || `${DEFAULT_OPTION_PREFIX} ${index + 1}`}
+            {option.label ||
+              option.value ||
+              `${t('contentBuilder.editor.multipleChoice.optionPrefix')} ${index + 1}`}
           </Label>
         </div>
       )),
-    [localData.options, handleOptionChange],
+    [localData.options, handleOptionChange, t],
   );
 
   return (
@@ -417,7 +440,9 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                           className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background"
                         />
                         <div className="flex items-center grow gap-2 relative">
-                          <span className="grow cursor-pointer leading-none">Other...</span>
+                          <span className="grow cursor-pointer leading-none">
+                            {t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -429,12 +454,16 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                       <div className={cn(itemBaseClass)}>
                         <Checkbox className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background" />
                         <div className="flex items-center grow gap-2 relative">
-                          <span className="grow cursor-pointer leading-none">Other...</span>
+                          <span className="grow cursor-pointer leading-none">
+                            {t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
+                          </span>
                         </div>
                       </div>
                     )}
                     <div className="flex justify-center w-full">
-                      <Button forSdk={true}>{localData.buttonText || DEFAULT_BUTTON_TEXT}</Button>
+                      <Button forSdk={true}>
+                        {localData.buttonText || t('contentBuilder.editor.textInput.defaultButtonText')}
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -451,15 +480,15 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
             >
               <div className="flex flex-col gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="question-name">Question name</Label>
+                  <Label htmlFor="question-name">{t('contentBuilder.editor.question.name')}</Label>
                   <Input
                     id="question-name"
                     value={localData.name || ''}
                     onChange={(e) => handleDataChange({ name: e.target.value })}
-                    placeholder="Enter question name"
+                    placeholder={t('contentBuilder.editor.multipleChoice.namePlaceholder')}
                   />
                 </div>
-                <Label>When answer is submitted</Label>
+                <Label>{t('contentBuilder.editor.question.whenSubmitted')}</Label>
                 <ContentActions
                   zIndex={zIndex}
                   isShowIf={false}
@@ -474,18 +503,18 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                 />
 
                 <div className="space-y-2">
-                  <Label>Options</Label>
+                  <Label>{t('contentBuilder.editor.multipleChoice.options')}</Label>
                   {localData.options.map((option, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
                         value={option.value}
                         onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
-                        placeholder="Value"
+                        placeholder={t('contentBuilder.editor.multipleChoice.optionValue')}
                       />
                       <Input
                         value={option.label}
                         onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
-                        placeholder="Option label"
+                        placeholder={t('contentBuilder.editor.multipleChoice.optionLabel')}
                       />
                       <TooltipProvider>
                         <Tooltip>
@@ -503,7 +532,9 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                               <DeleteIcon className="fill-red-500" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">Remove option</TooltipContent>
+                          <TooltipContent className="max-w-xs">
+                            {t('contentBuilder.editor.multipleChoice.removeOption')}
+                          </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>
@@ -520,34 +551,38 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                     className="hover:no-underline"
                   >
                     <PlusIcon width={16} height={16} />
-                    Add answer option
+                    {t('contentBuilder.editor.multipleChoice.addOption')}
                   </Button>
                 </div>
                 {localData.allowMultiple && (
                   <>
-                    <Label className="flex items-center gap-1">Number of options required</Label>
+                    <Label className="flex items-center gap-1">
+                      {t('contentBuilder.editor.multipleChoice.numberRequired')}
+                    </Label>
                     <div className="flex flex-row gap-2 items-center">
                       <Input
                         type="number"
                         value={localData.lowRange}
-                        placeholder="Default"
+                        placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                         onChange={(e) => handleDataChange({ lowRange: Number(e.target.value) })}
                       />
                       <p>-</p>
                       <Input
                         type="number"
                         value={localData.highRange}
-                        placeholder="Default"
+                        placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                         onChange={(e) => handleDataChange({ highRange: Number(e.target.value) })}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="button-text">Submit button text</Label>
+                      <Label htmlFor="button-text">
+                        {t('contentBuilder.editor.multipleChoice.submitButton')}
+                      </Label>
                       <Input
                         id="button-text"
                         value={localData.buttonText}
                         onChange={(e) => handleDataChange({ buttonText: e.target.value })}
-                        placeholder="Enter button text"
+                        placeholder={t('contentBuilder.editor.multipleChoice.submitButtonPlaceholder')}
                       />
                     </div>
                   </>
@@ -561,7 +596,7 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                       className="data-[state=unchecked]:bg-muted"
                       onCheckedChange={(checked) => handleDataChange({ shuffleOptions: checked })}
                     />
-                    <Label htmlFor="shuffle">Shuffle option order</Label>
+                    <Label htmlFor="shuffle">{t('contentBuilder.editor.multipleChoice.shuffle')}</Label>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -571,7 +606,7 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                       className="data-[state=unchecked]:bg-muted"
                       onCheckedChange={(checked) => handleDataChange({ enableOther: checked })}
                     />
-                    <Label htmlFor="other">Enable "Other" option</Label>
+                    <Label htmlFor="other">{t('contentBuilder.editor.multipleChoice.enableOther')}</Label>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -581,7 +616,9 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                       className="data-[state=unchecked]:bg-muted"
                       onCheckedChange={(checked) => handleDataChange({ allowMultiple: checked })}
                     />
-                    <Label htmlFor="multiple">Allow multiple selection</Label>
+                    <Label htmlFor="multiple">
+                      {t('contentBuilder.editor.multipleChoice.allowMultiple')}
+                    </Label>
                   </div>
                   <BindAttribute
                     zIndex={zIndex}
@@ -602,7 +639,7 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent side="bottom" style={{ zIndex }}>
-        Question name is required
+        {t('contentBuilder.editor.question.nameRequired')}
       </EditorErrorContent>
     </EditorError>
   );
@@ -632,7 +669,9 @@ const OtherOptionSerialize = memo(
     otherInputRef: React.RefObject<HTMLInputElement>;
     onClick?: (element: ContentEditorMultipleChoiceElement, value?: any) => void;
     itemBaseClass: string;
-  }) => (
+  }) => {
+    const { t } = useTranslation();
+    return (
     <div className={cn(itemBaseClass, isEditing && 'hover:bg-transparent')}>
       <RadioGroupItem
         value="other"
@@ -644,7 +683,7 @@ const OtherOptionSerialize = memo(
           <>
             <input
               ref={otherInputRef}
-              placeholder="Other..."
+              placeholder={t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
               value={otherValue}
               onChange={(e) => {
                 setOtherValue(e.target.value);
@@ -672,12 +711,13 @@ const OtherOptionSerialize = memo(
               setIsEditing(true);
             }}
           >
-            {otherValue || 'Other...'}
+            {otherValue || t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
           </span>
         )}
       </div>
     </div>
-  ),
+    );
+  },
 );
 
 OtherOptionSerialize.displayName = 'OtherOptionSerialize';
@@ -688,6 +728,7 @@ export const ContentEditorMultipleChoiceSerialize = memo(
     onClick?: (element: ContentEditorMultipleChoiceElement, value?: any) => Promise<void> | void;
   }) => {
     const { element, onClick } = props;
+    const { t } = useTranslation();
     const [otherValue, setOtherValue] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [selectedValues, setSelectedValues] = useState<string[]>([]);
@@ -756,7 +797,9 @@ export const ContentEditorMultipleChoiceSerialize = memo(
                     className="border-sdk-question data-[state=checked]:bg-sdk-question data-[state=checked]:text-sdk-background"
                   />
                   <span className="grow cursor-pointer text-sm">
-                    {option.label || option.value || `${DEFAULT_OPTION_PREFIX} ${index + 1}`}
+                    {option.label ||
+                      option.value ||
+                      `${t('contentBuilder.editor.multipleChoice.optionPrefix')} ${index + 1}`}
                   </span>
                 </div>
               ))}
@@ -780,7 +823,7 @@ export const ContentEditorMultipleChoiceSerialize = memo(
                     {isEditing ? (
                       <input
                         ref={otherInputRef}
-                        placeholder="Other..."
+                        placeholder={t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
                         value={otherValue}
                         onChange={(e) => {
                           setOtherValue(e.target.value);
@@ -796,7 +839,7 @@ export const ContentEditorMultipleChoiceSerialize = memo(
                           setIsEditing(true);
                         }}
                       >
-                        {otherValue || 'Other...'}
+                        {otherValue || t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
                       </span>
                     )}
                   </div>
@@ -809,7 +852,7 @@ export const ContentEditorMultipleChoiceSerialize = memo(
                 disabled={!isValidSelection() || loading}
                 onClick={handleSubmit}
               >
-                {element.data.buttonText || DEFAULT_BUTTON_TEXT}
+                {element.data.buttonText || t('contentBuilder.editor.textInput.defaultButtonText')}
               </Button>
             </div>
           </div>

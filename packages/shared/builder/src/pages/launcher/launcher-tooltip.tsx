@@ -14,9 +14,11 @@ import { SidebarContainer } from '../sidebar';
 import { LauncherPosition } from './components/launcher-position';
 import { LauncherSettings } from './components/launcher-settings';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const LauncherTooltipHeader = () => {
   const { backToLauncher, setLauncherTooltip } = useLauncherContext();
+  const { t } = useTranslation();
 
   const handleBackToLauncher = () => {
     backToLauncher();
@@ -34,7 +36,7 @@ const LauncherTooltipHeader = () => {
         >
           <ChevronLeftIcon className="h-6 w-6 " />
         </Button>
-        <span className=" truncate ...">Tooltip settings</span>
+        <span className=" truncate ...">{t('contentBuilder.launcher.tooltipSettings')}</span>
       </CardTitle>
     </CardHeader>
   );
@@ -89,6 +91,7 @@ const LauncherTooltipBody = () => {
 const LauncherTooltipFooter = () => {
   const { isLoading, updateLocalData, launcherTooltip, backToLauncher, setLauncherTooltip } =
     useLauncherContext();
+  const { t } = useTranslation();
 
   const saveTooltip = useCallback(() => {
     updateLocalData({ tooltip: launcherTooltip });
@@ -100,7 +103,7 @@ const LauncherTooltipFooter = () => {
     <CardFooter className="flex-none p-5">
       <Button className="w-full h-10" disabled={isLoading} onClick={saveTooltip}>
         {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-        Save
+        {t('contentBuilder.common.save')}
       </Button>
     </CardFooter>
   );

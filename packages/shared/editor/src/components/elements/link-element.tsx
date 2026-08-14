@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { MouseEvent, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Descendant, Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
 import { LinkElementType } from '../../types/slate';
@@ -22,6 +23,7 @@ const initialValue: Descendant[] = [
   },
 ];
 export const LinkElement = (props: RenderElementProps) => {
+  const { t } = useTranslation();
   const { zIndex, attributes } = usePopperEditorContext();
   const element = props.element as LinkElementType;
   const editor = useSlateStatic();
@@ -110,7 +112,7 @@ export const LinkElement = (props: RenderElementProps) => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Remove link</p>
+                    <p>{t('contentBuilder.editor.link.removeLink')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -121,13 +123,13 @@ export const LinkElement = (props: RenderElementProps) => {
                   value="same"
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground w-1/2"
                 >
-                  Same tab
+                  {t('contentBuilder.editor.link.sameTab')}
                 </TabsTrigger>
                 <TabsTrigger
                   value="new"
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground w-1/2"
                 >
-                  New tab
+                  {t('contentBuilder.editor.link.newTab')}
                 </TabsTrigger>
               </TabsList>
             </Tabs>

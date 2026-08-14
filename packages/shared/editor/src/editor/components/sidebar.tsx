@@ -1,7 +1,8 @@
 import * as Popover from '@radix-ui/react-popover';
 import { EDITOR_SIDEBAR } from '@usertour-packages/constants';
 import { PlusIcon3 } from '@usertour-packages/icons';
-import { CSSProperties, useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import {
   ContentEditorElement,
@@ -10,7 +11,7 @@ import {
 } from '../../types/editor';
 import { cuid } from '@usertour/helpers';
 import { isQuestionElement } from '../../utils/helper';
-import { contentTypesConfig } from '../../utils/config';
+import { getContentTypesConfig } from '../../utils/config';
 
 const selectStyle: CSSProperties = {
   boxSizing: 'border-box',
@@ -136,6 +137,8 @@ export const ContentEditorSideBarPopper = (
   },
 ) => {
   const { zIndex, enabledElementTypes } = useContentEditorContext();
+  const { t } = useTranslation();
+  const contentTypesConfig = useMemo(() => getContentTypesConfig(t), [t]);
 
   // Filter buttons based on enabledElementTypes
   const filteredContentTypes = enabledElementTypes

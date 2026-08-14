@@ -1,18 +1,38 @@
 'use client';
 
 import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import type { Locale } from 'date-fns';
+import { enUS, frCA } from 'date-fns/locale';
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
+import { useTranslation } from 'react-i18next';
 
 import { buttonVariants } from '@usertour-packages/button';
 import { cn } from '@usertour/helpers';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+// Maps i18next language codes to their date-fns locale
+const dateFnsLocales: Record<string, Locale> = {
+  en: enUS,
+  'en-US': enUS,
+  fr: frCA,
+  'fr-CA': frCA,
+};
+
+function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  locale,
+  ...props
+}: CalendarProps) {
+  const { i18n } = useTranslation();
+  const resolvedLocale = locale ?? dateFnsLocales[i18n.language] ?? enUS;
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      locale={resolvedLocale}
       className={cn('p-3', className)}
       classNames={{
         months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',

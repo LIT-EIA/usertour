@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { BizCompanyRemoveForm } from './company-remove-form';
 import { Segment } from '@usertour/types';
 import { useCompanyListContext } from '@/contexts/company-list-context';
+import { useTranslation } from 'react-i18next';
 
 interface RemoveFromSegmentProps {
   table: Table<any>;
@@ -17,6 +18,7 @@ export const RemoveFromSegment = (props: RemoveFromSegmentProps) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [bizCompanyIds, setBizCompanyIds] = useState<string[]>([]);
   const { refetch } = useCompanyListContext();
+  const { t } = useTranslation();
 
   const handleOnClick = useCallback(() => {
     const rows = table.getFilteredSelectedRowModel().rows;
@@ -48,7 +50,7 @@ export const RemoveFromSegment = (props: RemoveFromSegmentProps) => {
         onClick={handleOnClick}
       >
         <CloseIcon className="mr-1" />
-        Remove from this segment
+        {t('companies.actions.removeFromSegment')}
       </Button>
 
       <BizCompanyRemoveForm

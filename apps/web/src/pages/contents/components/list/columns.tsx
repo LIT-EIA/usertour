@@ -1,11 +1,12 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { Content } from '@usertour/types';
+import type { TFunction } from 'i18next';
 
-export const columns: ColumnDef<Content>[] = [
+export const getColumns = (t: TFunction): ColumnDef<Content>[] => [
   // {
   //   id: "select",
   //   header: ({ table }) => (
@@ -29,21 +30,27 @@ export const columns: ColumnDef<Content>[] = [
   // },
   {
     accessorKey: 'id',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Id" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('contents.listView.columns.id')} />
+    ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue('id')}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
     accessorKey: 'environmentId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="environmentId" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('contents.listView.columns.environmentId')} />
+    ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue('environmentId')}</div>,
     enableSorting: false,
     enableHiding: true,
   },
   {
     accessorKey: 'name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('contents.listView.columns.name')} />
+    ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
@@ -54,12 +61,14 @@ export const columns: ColumnDef<Content>[] = [
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="createdAt" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('contents.listView.columns.createdAt')} />
+    ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium">
-            {format(new Date(row.getValue('createdAt')), 'PPpp')}
+            {formatDate(new Date(row.getValue('createdAt')), 'PPpp')}
           </span>
         </div>
       );

@@ -1,8 +1,10 @@
 'use client';
 
 import { cn, uuidV4 } from '@usertour/helpers';
+import { TFunction } from 'i18next';
 import isHotkey from 'is-hotkey';
 import React, { CSSProperties, useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Descendant, Text, createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from 'slate-react';
@@ -19,6 +21,7 @@ import { withImages } from '../lib/withImages';
 import { withLink } from '../lib/withLink';
 import { withUserAttribute } from '../lib/withUserAttribute';
 import { PopperEditorContextProps, PopperEditorProps } from '../types/editor';
+import { CustomEditor } from '../types/slate';
 import { ELEMENTS } from './elements';
 import { EditorToolbar } from './toolbar';
 import { UserAttrButton } from './toolbar/user-attr';
@@ -30,12 +33,12 @@ const HOTKEYS = {
   'mod+`': 'code',
 };
 
-const HOTKEYS_ELEMENT = {
-  'mod+shift+b': inertButtonBlock,
-  'mod+shift+c': inertGroupBlock,
+const buildHotkeysElement = (t: TFunction) => ({
+  'mod+shift+b': (editor: CustomEditor) => inertButtonBlock(editor, t),
+  'mod+shift+c': (editor: CustomEditor) => inertGroupBlock(editor, t),
   'mod+shift+v': inertEmbedBlock,
   'mod+shift+m': inertImageBlock,
-};
+});
 
 export const ALIGN_MAPPING = {
   right: 'text-right',
@@ -144,6 +147,7 @@ export const PopperEditor = (props: PopperEditorProps) => {
     attributes,
     isInline = false,
   } = props;
+  const { t } = useTranslation();
   const renderElement = useCallback((props: RenderElementProps) => <Element {...props} />, []);
   const renderLeaf = useCallback((props: RenderLeafProps) => <Leaf {...props} />, []);
   const editor = useMemo(
@@ -153,6 +157,7 @@ export const PopperEditor = (props: PopperEditorProps) => {
       ),
     [],
   );
+  const hotkeysElement = useMemo(() => buildHotkeysElement(t), [t]);
   const [showToolbar, setShowToolbar] = useState(false);
   const [isEditorHover, setIsEditorHover] = useState(false);
   const [editorRef, setEditorRef] = useState<HTMLDivElement | null>(null);
@@ -171,10 +176,10 @@ export const PopperEditor = (props: PopperEditorProps) => {
         toggleTextProps(editor, mark);
       }
     }
-    for (const hotkey in HOTKEYS_ELEMENT) {
+    for (const hotkey in hotkeysElement) {
       if (isHotkey(hotkey, event as any)) {
         event.preventDefault();
-        HOTKEYS_ELEMENT[hotkey as keyof typeof HOTKEYS_ELEMENT](editor);
+        hotkeysElement[hotkey as keyof typeof hotkeysElement](editor);
       }
     }
   };
@@ -232,7 +237,7 @@ export const PopperEditor = (props: PopperEditorProps) => {
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
-            placeholder="Write text here…"
+            placeholder={t('contentBuilder.editor.placeholderMini')}
             spellCheck
             autoFocus={false}
             style={{ outline: 'none' }}
@@ -270,6 +275,7 @@ export const PopperEditorMini = (props: PopperEditorProps) => {
     attributes,
     className,
   } = props;
+  const { t } = useTranslation();
   const renderElement = useCallback((props: RenderElementProps) => <Element {...props} />, []);
   const renderLeaf = useCallback((props: RenderLeafProps) => <Leaf {...props} />, []);
   const editor = useMemo(
@@ -334,7 +340,7 @@ export const PopperEditorMini = (props: PopperEditorProps) => {
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             className="grow"
-            placeholder="Write text here…"
+            placeholder={t('contentBuilder.editor.placeholderMini')}
             spellCheck
             autoFocus={true}
             style={{ outline: 'none' }}

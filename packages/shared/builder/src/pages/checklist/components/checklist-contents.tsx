@@ -38,6 +38,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { ChecklistItemType } from '@usertour/types';
 import { forwardRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext, useChecklistContext } from '../../../contexts';
 // Add interface for component props
 interface ChecklistContentProps {
@@ -55,39 +56,42 @@ const DeleteDialog = ({
 }: {
   onDelete: () => void;
   children: React.ReactNode;
-}) => (
-  <AlertDialog>
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Delete</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-        <AlertDialogDescription>
-          After deletion, it will not be possible to access or recover the data through any means.
-          Please confirm.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction onClick={onDelete} variant={'destructive'}>
-          Delete
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <AlertDialog>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('contentBuilder.checklist.delete')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('contentBuilder.checklist.deleteConfirmTitle')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('contentBuilder.checklist.deleteConfirmDescription')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('contentBuilder.common.cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete} variant={'destructive'}>
+            {t('contentBuilder.checklist.delete')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
 
 // Optimized ChecklistContent component
 const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
   ({ onClick, listeners = {}, attributes = {}, item, style }, ref) => {
+    const { t } = useTranslation();
     return (
       <div
         ref={ref}
@@ -116,7 +120,7 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
                     <GearIcon className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t('contentBuilder.checklist.edit')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -158,6 +162,7 @@ const SortableItem = ({ id, onClick, item }: any) => {
 export const ChecklistContents = () => {
   const { setCurrentMode } = useBuilderContext();
   const { localData, updateLocalData, setCurrentItem, removeItem } = useChecklistContext();
+  const { t } = useTranslation();
 
   if (!localData) {
     return null;
@@ -203,7 +208,7 @@ export const ChecklistContents = () => {
   return (
     <>
       <div className="flex justify-between items-center space-x-1	">
-        <h1 className="text-sm">Items</h1>
+        <h1 className="text-sm">{t('contentBuilder.checklist.items')}</h1>
       </div>
       <DndContext
         sensors={sensors}

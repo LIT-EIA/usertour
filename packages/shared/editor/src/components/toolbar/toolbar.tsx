@@ -30,11 +30,13 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvent, useMeasure } from 'react-use';
 import { Editor, Element as SlateElement, Transforms } from 'slate';
 import { useSlate } from 'slate-react';
 import { inertUserAttributeBlock, insertLink, isLinkActive } from '../../lib/editorHelper';
 import { getTextProps, toggleTextProps } from '../../lib/text';
+import { TFunction } from 'i18next';
 import { CustomEditor } from '../../types/slate';
 import { usePopperEditorContext } from '../editor';
 import { ColorPicker } from './color-picker';
@@ -199,60 +201,100 @@ const ToolbarToggleItem = ({
   );
 };
 
+const buildItemMapping = (t: TFunction, container: HTMLElement | null) => [
+  <ToolbarToggleItem value="bold" label={t('contentBuilder.editor.toolbar.bold.ariaLabel')} key={'bold'}>
+    <MarkButton
+      format="bold"
+      Comp={FontBoldIcon}
+      tips={t('contentBuilder.editor.toolbar.bold.tooltip')}
+    />
+  </ToolbarToggleItem>,
+  <ToolbarToggleItem value="italic" label={t('contentBuilder.editor.toolbar.italic.ariaLabel')} key={'italic'}>
+    <MarkButton
+      format="italic"
+      Comp={FontItalicIcon}
+      tips={t('contentBuilder.editor.toolbar.italic.tooltip')}
+    />
+  </ToolbarToggleItem>,
+  <ToolbarToggleItem
+    value="underline"
+    label={t('contentBuilder.editor.toolbar.underline.ariaLabel')}
+    key={'underline'}
+  >
+    <MarkButton
+      format="underline"
+      Comp={UnderlineIcon}
+      tips={t('contentBuilder.editor.toolbar.underline.tooltip')}
+    />
+  </ToolbarToggleItem>,
+  <ToolbarToggleItem value="color" label={t('contentBuilder.editor.toolbar.color.ariaLabel')} key={'color'}>
+    <ColorPicker container={container} />
+  </ToolbarToggleItem>,
+  <ToggleItemBlockButton format="code" key={'code'} tips={t('contentBuilder.editor.toolbar.code.tooltip')}>
+    <CodeIcon />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton format="h1" key={'h1'} tips={t('contentBuilder.editor.toolbar.h1.tooltip')}>
+    <H1Icon />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton format="h2" key={'h2'} tips={t('contentBuilder.editor.toolbar.h2.tooltip')}>
+    <H2Icon />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton format="link" key={'link'} tips={t('contentBuilder.editor.toolbar.link.tooltip')}>
+    <Link1Icon height={15} width={15} />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton
+    format="user-attribute"
+    key={'user-attribute'}
+    tips={t('contentBuilder.editor.toolbar.userAttribute.tooltip')}
+  >
+    <UserIcon height={15} width={15} />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton
+    format="numbered-list"
+    key={'numbered-list'}
+    tips={t('contentBuilder.editor.toolbar.numberedList.tooltip')}
+  >
+    <ListOrderIcon />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton
+    format="bulleted-list"
+    key={'bulleted-list'}
+    tips={t('contentBuilder.editor.toolbar.bulletedList.tooltip')}
+  >
+    <ListUnOrderIcon />
+  </ToggleItemBlockButton>,
+];
+
+const buildAlignItem = (t: TFunction) => [
+  <ToggleItemBlockButton format="left" key={'left'} tips={t('contentBuilder.editor.toolbar.alignLeft.tooltip')}>
+    <TextAlignLeftIcon />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton
+    format="center"
+    key={'center'}
+    tips={t('contentBuilder.editor.toolbar.alignCenter.tooltip')}
+  >
+    <TextAlignCenterIcon />
+  </ToggleItemBlockButton>,
+  <ToggleItemBlockButton
+    format="right"
+    key={'right'}
+    tips={t('contentBuilder.editor.toolbar.alignRight.tooltip')}
+  >
+    <TextAlignRightIcon />
+  </ToggleItemBlockButton>,
+];
+
 export const EditorToolbar = () => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLElement | null>(null);
   const refPopper = useRef<HTMLDivElement | null>(null);
   const { zIndex, setShowToolbar, showToolbar } = usePopperEditorContext();
 
   const [isShowMore, setIsShowMore] = useState(false);
 
-  const itemMapping = [
-    <ToolbarToggleItem value="bold" label="Bold" key={'bold'}>
-      <MarkButton format="bold" Comp={FontBoldIcon} tips="Bold ⌘ B" />
-    </ToolbarToggleItem>,
-    <ToolbarToggleItem value="italic" label="Italic" key={'italic'}>
-      <MarkButton format="italic" Comp={FontItalicIcon} tips="Italic ⌘ I" />
-    </ToolbarToggleItem>,
-    <ToolbarToggleItem value="underline" label="Underline" key={'underline'}>
-      <MarkButton format="underline" Comp={UnderlineIcon} tips="Underline ⌘ U" />
-    </ToolbarToggleItem>,
-    <ToolbarToggleItem value="color" label="Color" key={'color'}>
-      <ColorPicker container={ref.current} />
-    </ToolbarToggleItem>,
-    <ToggleItemBlockButton format="code" key={'code'} tips="Code ⌘ `">
-      <CodeIcon />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="h1" key={'h1'} tips="H1">
-      <H1Icon />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="h2" key={'h2'} tips="H2">
-      <H2Icon />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="link" key={'link'} tips="Link">
-      <Link1Icon height={15} width={15} />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="user-attribute" key={'user-attribute'} tips="User attribute">
-      <UserIcon height={15} width={15} />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="numbered-list" key={'numbered-list'} tips="Numbered list">
-      <ListOrderIcon />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="bulleted-list" key={'bulleted-list'} tips="Bulleted list">
-      <ListUnOrderIcon />
-    </ToggleItemBlockButton>,
-  ];
-
-  const alignItem = [
-    <ToggleItemBlockButton format="left" key={'left'} tips="Align left">
-      <TextAlignLeftIcon />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="center" key={'center'} tips="Align center">
-      <TextAlignCenterIcon />
-    </ToggleItemBlockButton>,
-    <ToggleItemBlockButton format="right" key={'right'} tips="Align right">
-      <TextAlignRightIcon />
-    </ToggleItemBlockButton>,
-  ];
+  const itemMapping = buildItemMapping(t, ref.current);
+  const alignItem = buildAlignItem(t);
 
   const [topItem, setTopItem] = useState<typeof itemMapping>(itemMapping);
   const [miniItem, setMiniItem] = useState<typeof itemMapping>([]);
@@ -297,16 +339,16 @@ export const EditorToolbar = () => {
     >
       <Toolbar.Root
         // style={{ zIndex: zIndex + EDITOR_RICH_TOOLBAR }}
-        aria-label="Formatting options"
+        aria-label={t('contentBuilder.editor.toolbar.formattingOptions')}
         className="flex flex-row"
       >
-        <Toolbar.ToggleGroup type="multiple" aria-label="Text formatting">
+        <Toolbar.ToggleGroup type="multiple" aria-label={t('contentBuilder.editor.toolbar.textFormatting')}>
           {...topItem}
         </Toolbar.ToggleGroup>
         {!isShowMore && (
           <>
             <Toolbar.Separator className="w-[1px] bg-primary/30 mx-[10px] my-[3px]" />
-            <Toolbar.ToggleGroup type="single" defaultValue="center" aria-label="Text alignment">
+            <Toolbar.ToggleGroup type="single" defaultValue="center" aria-label={t('contentBuilder.editor.toolbar.textAlignment')}>
               {...alignItem}
             </Toolbar.ToggleGroup>
           </>
@@ -403,21 +445,21 @@ export const EditorToolbar = () => {
               )}
               // ref={ref}
               style={{ zIndex: zIndex + EDITOR_RICH_TOOLBAR }}
-              aria-label="Formatting options"
+              aria-label={t('contentBuilder.editor.toolbar.formattingOptions')}
             >
               {miniItem.length > 0 && (
                 <>
                   <Toolbar.ToggleGroup
                     type="single"
                     defaultValue="center"
-                    aria-label="Text alignment"
+                    aria-label={t('contentBuilder.editor.toolbar.textAlignment')}
                   >
                     {...miniItem}
                   </Toolbar.ToggleGroup>
                   <Toolbar.Separator className="w-[1px] bg-primary/30 mx-[10px] my-[3px]" />
                 </>
               )}
-              <Toolbar.ToggleGroup type="single" defaultValue="center" aria-label="Text alignment">
+              <Toolbar.ToggleGroup type="single" defaultValue="center" aria-label={t('contentBuilder.editor.toolbar.textAlignment')}>
                 {...alignItem}
               </Toolbar.ToggleGroup>
             </Toolbar.Root>

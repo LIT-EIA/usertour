@@ -9,8 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from '@usertour-packages/table';
-import { format } from 'date-fns';
+import { formatDate as format } from '@/utils/common';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AttributeListAction } from './attribute-list-action';
 
 interface AttributeListContentProps {
@@ -21,6 +22,7 @@ export const AttributeListContent = (props: AttributeListContentProps) => {
   const { bizType } = props;
   const { attributeList, loading } = useAttributeListContext();
   const [attributes, setAttributes] = useState<Attribute[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (attributeList) {
@@ -38,10 +40,10 @@ export const AttributeListContent = (props: AttributeListContentProps) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Display name</TableHead>
-              <TableHead>Code name</TableHead>
-              <TableHead>Data type</TableHead>
-              <TableHead>CreatedAt</TableHead>
+              <TableHead>{t('settings.attributes.columns.displayName')}</TableHead>
+              <TableHead>{t('settings.attributes.columns.codeName')}</TableHead>
+              <TableHead>{t('settings.attributes.columns.dataType')}</TableHead>
+              <TableHead>{t('settings.attributes.columns.createdAt')}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -73,7 +75,7 @@ export const AttributeListContent = (props: AttributeListContentProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center">No results.</TableCell>
+                <TableCell className="h-24 text-center">{t('dataTable.noResults')}</TableCell>
               </TableRow>
             )}
           </TableBody>

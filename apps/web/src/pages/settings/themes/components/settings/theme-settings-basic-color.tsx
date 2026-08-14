@@ -3,8 +3,10 @@ import { ThemeTypesSettingsColor } from '@usertour/types';
 import { Separator } from '@usertour-packages/separator';
 import { generateAutoStateColors } from '@usertour/helpers';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsBasicColor = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
 
   const updateBrandColor = (data: Partial<ThemeTypesSettingsColor>) => {
@@ -34,9 +36,9 @@ export const ThemeSettingsBasicColor = () => {
   return (
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
-        <div className="text-base">Brand colors</div>
+        <div className="text-base">{t('themeBuilder.subSections.brandColors')}</div>
         <div className="space-y-1">
-          <div className="text-sm">Text</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.text')}</div>
           <div className="flex">
             <ThemeColorPicker
               defaultColor={settings.brandColor.color}
@@ -48,7 +50,7 @@ export const ThemeSettingsBasicColor = () => {
         </div>
         <div className="flex flex-row w-full">
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Background</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.background')}</div>
             <ThemeColorPicker
               defaultColor={settings.brandColor.background}
               className="rounded-r-none"
@@ -58,7 +60,7 @@ export const ThemeSettingsBasicColor = () => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Hover</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.hover')}</div>
             <ThemeColorPicker
               defaultColor={settings.brandColor.hover}
               className="rounded-none border-x-0"
@@ -71,7 +73,7 @@ export const ThemeSettingsBasicColor = () => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Click</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.click')}</div>
             <ThemeColorPicker
               defaultColor={settings.brandColor.active}
               className="rounded-l-none"
@@ -87,9 +89,9 @@ export const ThemeSettingsBasicColor = () => {
       </div>
       <Separator />
       <div className="py-[15px] px-5 space-y-3">
-        <div className="text-base">Main colors</div>
+        <div className="text-base">{t('themeBuilder.subSections.mainColors')}</div>
         <div className="space-y-1">
-          <div className="text-sm">Text</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.text')}</div>
           <div className="flex">
             <ThemeColorPicker
               defaultColor={settings.mainColor.color}
@@ -101,7 +103,7 @@ export const ThemeSettingsBasicColor = () => {
         </div>
         <div className="flex flex-row w-full">
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Background</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.background')}</div>
             <ThemeColorPicker
               defaultColor={settings.mainColor.background}
               onChange={(color: string) => {
@@ -111,7 +113,7 @@ export const ThemeSettingsBasicColor = () => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Hover</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.hover')}</div>
             <ThemeColorPicker
               defaultColor={settings.mainColor.hover}
               showAutoButton={true}
@@ -124,7 +126,7 @@ export const ThemeSettingsBasicColor = () => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Click</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.click')}</div>
             <ThemeColorPicker
               defaultColor={settings.mainColor.active}
               showAutoButton={true}

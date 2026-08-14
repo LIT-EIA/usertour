@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@usertour-packages/select';
 import { LauncherPositionType } from '@usertour/types';
+import { useTranslation } from 'react-i18next';
 interface LauncherPositionProps {
   type?: LauncherPositionType;
   onChange: (value: LauncherPositionType) => void;
@@ -16,6 +17,7 @@ interface LauncherPositionProps {
 
 export const LauncherPosition = (props: LauncherPositionProps) => {
   const { onChange, zIndex, type = LauncherPositionType.TARGET } = props;
+  const { t } = useTranslation();
 
   const handleTypeChange = (value: LauncherPositionType) => {
     onChange(value);
@@ -25,7 +27,7 @@ export const LauncherPosition = (props: LauncherPositionProps) => {
     <div className="space-y-3 ">
       <div className="flex justify-between items-center space-x-1	">
         <div className="flex flex-row justify-between items-center space-x-1 ">
-          <h1 className="text-sm">Reference</h1>
+          <h1 className="text-sm">{t('contentBuilder.launcher.reference.label')}</h1>
         </div>
       </div>
       <Select defaultValue={type} onValueChange={handleTypeChange} value={type}>
@@ -39,10 +41,10 @@ export const LauncherPosition = (props: LauncherPositionProps) => {
         </SelectTrigger>
         <SelectContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
           <SelectItem value={LauncherPositionType.TARGET} className="cursor-pointer">
-            Target element
+            {t('contentBuilder.launcher.reference.targetElement')}
           </SelectItem>
           <SelectItem value={LauncherPositionType.LAUNCHER} className="cursor-pointer">
-            Launcher
+            {t('contentBuilder.launcher.reference.launcher')}
           </SelectItem>
         </SelectContent>
       </Select>

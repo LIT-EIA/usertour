@@ -26,11 +26,13 @@ import { useSearchParams } from 'react-router-dom';
 import { CompanySegmentCreateForm } from './create-form';
 import { useAppContext } from '@/contexts/app-context';
 import { CompanySegmentListSkeleton } from './sidebar-skeleton';
+import { useTranslation } from 'react-i18next';
 
 export function CompanyListSidebar() {
   const { segmentList, refetch, environmentId, currentSegment, loading } = useSegmentListContext();
   const [_, setSearchParams] = useSearchParams();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
   const handleCreate = () => {
@@ -55,7 +57,7 @@ export function CompanyListSidebar() {
     <>
       <AdminSidebarContainerTemplate>
         <AdminSidebarHeaderTemplate>
-          <h2 className="text-2xl font-semibold ">Companies</h2>
+          <h2 className="text-2xl font-semibold ">{t('companies.sidebar.title')}</h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -65,11 +67,11 @@ export function CompanyListSidebar() {
                   onClick={handleCreate}
                   disabled={isViewOnly}
                 >
-                  <PLUSIcon width={16} height={16} /> New
+                  <PLUSIcon width={16} height={16} /> {t('companies.sidebar.new')}
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs bg-slate-700">
-                <p>Create company segment</p>
+                <p>{t('companies.sidebar.createSegmentTooltip')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -80,7 +82,7 @@ export function CompanyListSidebar() {
           <CompanySegmentListSkeleton />
         ) : (
           <AdminSidebarBodyTemplate>
-            <AdminSidebarBodyTitleTemplate>Segments</AdminSidebarBodyTitleTemplate>
+            <AdminSidebarBodyTitleTemplate>{t('companies.sidebar.segments')}</AdminSidebarBodyTitleTemplate>
 
             {segmentList?.map((segment, index) => (
               <AdminSidebarBodyItemTemplate
@@ -102,7 +104,7 @@ export function CompanyListSidebar() {
                 {segment.dataType === 'MANUAL' && (
                   <Archive2LineIcon width={16} height={16} className="mr-1" />
                 )}
-                {segment.name}
+                {segment.dataType === 'ALL' ? t('companies.segments.allCompaniesName') : segment.name}
               </AdminSidebarBodyItemTemplate>
             ))}
           </AdminSidebarBodyTemplate>

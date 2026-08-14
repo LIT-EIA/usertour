@@ -9,6 +9,7 @@ import {
 import { cn } from '@usertour/helpers';
 import { TooltipProvider } from '@usertour-packages/tooltip';
 import { LauncherIconSource } from '@usertour/types';
+import { useTranslation } from 'react-i18next';
 import { TAB_VALUES } from './constants';
 import { getActiveText } from './utils';
 import { useIconTab } from './hooks/use-icon-tab';
@@ -26,6 +27,7 @@ export const IconPicker = ({
   showNoIcon = false,
   onChange,
 }: IconPickerProps) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const hasNoIconTab = showNoIcon;
   const popoverWidthClassName = hasNoIconTab ? 'w-[360px]' : 'w-72';
@@ -123,15 +125,25 @@ export const IconPicker = ({
           <div className={cn('bg-background space-y-3 rounded p-4', popoverWidthClassName)}>
             <Tabs value={activeTab} onValueChange={handleTabValueChange}>
               <UnderlineTabsList>
-                <UnderlineTabsTrigger value="builtin">Built-in icon</UnderlineTabsTrigger>
-                <UnderlineTabsTrigger value="upload">Upload icon</UnderlineTabsTrigger>
-                <UnderlineTabsTrigger value="url">Enter URL</UnderlineTabsTrigger>
-                {showNoIcon && <UnderlineTabsTrigger value="none">No icon</UnderlineTabsTrigger>}
+                <UnderlineTabsTrigger value="builtin">
+                  {t('contentBuilder.iconPicker.tabBuiltin')}
+                </UnderlineTabsTrigger>
+                <UnderlineTabsTrigger value="upload">
+                  {t('contentBuilder.iconPicker.tabUpload')}
+                </UnderlineTabsTrigger>
+                <UnderlineTabsTrigger value="url">
+                  {t('contentBuilder.iconPicker.tabUrl')}
+                </UnderlineTabsTrigger>
+                {showNoIcon && (
+                  <UnderlineTabsTrigger value="none">
+                    {t('contentBuilder.iconPicker.tabNone')}
+                  </UnderlineTabsTrigger>
+                )}
               </UnderlineTabsList>
               {showNoIcon && (
                 <UnderlineTabsContent value="none">
                   <div className="py-4 text-center text-sm text-muted-foreground">
-                    No icon will be displayed for this item.
+                    {t('contentBuilder.iconPicker.noneDescription')}
                   </div>
                 </UnderlineTabsContent>
               )}

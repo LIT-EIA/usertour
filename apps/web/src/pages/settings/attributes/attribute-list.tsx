@@ -1,11 +1,13 @@
 import { CompanyIcon, EventIcon2, UserIcon, UserIcon2 } from '@usertour-packages/icons';
 import { Separator } from '@usertour-packages/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@usertour-packages/tabs';
+import { useTranslation } from 'react-i18next';
 import { SettingsContent } from '../components/content';
 import { AttributeListContent } from './components/attribute-list-content';
 import { AttributeListHeader } from './components/attribute-list-header';
 
 export const SettingsAttributeList = () => {
+  const { t } = useTranslation();
   return (
     <SettingsContent>
       <AttributeListHeader />
@@ -15,19 +17,19 @@ export const SettingsAttributeList = () => {
           <TabsList>
             <TabsTrigger value="user" className="relative">
               <UserIcon width={16} height={16} className="mr-1" />
-              User
+              {t('settings.attributes.tabs.user')}
             </TabsTrigger>
             <TabsTrigger value="company">
               <CompanyIcon width={16} height={16} className="mr-1" />
-              Company
+              {t('settings.attributes.tabs.company')}
             </TabsTrigger>
             <TabsTrigger value="membership">
               <UserIcon2 width={16} height={16} className="mr-1" />
-              Company membership
+              {t('settings.attributes.tabs.membership')}
             </TabsTrigger>
             <TabsTrigger value="event">
               <EventIcon2 width={16} height={16} className="mr-1" />
-              Event
+              {t('settings.attributes.tabs.event')}
             </TabsTrigger>
           </TabsList>
         </div>

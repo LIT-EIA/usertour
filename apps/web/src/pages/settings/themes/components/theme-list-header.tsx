@@ -27,14 +27,11 @@ export const ThemeListHeader = () => {
             <h3 className="text-2xl font-semibold tracking-tight">{t('common.theme')}</h3>
             <Button onClick={handleCreateTheme} disabled={isViewOnly}>
               <PlusIcon className="h-4 w-4" />
-              New Theme
+              {t('settings.themes.listHeader.newTheme')}
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
-            <p>
-              With themes, you can make flows and other Usertour content look like a native part of
-              your app.
-            </p>
+            <p>{t('settings.themes.listHeader.description')}</p>
           </div>
         </div>
       </div>

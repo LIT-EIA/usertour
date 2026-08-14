@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@usertour-packages/select';
 import { CSSProperties, ChangeEvent, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 /* eslint-disable @next/next/no-img-element */
 import { Path, Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
@@ -58,6 +59,7 @@ const transformsStyle = (element: EmbedElementType) => {
   return _style;
 };
 export const EmbedElement = (props: RenderElementProps) => {
+  const { t } = useTranslation();
   const editor = useSlateStatic();
   const element = props.element as EmbedElementType;
   const { zIndex } = usePopperEditorContext();
@@ -184,7 +186,9 @@ export const EmbedElement = (props: RenderElementProps) => {
           <Popover.Trigger asChild>
             <div style={{ position: 'relative', ...style }}>
               <iframe
-                title={`Embedded content from ${element.parsedUrl}`}
+                title={t('contentBuilder.editor.embed.embeddedContentFrom', {
+                  url: element.parsedUrl,
+                })}
                 src={element.parsedUrl}
                 width="100%"
                 height="100%"
@@ -210,10 +214,10 @@ export const EmbedElement = (props: RenderElementProps) => {
             sideOffset={5}
           >
             <div className="flex flex-col gap-2.5">
-              <Label htmlFor="button-text">Embed URL</Label>
+              <Label htmlFor="button-text">{t('contentBuilder.editor.embed.url')}</Label>
               <div className="flex gap-x-2">
                 <Input
-                  placeholder="Enter url"
+                  placeholder={t('contentBuilder.editor.embed.urlPlaceholder')}
                   value={element.url}
                   onChange={handleUrlChange}
                   className="bg-background w-80 "
@@ -225,15 +229,15 @@ export const EmbedElement = (props: RenderElementProps) => {
                   onClick={handleSubmitUrl}
                 >
                   <ArrowRightIcon className="mr-1 " />
-                  Load
+                  {t('contentBuilder.editor.embed.load')}
                 </Button>
               </div>
-              <Label htmlFor="button-text">Display width</Label>
+              <Label htmlFor="button-text">{t('contentBuilder.editor.embed.displayWidth')}</Label>
               <div className="flex gap-x-2">
                 <Input
                   type="width"
                   value={element.width?.value}
-                  placeholder="Display width"
+                  placeholder={t('contentBuilder.editor.embed.displayWidth')}
                   onChange={handleWidthValueChange}
                   className="bg-background grow "
                 />
@@ -242,13 +246,13 @@ export const EmbedElement = (props: RenderElementProps) => {
                   defaultValue={element.width?.type ?? 'percent'}
                 >
                   <SelectTrigger className="shrink w-56">
-                    <SelectValue placeholder="Select a distribute" />
+                    <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                   </SelectTrigger>
                   <SelectPortal style={{ zIndex: zIndex + 2 }}>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value="percent">%</SelectItem>
-                        <SelectItem value="pixels">pixels</SelectItem>
+                        <SelectItem value="percent">{t('contentBuilder.editor.width.percent')}</SelectItem>
+                        <SelectItem value="pixels">{t('contentBuilder.editor.width.pixels')}</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </SelectPortal>
@@ -260,14 +264,14 @@ export const EmbedElement = (props: RenderElementProps) => {
                   checked={element.margin?.enabled}
                   onCheckedChange={handleMarginCheckedChange}
                 />
-                <Label htmlFor="margin">Margin</Label>
+                <Label htmlFor="margin">{t('contentBuilder.editor.margin.label')}</Label>
               </div>
               {element.margin?.enabled && (
                 <div className="flex gap-x-2">
                   <div className="flex flex-col justify-center">
                     <Input
                       value={element.margin?.left}
-                      placeholder="Left"
+                      placeholder={t('contentBuilder.editor.common.left')}
                       onChange={(e) => {
                         handleMarginValueChange(e, 'left');
                       }}
@@ -280,7 +284,7 @@ export const EmbedElement = (props: RenderElementProps) => {
                       onChange={(e) => {
                         handleMarginValueChange(e, 'top');
                       }}
-                      placeholder="Top"
+                      placeholder={t('contentBuilder.editor.common.top')}
                       className="bg-background flex-none w-20"
                     />
                     <Input
@@ -288,14 +292,14 @@ export const EmbedElement = (props: RenderElementProps) => {
                       onChange={(e) => {
                         handleMarginValueChange(e, 'bottom');
                       }}
-                      placeholder="Bottom"
+                      placeholder={t('contentBuilder.editor.common.bottom')}
                       className="bg-background flex-none w-20"
                     />
                   </div>
                   <div className="flex flex-col justify-center">
                     <Input
                       value={element.margin?.right}
-                      placeholder="Right"
+                      placeholder={t('contentBuilder.editor.common.right')}
                       onChange={(e) => {
                         handleMarginValueChange(e, 'right');
                       }}
@@ -318,7 +322,7 @@ export const EmbedElement = (props: RenderElementProps) => {
                 <Button className="flex-none" variant="ghost" size="icon" onClick={handleAddLeft}>
                   <InsertColumnLeftIcon className="fill-foreground" />
                 </Button>
-                <div className="flex-none mx-1 leading-10">Embed URL</div>
+                <div className="flex-none mx-1 leading-10">{t('contentBuilder.editor.embed.url')}</div>
                 <Button className="flex-none" variant="ghost" size="icon" onClick={handleAddRight}>
                   <InsertColumnRightIcon className="fill-foreground" />
                 </Button>
@@ -338,6 +342,7 @@ type EmbedElementSerializeType = {
   element: EmbedElementType;
 };
 export const EmbedElementSerialize = (props: EmbedElementSerializeType) => {
+  const { t } = useTranslation();
   const { element } = props;
   const [style, setStyle] = useState<CSSProperties | null>(null);
 
@@ -350,7 +355,7 @@ export const EmbedElementSerialize = (props: EmbedElementSerializeType) => {
       {element.parsedUrl && (
         <div style={{ position: 'relative', ...style }}>
           <iframe
-            title={`Embedded content from ${element.parsedUrl}`}
+            title={t('contentBuilder.editor.embed.embeddedContentFrom', { url: element.parsedUrl })}
             src={element.parsedUrl}
             width="100%"
             height="100%"

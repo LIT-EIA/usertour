@@ -12,6 +12,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useDeleteEnvironmentsMutation } from '@usertour-packages/shared-hooks';
 import { useToast } from '@usertour-packages/use-toast';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 export const EnvironmentDeleteForm = (props: {
   data: Environment;
@@ -22,12 +23,13 @@ export const EnvironmentDeleteForm = (props: {
   const { data, open, onOpenChange, onSubmit } = props;
   const { invoke: deleteEnvironment, loading } = useDeleteEnvironmentsMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = async () => {
     if (!data?.id) {
       toast({
         variant: 'destructive',
-        title: 'Invalid environment data',
+        title: t('settings.environments.invalidData'),
       });
       return;
     }
@@ -37,13 +39,13 @@ export const EnvironmentDeleteForm = (props: {
       if (success) {
         toast({
           variant: 'success',
-          title: 'The environment has been successfully deleted',
+          title: t('settings.environments.deleteSuccess'),
         });
         onSubmit(true);
       } else {
         toast({
           variant: 'destructive',
-          title: 'Failed to delete environment',
+          title: t('settings.environments.deleteFailure'),
         });
         onSubmit(false);
       }
@@ -60,16 +62,13 @@ export const EnvironmentDeleteForm = (props: {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the environment{' '}
-            <span className="font-bold text-foreground">{data.name}</span>.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{t('settings.common.deleteConfirm.title', { resource: t('settings.environments.deleteResource') })}</AlertDialogTitle>
+          <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t('settings.common.deleteConfirm.description', { name: data.name }) }} />
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('settings.common.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} variant="destructive" loading={loading}>
-            Submit
+            {t('settings.common.deleteConfirm.confirm', { resource: t('settings.environments.deleteResource') })}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

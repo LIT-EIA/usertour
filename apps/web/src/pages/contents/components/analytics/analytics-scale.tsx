@@ -8,7 +8,7 @@ import type {
 } from '@usertour/types';
 import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@usertour-packages/chart';
-import { format } from 'date-fns';
+import { formatDate as formatDateLocalized } from '@/utils/common';
 import { useState, useMemo } from 'react';
 import { cn } from '@usertour/helpers';
 import { ArrowRightIcon } from '@usertour-packages/icons';
@@ -17,6 +17,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import { RollingWindowDialog } from './components/rolling-window-dialog';
 import { ContentEditorElementType } from '@usertour-packages/shared-editor';
 import { QuestionStarRating } from '@/components/molecules/question';
+import { useTranslation } from 'react-i18next';
 
 interface AnalyticsScaleProps {
   questionAnalytics: ContentQuestionAnalytics;
@@ -36,7 +37,7 @@ const CONSTANTS = {
   },
 } as const;
 
-const formatDate = (date: string) => format(new Date(date), 'MMM dd, yyyy');
+const formatDate = (date: string) => formatDateLocalized(new Date(date), 'MMM dd, yyyy');
 
 const completeDistribution = (min: number, max: number, distribution: AnswerCount[]) => {
   const fullDistribution: AnswerCount[] = [];
@@ -59,6 +60,7 @@ export const AnalyticsScale = (props: AnalyticsScaleProps) => {
   const { questionAnalytics, totalViews, content, onRollingWindowChange } = props;
   const { averageByDay, answer, question } = questionAnalytics;
   const rollingWindow = content.config?.rollWindowConfig ?? CONSTANTS.DEFAULT_ROLLING_WINDOW;
+  const { t } = useTranslation();
   const [selectedDay, setSelectedDay] = useState<AverageByDay | null>(null);
   const { invoke: updateContent } = useUpdateContentMutation();
   const { toast } = useToast();
@@ -69,7 +71,7 @@ export const AnalyticsScale = (props: AnalyticsScaleProps) => {
 
   const averageChartConfig = {
     average: {
-      label: 'Average',
+      label: t('contents.analytics.scale.average'),
       color: 'hsl(var(--primary))',
     },
   };
@@ -118,19 +120,19 @@ export const AnalyticsScale = (props: AnalyticsScaleProps) => {
       });
 
       if (response) {
-        toast({ title: 'Rolling window updated' });
+        toast({ title: t('contents.analytics.rollingWindow.updated') });
         onRollingWindowChange(true);
       } else {
         toast({
           variant: 'destructive',
-          title: 'Failed to update rolling window',
+          title: t('contents.analytics.rollingWindow.updateFailed'),
         });
         onRollingWindowChange(false);
       }
     } catch (_) {
       toast({
         variant: 'destructive',
-        title: 'Failed to update rolling window',
+        title: t('contents.analytics.rollingWindow.updateFailed'),
       });
       onRollingWindowChange(false);
     }
@@ -153,7 +155,9 @@ export const AnalyticsScale = (props: AnalyticsScaleProps) => {
           {/* Current NPS Score */}
           <div className="flex flex-col items-center justify-center ">
             <div className="text-6xl font-bold text-primary">{average}</div>
-            <div className="text-sm text-muted-foreground ml-2">Current Average</div>
+            <div className="text-sm text-muted-foreground ml-2">
+              {t('contents.analytics.scale.currentAverage')}
+            </div>
           </div>
 
           {/* NPS Trend Chart */}
@@ -182,7 +186,9 @@ export const AnalyticsScale = (props: AnalyticsScaleProps) => {
                 content={
                   <ChartTooltipContent
                     formatter={(value) => (
-                      <div className="flex items-center justify-between gap-2">{value} Average</div>
+                      <div className="flex items-center justify-between gap-2">
+                        {t('contents.analytics.scale.valueAverage', { value })}
+                      </div>
                     )}
                   />
                 }
@@ -204,10 +210,10 @@ export const AnalyticsScale = (props: AnalyticsScaleProps) => {
               <span>{endDate}</span>
             </div>
             <div className="flex flex-row gap-2 items-center justify-center">
-              <span>{totalResponses}</span> <span className="text-muted-foreground">responses</span>
+              <span>{totalResponses}</span> <span className="text-muted-foreground">{t('contents.analytics.nps.responses')}</span>
             </div>
             <div className="flex flex-row gap-2 items-center justify-center">
-              <span>{rate}%</span> <span className="text-muted-foreground">response rate</span>
+              <span>{rate}%</span> <span className="text-muted-foreground">{t('contents.analytics.nps.responseRate')}</span>
             </div>
           </div>
           {/* <NPSGauge score={selectedData?.nps ?? npsAnalysis?.npsScore ?? 0} /> */}
@@ -237,6 +243,7 @@ export const ScaleDistribution = ({
   question,
   className,
 }: ScaleDistributionProps) => {
+  const { t } = useTranslation();
   if (!averageByDay) return null;
 
   const lowRange = question.data.lowRange ?? 0;
@@ -287,8 +294,12 @@ export const ScaleDistribution = ({
 
       {/* Score labels */}
       <div className="flex justify-between mt-4">
-        <div className="text-sm text-gray-600">{question.data.lowLabel || 'Not at all likely'}</div>
-        <div className="text-sm text-gray-600">{question.data.highLabel || 'Extremely likely'}</div>
+        <div className="text-sm text-gray-600">
+          {question.data.lowLabel || t('contentBuilder.analytics.notAtAllLikely')}
+        </div>
+        <div className="text-sm text-gray-600">
+          {question.data.highLabel || t('contentBuilder.analytics.extremelyLikely')}
+        </div>
       </div>
     </div>
   );

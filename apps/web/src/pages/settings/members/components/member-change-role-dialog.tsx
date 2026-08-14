@@ -33,6 +33,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface MemberChangeRoleDialogProps {
@@ -56,6 +57,7 @@ export const MemberChangeRoleDialog = (props: MemberChangeRoleDialogProps) => {
   const { invoke } = useChangeTeamMemberRoleMutation();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -82,12 +84,12 @@ export const MemberChangeRoleDialog = (props: MemberChangeRoleDialogProps) => {
     setIsLoading(true);
     try {
       if (!data.userId) {
-        showError('Project ID or User ID is missing.');
+        showError(t('settings.team.changeRole.missingIds'));
         return;
       }
       const success = await invoke(projectId, data.userId, role);
       if (!success) {
-        showError('Change role failed.');
+        showError(t('settings.team.changeRole.failure'));
       }
       onSuccess();
     } catch (error) {
@@ -102,7 +104,7 @@ export const MemberChangeRoleDialog = (props: MemberChangeRoleDialogProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Change team member role</DialogTitle>
+              <DialogTitle>{t('settings.team.changeRole.title')}</DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -112,18 +114,18 @@ export const MemberChangeRoleDialog = (props: MemberChangeRoleDialogProps) => {
                     name="role"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Role</FormLabel>
+                        <FormLabel>{t('settings.team.changeRole.roleLabel')}</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormItem>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select a role" />
+                                  <SelectValue placeholder={t('settings.team.changeRole.rolePlaceholder')} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value={TeamMemberRole.ADMIN}>Admin</SelectItem>
-                                <SelectItem value={TeamMemberRole.VIEWER}>Viewer</SelectItem>
+                                <SelectItem value={TeamMemberRole.ADMIN}>{t('settings.team.roles.admin')}</SelectItem>
+                                <SelectItem value={TeamMemberRole.VIEWER}>{t('settings.team.roles.viewer')}</SelectItem>
                               </SelectContent>
                             </FormItem>
                           </Select>
@@ -137,11 +139,11 @@ export const MemberChangeRoleDialog = (props: MemberChangeRoleDialogProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={onCancel}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Change role
+                {t('settings.team.changeRole.submit')}
               </Button>
             </DialogFooter>
           </form>

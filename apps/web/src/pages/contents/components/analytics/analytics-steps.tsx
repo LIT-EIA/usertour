@@ -11,9 +11,11 @@ import {
 } from '@usertour-packages/table';
 import { AnalyticsViewsByStep } from '@usertour/types';
 import { AnalyticsStepsSkeleton } from './analytics-skeleton';
+import { useTranslation } from 'react-i18next';
 
 export const AnalyticsSteps = () => {
   const { analyticsData, loading } = useAnalyticsContext();
+  const { t } = useTranslation();
 
   if (loading) {
     return <AnalyticsStepsSkeleton />;
@@ -31,16 +33,16 @@ export const AnalyticsSteps = () => {
       <Card>
         <CardHeader>
           <CardTitle className="space-between flex flex-row  items-center">
-            <div className="grow	">Step funnel</div>
+            <div className="grow	">{t('contents.analytics.steps.title')}</div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Step</TableHead>
-                <TableHead className="w-32">Unique views</TableHead>
-                <TableHead className="w-24">View rate</TableHead>
+                <TableHead>{t('contents.analytics.steps.step')}</TableHead>
+                <TableHead className="w-32">{t('contents.analytics.steps.uniqueViews')}</TableHead>
+                <TableHead className="w-24">{t('contents.analytics.steps.viewRate')}</TableHead>
                 <TableHead className="w-3/5" />
               </TableRow>
             </TableHeader>
@@ -66,7 +68,7 @@ export const AnalyticsSteps = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
-                    No results.
+                    {t('contents.analytics.common.noResults')}
                   </TableCell>
                 </TableRow>
               )}

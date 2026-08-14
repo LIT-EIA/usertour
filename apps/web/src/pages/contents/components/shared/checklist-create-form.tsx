@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface ChecklistCreateFormProps {
   isOpen: boolean;
@@ -57,6 +58,7 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
   const { environment } = useAppContext();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -88,7 +90,7 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
       };
       const ret = await createContentMutation({ variables: data });
       if (!ret.data?.createContent?.id) {
-        showError('Create checklist failed.');
+        showError(t('contents.create.failure', { type: t('contents.types.checklist') }));
       }
       const content = ret.data?.createContent as Content;
       const initVersion = await updateContentVersionMutation({
@@ -98,7 +100,7 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
         },
       });
       if (!initVersion.data.updateContentVersion) {
-        showError('Create checklist failed.');
+        showError(t('contents.create.failure', { type: t('contents.types.checklist') }));
       }
       openBuilder(content);
     } catch (error) {
@@ -113,7 +115,9 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Checklist</DialogTitle>
+              <DialogTitle>
+                {t('contents.create.title', { type: t('contents.types.checklist'), context: 'feminine' })}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-2 py-4 ">
               <FormField
@@ -121,10 +125,16 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-1 space-y-0">
-                    <FormLabel className="w-32 flex-none">Checklist name:</FormLabel>
+                    <FormLabel className="w-32 flex-none">{t('contents.create.nameLabel')}</FormLabel>
                     <FormControl>
                       <div className="flex flex-col space-x-1 w-full grow">
-                        <Input placeholder="Enter checklist name" {...field} />
+                        <Input
+                          placeholder={t('contents.create.namePlaceholder', {
+                            type: t('contents.types.checklist'),
+                            context: 'feminine',
+                          })}
+                          {...field}
+                        />
                         <FormMessage />
                       </div>
                     </FormControl>
@@ -134,11 +144,11 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('contents.shared.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('contents.create.submit', { type: t('contents.types.checklist') })}
               </Button>
             </DialogFooter>
           </form>

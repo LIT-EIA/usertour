@@ -28,6 +28,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface ThemeDuplicateFormProps {
@@ -53,6 +54,7 @@ export const ThemeDuplicateForm = (props: ThemeDuplicateFormProps) => {
   const [copyMutation] = useMutation(copyTheme);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const showError = (title: string) => {
     toast({
       variant: 'destructive',
@@ -81,7 +83,7 @@ export const ThemeDuplicateForm = (props: ThemeDuplicateFormProps) => {
       if (response.data.copyTheme.id) {
         toast({
           variant: 'success',
-          title: 'The theme has been successfully created',
+          title: t('settings.themes.duplicateSuccess'),
         });
       }
       onSuccess();
@@ -97,7 +99,7 @@ export const ThemeDuplicateForm = (props: ThemeDuplicateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Theme</DialogTitle>
+              <DialogTitle>{t('settings.themes.duplicateTitle')}</DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -107,9 +109,9 @@ export const ThemeDuplicateForm = (props: ThemeDuplicateFormProps) => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Theme name</FormLabel>
+                        <FormLabel>{t('settings.themes.duplicateNameLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter theme  name" {...field} />
+                          <Input placeholder={t('settings.themes.duplicateNamePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -121,12 +123,12 @@ export const ThemeDuplicateForm = (props: ThemeDuplicateFormProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" type="button">
-                  Cancel
+                  {t('settings.common.cancel')}
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('settings.themes.duplicateSubmit')}
               </Button>
             </DialogFooter>
           </form>

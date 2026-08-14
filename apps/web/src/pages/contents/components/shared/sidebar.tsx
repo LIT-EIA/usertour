@@ -11,62 +11,64 @@ import {
 import { ContentTypeName } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const sidebarNavItems = [
-  {
-    title: 'Engagement Layer',
-    items: [
-      {
-        title: 'Flows',
-        disabled: false,
-        icon: <FlowIcon className="mr-2 h-4 w-4" />,
-        contentType: ContentTypeName.FLOWS,
-      },
-      {
-        title: 'Launchers',
-        disabled: false,
-        icon: <LauncherIcon className="mr-2 h-4 w-4" />,
-        contentType: ContentTypeName.LAUNCHERS,
-      },
-      {
-        title: 'Checklists',
-        disabled: false,
-        icon: <ChecklistIcon className="mr-2 h-4 w-4" />,
-        contentType: ContentTypeName.CHECKLISTS,
-      },
-      {
-        title: 'Banners',
-        disabled: false,
-        icon: <BannerIcon className="mr-2 h-4 w-4" />,
-        contentType: ContentTypeName.BANNERS,
-      },
-    ],
-  },
-  {
-    title: 'User Feedback',
-    items: [
-      {
-        title: 'NPS',
-        disabled: false,
-        icon: <NpsIcon className="mr-2 h-4 w-4 scale-125" />,
-        contentType: ContentTypeName.NPS,
-      },
-      {
-        title: 'Surveys',
-        disabled: false,
-        icon: <SurveyIcon className="mr-2 h-4 w-4" />,
-        contentType: ContentTypeName.SURVEYS,
-      },
-    ],
-  },
-];
 
 export function Sidebar({ className }: SidebarProps) {
   const { contentType } = useParams();
   const navigate = useNavigate();
   const { environment } = useAppContext();
+  const { t } = useTranslation();
+
+  const sidebarNavItems = [
+    {
+      title: t('contents.sidebar.engagementLayer'),
+      items: [
+        {
+          title: t('contents.list.flows.title'),
+          disabled: false,
+          icon: <FlowIcon className="mr-2 h-4 w-4" />,
+          contentType: ContentTypeName.FLOWS,
+        },
+        {
+          title: t('contents.list.launchers.title'),
+          disabled: false,
+          icon: <LauncherIcon className="mr-2 h-4 w-4" />,
+          contentType: ContentTypeName.LAUNCHERS,
+        },
+        {
+          title: t('contents.list.checklists.title'),
+          disabled: false,
+          icon: <ChecklistIcon className="mr-2 h-4 w-4" />,
+          contentType: ContentTypeName.CHECKLISTS,
+        },
+        {
+          title: t('contents.list.banners.title'),
+          disabled: false,
+          icon: <BannerIcon className="mr-2 h-4 w-4" />,
+          contentType: ContentTypeName.BANNERS,
+        },
+      ],
+    },
+    {
+      title: t('contents.sidebar.userFeedback'),
+      items: [
+        {
+          title: t('contents.sidebar.nps'),
+          disabled: false,
+          icon: <NpsIcon className="mr-2 h-4 w-4 scale-125" />,
+          contentType: ContentTypeName.NPS,
+        },
+        {
+          title: t('contents.sidebar.surveys'),
+          disabled: false,
+          icon: <SurveyIcon className="mr-2 h-4 w-4" />,
+          contentType: ContentTypeName.SURVEYS,
+        },
+      ],
+    },
+  ];
 
   return (
     <div className={cn('pb-12', className)}>

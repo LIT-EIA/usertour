@@ -13,15 +13,8 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { ContentPriority } from '@usertour/types';
-import { useState } from 'react';
-
-const itemsMapping = [
-  { key: ContentPriority.HIGHEST, value: 'Highest priority' },
-  { key: ContentPriority.HIGH, value: 'High priority' },
-  { key: ContentPriority.MEDIUM, value: 'Medium priority' },
-  { key: ContentPriority.LOW, value: 'Low priority' },
-  { key: ContentPriority.LOWEST, value: 'Lowest priority' },
-];
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface RulesPriorityProps {
   defaltValue: ContentPriority;
@@ -30,6 +23,17 @@ interface RulesPriorityProps {
 }
 export const RulesPriority = (props: RulesPriorityProps) => {
   const { defaltValue = ContentPriority.MEDIUM, onChange, disabled = false } = props;
+  const { t } = useTranslation();
+  const itemsMapping = useMemo(
+    () => [
+      { key: ContentPriority.HIGHEST, value: t('conditions.standalone.priority.highest') },
+      { key: ContentPriority.HIGH, value: t('conditions.standalone.priority.high') },
+      { key: ContentPriority.MEDIUM, value: t('conditions.standalone.priority.medium') },
+      { key: ContentPriority.LOW, value: t('conditions.standalone.priority.low') },
+      { key: ContentPriority.LOWEST, value: t('conditions.standalone.priority.lowest') },
+    ],
+    [t],
+  );
   const [value, setValue] = useState(defaltValue);
 
   const handleOnValueChange = (value: string) => {
@@ -61,10 +65,7 @@ export const RulesPriority = (props: RulesPriorityProps) => {
             <QuestionMarkCircledIcon />
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
-            <p>
-              if a user matches start conditions for 2 contents, the one with the higher
-              prioritywill be started. Choose a high priority for your most important content
-            </p>
+            <p>{t('conditions.standalone.priority.tooltip')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

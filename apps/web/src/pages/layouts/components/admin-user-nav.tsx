@@ -1,5 +1,6 @@
 import { useAppContext } from '@/contexts/app-context';
 import { UserAvatar } from '@/components/molecules/user-avatar';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@usertour-packages/badge';
 import { Button } from '@usertour-packages/button';
 import {
@@ -29,6 +30,7 @@ export const AdminUserNav = () => {
   const posthog = usePostHog();
   const { invoke } = useActiveUserProjectMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -67,7 +69,7 @@ export const AdminUserNav = () => {
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: 'Switch project failed',
+          title: t('userNav.switchProjectFailed'),
         });
         console.error(error);
       }
@@ -97,30 +99,30 @@ export const AdminUserNav = () => {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate(`/project/${project?.id}/settings/account`)}>
-            Account
+            {t('settings.nav.sections.account')}
             <DropdownMenuShortcut>⌘U</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate(`/project/${project?.id}/settings/themes`)}>
-            Themes
+            {t('settings.nav.sections.themes')}
             <DropdownMenuShortcut>⌘M</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate(`/project/${project?.id}/settings/events`)}>
-            Events
+            {t('settings.nav.sections.events')}
             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => navigate(`/project/${project?.id}/settings/environments`)}
           >
-            Environments
+            {t('settings.nav.sections.environments')}
           </DropdownMenuItem>
           {/* <DropdownMenuSeparator />
           <DropdownMenuLabel className="font-normal">My Organizations</DropdownMenuLabel> */}
           <DropdownMenuSeparator />
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>My Companies</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>{t('userNav.myProjects')}</DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent className="w-56">
-                <DropdownMenuLabel className="text-xs	">CURRENT COMPANY</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs	">{t('userNav.currentProject')}</DropdownMenuLabel>
                 {activeProject && (
                   <DropdownMenuItem
                     key={activeProject.id}
@@ -134,7 +136,7 @@ export const AdminUserNav = () => {
                 <DropdownMenuSeparator />
                 {otherProjects.length > 0 && (
                   <>
-                    <DropdownMenuLabel className="text-xs">OTHER COMPANIES</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-xs">{t('userNav.otherProjects')}</DropdownMenuLabel>
                     {otherProjects.map((p) => (
                       <DropdownMenuItem
                         key={p.id}
@@ -153,7 +155,7 @@ export const AdminUserNav = () => {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logoutHandler}>
-          Log out
+          {t('userNav.logout')}
           <DropdownMenuShortcut>⇧⌘K</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

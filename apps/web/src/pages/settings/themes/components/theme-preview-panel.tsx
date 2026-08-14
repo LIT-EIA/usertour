@@ -13,6 +13,7 @@ import { ThemePreviewSelector } from './preview/theme-preview-selector';
 import { ContentEditorRoot, createValue6, surveysValue } from '@usertour-packages/shared-editor';
 import { ThemeTypesSetting } from '@usertour/types';
 import { Rect } from './theme-editor';
+import { useTranslation } from 'react-i18next';
 
 interface ThemePreviewPanelProps {
   settings: ThemeTypesSetting;
@@ -33,6 +34,7 @@ export const ThemePreviewPanel = ({
   customStyle,
   className,
 }: ThemePreviewPanelProps) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const containerRect = useRect(containerRef.current);
   const [debouncedRect, setDebouncedRect] = useState<Rect | undefined>();
@@ -63,7 +65,7 @@ export const ThemePreviewPanel = ({
   return (
     <div className={cn('shadow bg-white rounded-lg grow ml-4 h-full flex flex-col', className)}>
       <div className="flex flex-col items-start justify-between space-y-2 p-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-        <h2 className="text-lg font-semibold">Preview</h2>
+        <h2 className="text-lg font-semibold">{t('themeBuilder.chrome.preview')}</h2>
         {showSelector && (
           <div className="ml-auto flex w-full space-x-2 sm:justify-end">
             <ThemePreviewSelector selectedType={selectedType} onTypeChange={onTypeChange} />

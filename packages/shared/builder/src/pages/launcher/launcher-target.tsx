@@ -10,9 +10,11 @@ import { useLauncherContext } from '../../contexts';
 import { SidebarContainer } from '../sidebar';
 import { LauncherPlacement } from './components/launcher-placement';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const LauncherTargetHeader = () => {
   const { backToLauncher, setLauncherTarget } = useLauncherContext();
+  const { t } = useTranslation();
 
   const handleBackToLauncher = () => {
     backToLauncher();
@@ -30,7 +32,7 @@ const LauncherTargetHeader = () => {
         >
           <ChevronLeftIcon className="h-6 w-6" />
         </Button>
-        <span className="truncate">Target settings</span>
+        <span className="truncate">{t('contentBuilder.launcher.targetSettings')}</span>
       </CardTitle>
     </CardHeader>
   );
@@ -70,6 +72,7 @@ const LauncherTargetBody = () => {
 const LauncherTargetFooter = () => {
   const { isLoading, launcherTarget, backToLauncher, updateLocalData, setLauncherTarget } =
     useLauncherContext();
+  const { t } = useTranslation();
 
   const handleSave = useCallback(() => {
     if (launcherTarget) {
@@ -83,7 +86,7 @@ const LauncherTargetFooter = () => {
     <CardFooter className="flex-none p-5">
       <Button className="w-full h-10" disabled={isLoading} onClick={handleSave}>
         {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-        Save
+        {t('contentBuilder.common.save')}
       </Button>
     </CardFooter>
   );

@@ -1,3 +1,4 @@
+import { TFunction } from 'i18next';
 import {
   Descendant,
   Editor,
@@ -112,7 +113,11 @@ export const inertGroupBlockV2 = (
   );
 };
 
-export const inertGroupBlock = (editor: CustomEditor, options?: NodeInsertNodesOptions<Node>) => {
+export const inertGroupBlock = (
+  editor: CustomEditor,
+  t: TFunction,
+  options?: NodeInsertNodesOptions<Node>,
+) => {
   Transforms.insertNodes(
     editor,
     {
@@ -127,7 +132,7 @@ export const inertGroupBlock = (editor: CustomEditor, options?: NodeInsertNodesO
           children: [
             {
               type: 'paragraph',
-              children: [{ text: 'Write text here' }],
+              children: [{ text: t('contentBuilder.editor.placeholderMini') }],
             },
           ],
         },
@@ -137,10 +142,10 @@ export const inertGroupBlock = (editor: CustomEditor, options?: NodeInsertNodesO
   );
 };
 
-export const inertButtonBlock = (editor: CustomEditor) => {
+export const inertButtonBlock = (editor: CustomEditor, t: TFunction) => {
   Transforms.insertNodes(editor, {
     type: 'button',
-    data: { text: 'Button', type: 'default', action: 'goto' },
+    data: { text: t('contentBuilder.editor.defaultContent.buttonText'), type: 'default', action: 'goto' },
     children: [{ text: '' }],
   });
 };

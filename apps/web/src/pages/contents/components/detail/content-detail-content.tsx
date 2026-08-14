@@ -21,7 +21,7 @@ import {
   Step,
   Theme,
 } from '@usertour/types';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { useEffect, useState } from 'react';
 import { ContentEditForm } from '../shared/content-edit-form';
 import {
@@ -32,6 +32,7 @@ import {
 } from '../shared/content-preview';
 import { useAppContext } from '@/contexts/app-context';
 import { Button } from '@usertour-packages/button';
+import { useTranslation } from 'react-i18next';
 
 interface ContentDetailContentStepProps {
   currentStep: Step;
@@ -84,6 +85,7 @@ const ContentDetailContentStep = ({
   onEdit,
   disabled,
 }: ContentDetailContentStepProps) => {
+  const { t } = useTranslation();
   const currentTheme = useThemeHandler(currentVersion, currentStep.themeId);
   const [contentRect, setContentRect] = useState<DOMRect | null>(null);
   const [scale, setScale] = useState<number>(1);
@@ -134,7 +136,7 @@ const ContentDetailContentStep = ({
                     <EditIcon className="w-4 h-4 cursor-pointer" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -142,39 +144,49 @@ const ContentDetailContentStep = ({
             {index + 1}. {currentStep.name}
           </div>
           <div className="text-sm space-x-1">
-            <ContentBadge>{currentStep.type}</ContentBadge>
+            <ContentBadge>
+              {t(`contentBuilder.flow.stepType.${currentStep.type}`, currentStep.type)}
+            </ContentBadge>
             {!isHidddenStep && (
               <>
-                <ContentBadge>width: {currentStep.setting.width}px</ContentBadge>
-                <ContentBadge>height: {Math.floor(currentStep.setting.height)}px</ContentBadge>
-                <ContentBadge>theme: {currentTheme.name}</ContentBadge>
+                <ContentBadge>
+                  {t('contents.overview.step.width', { value: `${currentStep.setting.width}px` })}
+                </ContentBadge>
+                <ContentBadge>
+                  {t('contents.overview.step.height', {
+                    value: `${Math.floor(currentStep.setting.height)}px`,
+                  })}
+                </ContentBadge>
+                <ContentBadge>
+                  {t('contents.overview.step.theme', { name: currentTheme.name })}
+                </ContentBadge>
               </>
             )}
           </div>
           {!isHidddenStep && (
             <div className="flex flex-row space-x-1">
               <ContentBadge>
-                {!currentStep.setting.skippable && 'not skippable'}
-                {currentStep.setting.skippable && 'skippable'}
+                {!currentStep.setting.skippable && t('contents.overview.step.notSkippable')}
+                {currentStep.setting.skippable && t('contents.overview.step.skippable')}
               </ContentBadge>
-              {currentStep.setting.enabledBackdrop && <ContentBadge>backdrop enabled</ContentBadge>}
+              {currentStep.setting.enabledBackdrop && (
+                <ContentBadge>{t('contents.overview.step.backdropEnabled')}</ContentBadge>
+              )}
               {!currentStep.setting.enabledBackdrop && (
-                <ContentBadge>backdrop disabled</ContentBadge>
+                <ContentBadge>{t('contents.overview.step.backdropDisabled')}</ContentBadge>
               )}
             </div>
           )}
           {!stepIsReachable(currentVersion.steps as Step[], currentStep) && (
             <div className="text-xs flex flex-row items-center text-warning space-x-1 pt-2">
               <ExclamationTriangleIcon className="h-3 w-3" />
-              <span>
-                Step is not reachable from the start step. Add a button, trigger that links to this
-                step, or delete it in the builder.
-              </span>
+              <span>{t('contents.overview.step.unreachableWarning')}</span>
             </div>
           )}
           <div className="text-xs	 absolute right-0 bottom-0 text-muted-foreground">
-            Last edited at{' '}
-            {currentStep.updatedAt && format(new Date(currentStep.updatedAt), 'PPpp')}
+            {t('contents.overview.previewCard.lastEdited', {
+              date: currentStep.updatedAt ? formatDate(new Date(currentStep.updatedAt), 'PPpp') : '',
+            })}
           </div>
         </div>
       </div>
@@ -196,6 +208,7 @@ const LauncherContentPreview = ({
   onEdit,
   disabled,
 }: LauncherContentPreviewProps) => {
+  const { t } = useTranslation();
   const currentTheme = useThemeHandler(currentVersion);
   const data = currentVersion.data as LauncherData;
 
@@ -217,7 +230,7 @@ const LauncherContentPreview = ({
                     <EditIcon className="w-4 h-4 cursor-pointer" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -225,24 +238,37 @@ const LauncherContentPreview = ({
             {content.name}
           </div>
           <div className="text-sm space-x-1">
-            <ContentBadge>{data.type}</ContentBadge>
-            <ContentBadge>target element: {data.target.element?.customSelector}</ContentBadge>
-            <ContentBadge>target alignment: {data.target.alignment.alignType}</ContentBadge>
-            <ContentBadge>theme: {currentTheme.name}</ContentBadge>
+            <ContentBadge>{t(`contentBuilder.launcher.type.${data.type}`, data.type)}</ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.launcher.targetElement', {
+                value: data.target.element?.customSelector ?? t('contents.overview.launcher.notSet'),
+              })}
+            </ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.launcher.targetAlignment', {
+                value: data.target.alignment.alignType,
+              })}
+            </ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.launcher.theme', { name: currentTheme.name })}
+            </ContentBadge>
           </div>
           <div className="flex flex-row space-x-1">
             {data.type === LauncherDataType.ICON && data.iconType && (
-              <ContentBadge>iconType: {data.iconType}</ContentBadge>
+              <ContentBadge>
+                {t('contents.overview.launcher.iconType', { value: data.iconType })}
+              </ContentBadge>
             )}
             <ContentBadge>
               {data.behavior.actionType === LauncherActionType.PERFORM_ACTION
-                ? 'Perform action'
-                : 'Show tooltip'}
+                ? t('contents.overview.launcher.performAction')
+                : t('contents.overview.launcher.showTooltip')}
             </ContentBadge>
           </div>
           <div className="text-xs	 absolute right-0 bottom-0 text-muted-foreground">
-            Last edited at{' '}
-            {currentVersion.updatedAt && format(new Date(currentVersion.updatedAt), 'PPpp')}
+            {t('contents.overview.previewCard.lastEdited', {
+              date: currentVersion.updatedAt ? formatDate(new Date(currentVersion.updatedAt), 'PPpp') : '',
+            })}
           </div>
         </div>
       </div>
@@ -264,6 +290,7 @@ const ChecklistContentPreview = ({
   onEdit,
   disabled,
 }: ChecklistContentPreviewProps) => {
+  const { t } = useTranslation();
   const currentTheme = useThemeHandler(currentVersion);
   const data = currentVersion.data as ChecklistData;
   const [contentRect, setContentRect] = useState<DOMRect | null>(null);
@@ -306,7 +333,7 @@ const ChecklistContentPreview = ({
                     <EditIcon className="w-4 h-4 cursor-pointer" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -314,24 +341,37 @@ const ChecklistContentPreview = ({
             {content.name}
           </div>
           <div className="text-sm flex flex-row flex-wrap gap-1">
-            <ContentBadge>launcher button text: {data.buttonText}</ContentBadge>
             <ContentBadge>
-              initial display: {data.initialDisplay === ChecklistInitialDisplay.BUTTON && 'button'}
-              {data.initialDisplay === ChecklistInitialDisplay.EXPANDED && 'expanded'}
+              {t('contents.overview.checklist.launcherButtonText', { value: data.buttonText })}
             </ContentBadge>
-            <ContentBadge>Task completion order: {data.completionOrder}</ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.checklist.initialDisplay', {
+                value:
+                  data.initialDisplay === ChecklistInitialDisplay.BUTTON
+                    ? t('contents.overview.checklist.initialDisplayButton')
+                    : t('contents.overview.checklist.initialDisplayExpanded'),
+              })}
+            </ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.checklist.completionOrder', { value: data.completionOrder })}
+            </ContentBadge>
             {data.preventDismissChecklist && (
-              <ContentBadge>Prevent users from dismissing checklist</ContentBadge>
+              <ContentBadge>{t('contents.overview.checklist.preventDismiss')}</ContentBadge>
             )}
             {!data.preventDismissChecklist && (
-              <ContentBadge>Allow users to dismiss checklist</ContentBadge>
+              <ContentBadge>{t('contents.overview.checklist.allowDismiss')}</ContentBadge>
             )}
-            <ContentBadge>theme: {currentTheme.name}</ContentBadge>
-            <ContentBadge>items: {data.items.length}</ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.checklist.theme', { name: currentTheme.name })}
+            </ContentBadge>
+            <ContentBadge>
+              {t('contents.overview.checklist.items', { count: data.items.length })}
+            </ContentBadge>
           </div>
           <div className="text-xs	 absolute right-0 bottom-0 text-muted-foreground">
-            Last edited at{' '}
-            {currentVersion.updatedAt && format(new Date(currentVersion.updatedAt), 'PPpp')}
+            {t('contents.overview.previewCard.lastEdited', {
+              date: currentVersion.updatedAt ? formatDate(new Date(currentVersion.updatedAt), 'PPpp') : '',
+            })}
           </div>
         </div>
       </div>

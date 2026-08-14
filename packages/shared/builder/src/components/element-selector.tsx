@@ -10,6 +10,7 @@ import {
 } from '@radix-ui/react-icons';
 import { cn } from '@usertour/helpers';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ElementSelectorProps {
   onCancel: () => void;
@@ -26,6 +27,7 @@ export const ElementSelector = ({
   setEnabledSelector,
   isBottom = true,
 }: ElementSelectorProps) => {
+  const { t } = useTranslation();
   const selectRef = useRef(null);
   const navigateRef = useRef(null);
   const [selectClass, setSelectClass] = useState('bg-primary');
@@ -93,7 +95,7 @@ export const ElementSelector = ({
       </div>
       <div className="bg-gradient-to-r from-slate-700 to-slate-800  rounded-r-2xl grow flex">
         <div className="px-4 items-center grow leading-[52px]">
-          Navigate to the page the element appears on
+          {t('contentBuilder.shared.elementSelector.navigateToPage')}
         </div>
         <div className="flex-none flex py-2">
           <div
@@ -105,7 +107,7 @@ export const ElementSelector = ({
             onClick={handleNavigatePage}
           >
             <GlobeIcon className="text-slate-50" width={16} height={16} />
-            <span>Navigate to another page</span>
+            <span>{t('contentBuilder.shared.elementSelector.navigateToAnotherPage')}</span>
           </div>
           <div
             className={cn(
@@ -116,7 +118,7 @@ export const ElementSelector = ({
             onClick={handleElementSelect}
           >
             <Crosshair2Icon className="text-slate-50" width={16} height={16} />
-            <span>Select element here</span>
+            <span>{t('contentBuilder.shared.elementSelector.selectElementHere')}</span>
           </div>
         </div>
         <div className="flex-none py-2 ml-4 mr-2 inline-flex items-center">

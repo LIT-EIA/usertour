@@ -1,4 +1,5 @@
 import { Button } from '@usertour-packages/button';
+import { useTranslation } from 'react-i18next';
 
 interface ElementPreviewProps {
   onClick: () => void;
@@ -6,15 +7,14 @@ interface ElementPreviewProps {
   title?: string;
 }
 
-export const ElementPreview = ({
-  onClick,
-  previewImageUrl,
-  title = 'Show launcher on this element',
-}: ElementPreviewProps) => {
+export const ElementPreview = ({ onClick, previewImageUrl, title }: ElementPreviewProps) => {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t('contentBuilder.launcher.placementSubtitle');
+
   return (
     <section className="space-y-3">
       <header className="flex justify-between items-center">
-        <h2 className="text-sm">Target</h2>
+        <h2 className="text-sm">{t('contentBuilder.launcher.target')}</h2>
       </header>
 
       <Button
@@ -22,14 +22,16 @@ export const ElementPreview = ({
         onClick={onClick}
       >
         <div className="space-y-2">
-          <h3 className="text-sm">{title}</h3>
+          <h3 className="text-sm">{resolvedTitle}</h3>
           <div className="rounded-2xl overflow-hidden">
             {previewImageUrl ? (
               <div className="w-[242px] h-[130px] overflow-hidden">
-                <img src={previewImageUrl} alt={`Preview for ${title}`} />
+                <img src={previewImageUrl} alt={`Preview for ${resolvedTitle}`} />
               </div>
             ) : (
-              <p className="text-destructive text-sm">No element selected yet.</p>
+              <p className="text-destructive text-sm">
+                {t('contentBuilder.launcher.noElementSelected')}
+              </p>
             )}
           </div>
         </div>

@@ -23,6 +23,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useActionsGroupContext } from '../contexts/actions-group-context';
 import { useContentActionsContext } from '../contexts/content-actions-context';
 import {
@@ -145,6 +146,7 @@ const PopoverWrapper = ({
 );
 
 const ContentActionsContentsName = () => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { selectedPreset, onContentSelected } = useContentActionsContentsContext();
   const { contents, zIndex } = useContentActionsContext();
@@ -184,7 +186,7 @@ const ContentActionsContentsName = () => {
 
   const trigger = (
     <Button variant="outline" className="flex-1 justify-between">
-      {selectedPreset?.name || 'Select content...'}
+      {selectedPreset?.name || t('actions.types.flowStart.selectContent')}
       <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
     </Button>
   );
@@ -193,11 +195,11 @@ const ContentActionsContentsName = () => {
     <div className="flex flex-row">
       <PopoverWrapper open={open} onOpenChange={setOpen} trigger={trigger} zIndex={zIndex}>
         <Command filter={handleFilter}>
-          <CommandInput placeholder="Search flow/checklist..." />
-          <CommandEmpty>No items found.</CommandEmpty>
+          <CommandInput placeholder={t('actions.types.flowStart.searchContent')} />
+          <CommandEmpty>{t('actions.types.flowStart.empty')}</CommandEmpty>
           <ScrollArea className="h-72">
             {flows.length > 0 && (
-              <CommandGroup heading="Flow">
+              <CommandGroup heading={t('actions.types.flowStart.heading.flow')}>
                 {flows.map((item) => (
                   <CommandItemWithCheck
                     key={item.id}
@@ -216,7 +218,7 @@ const ContentActionsContentsName = () => {
               </CommandGroup>
             )}
             {checklists.length > 0 && (
-              <CommandGroup heading="Checklist">
+              <CommandGroup heading={t('actions.types.flowStart.heading.checklist')}>
                 {checklists.map((item) => (
                   <CommandItemWithCheck
                     key={item.id}
@@ -242,6 +244,7 @@ const ContentActionsContentsName = () => {
 };
 
 const ContentActionsStep = ({ content }: { content: Content }) => {
+  const { t } = useTranslation();
   const { zIndex } = useContentActionsContext();
   const { stepCvid, setStepCvid } = useContentActionsContentsContext();
   const steps = content.steps || [];
@@ -273,7 +276,9 @@ const ContentActionsStep = ({ content }: { content: Content }) => {
   const trigger = (
     <Button variant="outline" className="flex-1 justify-between">
       <div className="max-w-[240px] truncate flex items-center">
-        <span className="truncate">{displayText || 'Select step...'}</span>
+        <span className="truncate">
+          {displayText || t('actions.types.flowStart.selectStep')}
+        </span>
       </div>
       <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
     </Button>
@@ -283,10 +288,10 @@ const ContentActionsStep = ({ content }: { content: Content }) => {
     <div className="flex flex-row">
       <PopoverWrapper open={open} onOpenChange={setOpen} trigger={trigger} zIndex={zIndex}>
         <Command filter={handleFilter}>
-          <CommandInput placeholder="Search steps..." />
-          <CommandEmpty>No items found.</CommandEmpty>
+          <CommandInput placeholder={t('actions.types.flowStart.searchStep')} />
+          <CommandEmpty>{t('actions.types.flowStart.empty')}</CommandEmpty>
           <ScrollArea className="h-72">
-            <CommandGroup heading="Steps">
+            <CommandGroup heading={t('actions.types.flowStart.steps')}>
               {steps?.map((item, index) => (
                 <CommandItemWithCheck
                   key={item.cvid}
@@ -337,6 +342,7 @@ const useErrorHandling = (
 
 export const ContentActionsContents = (props: ContentActionsContentsProps) => {
   const { index, data } = props;
+  const { t } = useTranslation();
   const { updateConditionData } = useActionsGroupContext();
   const { contents, zIndex } = useContentActionsContext();
 
@@ -435,14 +441,17 @@ export const ContentActionsContents = (props: ContentActionsContentsProps) => {
 
   // Memoize display text
   const displayText = useMemo(() => {
-    const contentType = selectedContent?.type === ContentDataType.FLOW ? 'flow' : 'checklist';
+    const startText =
+      selectedContent?.type === ContentDataType.FLOW
+        ? t('actions.types.flowStart.start.flow')
+        : t('actions.types.flowStart.start.checklist');
     const stepText =
       selectedContent?.type === ContentDataType.FLOW && stepCvid && stepIndex !== -1
-        ? `, at step: ${stepIndex + 1}`
+        ? `${t('actions.types.flowStart.atStep')}${stepIndex + 1}`
         : '';
 
-    return `Start ${contentType}: ${selectedPreset?.name || ''}${stepText}`;
-  }, [selectedContent?.type, selectedPreset?.name, stepCvid, stepIndex]);
+    return `${startText}: ${selectedPreset?.name || ''}${stepText}`;
+  }, [selectedContent?.type, selectedPreset?.name, stepCvid, stepIndex, t]);
 
   return (
     <ContentActionsContentsContext.Provider value={contextValue}>
@@ -462,12 +471,14 @@ export const ContentActionsContents = (props: ContentActionsContentsProps) => {
                 >
                   <div className="flex flex-col space-y-2">
                     <div>
-                      {selectedContent?.type === ContentDataType.FLOW ? 'Flow' : 'Checklist'}
+                      {selectedContent?.type === ContentDataType.FLOW
+                        ? t('actions.types.flowStart.flow')
+                        : t('actions.types.flowStart.checklist')}
                     </div>
                     <ContentActionsContentsName />
                     {selectedContent?.type === ContentDataType.FLOW && (
                       <>
-                        <span>Step to start at</span>
+                        <span>{t('actions.types.flowStart.stepLabel')}</span>
                         <ContentActionsStep content={selectedContent} />
                       </>
                     )}

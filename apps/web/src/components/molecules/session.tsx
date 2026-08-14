@@ -5,13 +5,15 @@ import { Tooltip, TooltipTrigger } from '@usertour-packages/tooltip';
 import { TooltipProvider } from '@usertour-packages/tooltip';
 import { BizEvents, BizSession, ChecklistData, ContentVersion } from '@usertour/types';
 import { Event } from '@usertour/types';
-import { formatDistanceStrict } from 'date-fns';
+import { formatDistanceStrictLocalized } from '@/utils/common';
+import { useTranslation } from 'react-i18next';
 
 const LauncherProgressColumn = ({
   original,
   eventList,
 }: { original: BizSession; eventList: Event[] }) => {
   const { bizEvent } = original;
+  const { t } = useTranslation();
   if (!eventList || !bizEvent || bizEvent.length === 0) {
     return <></>;
   }
@@ -27,7 +29,7 @@ const LauncherProgressColumn = ({
             <TooltipTrigger className="cursor-default">
               <PlayIcon className="text-success h-5 w-5" />
             </TooltipTrigger>
-            <TooltipContent>Active</TooltipContent>
+            <TooltipContent>{t('users.sessions.status.active')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -37,13 +39,13 @@ const LauncherProgressColumn = ({
             <TooltipTrigger className="cursor-default">
               <CancelIcon className="text-foreground/60 h-5 w-5" />
             </TooltipTrigger>
-            <TooltipContent>Dismissed</TooltipContent>
+            <TooltipContent>{t('users.sessions.status.dismissed')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
       <div className="flex flex-col">
-        {!isActivated && <div className="text-muted-foreground">Seen</div>}
-        {isActivated && <div className="text-success">Activated</div>}
+        {!isActivated && <div className="text-muted-foreground">{t('users.sessions.status.seen')}</div>}
+        {isActivated && <div className="text-success">{t('users.sessions.status.activated')}</div>}
       </div>
     </div>
   );
@@ -57,6 +59,7 @@ const ChecklistProgressColumn = ({
 }: { original: BizSession; eventList: Event[]; version: ContentVersion }) => {
   const { bizEvent } = original;
   const data = version?.data as ChecklistData;
+  const { t } = useTranslation();
 
   if (!eventList || !bizEvent || bizEvent.length === 0 || !data) {
     return <></>;
@@ -84,7 +87,10 @@ const ChecklistProgressColumn = ({
 
   const completeDate =
     completeBizEvent && firstEvent
-      ? formatDistanceStrict(new Date(completeBizEvent.createdAt), new Date(firstEvent.createdAt))
+      ? formatDistanceStrictLocalized(
+          new Date(completeBizEvent.createdAt),
+          new Date(firstEvent.createdAt),
+        )
       : null;
   const isComplete = !!completeBizEvent;
   const isDismissed = !!dismissedBizEvent;
@@ -97,7 +103,7 @@ const ChecklistProgressColumn = ({
             <TooltipTrigger className="cursor-default">
               <PlayIcon className="text-success h-5 w-5" />
             </TooltipTrigger>
-            <TooltipContent>Active</TooltipContent>
+            <TooltipContent>{t('users.sessions.status.active')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -107,14 +113,16 @@ const ChecklistProgressColumn = ({
             <TooltipTrigger className="cursor-default">
               <CancelIcon className="text-foreground/60 h-5 w-5" />
             </TooltipTrigger>
-            <TooltipContent>Dismissed</TooltipContent>
+            <TooltipContent>{t('users.sessions.status.dismissed')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
       <div className="flex flex-col">
         {!isComplete && <span>{progress}%</span>}
         {isComplete && (
-          <div className="text-success font-bold text-left">{`Completed in ${completeDate}`}</div>
+          <div className="text-success font-bold text-left">
+            {t('users.sessions.completedIn', { date: completeDate })}
+          </div>
         )}
       </div>
     </div>
@@ -127,6 +135,7 @@ const FlowProgressColumn = ({
   eventList,
 }: { original: BizSession; eventList: Event[] }) => {
   const { bizEvent } = original;
+  const { t } = useTranslation();
   if (!eventList || !bizEvent || bizEvent.length === 0) {
     return <></>;
   }
@@ -145,7 +154,10 @@ const FlowProgressColumn = ({
 
   const completeDate =
     completeBizEvent && firstEvent
-      ? formatDistanceStrict(new Date(completeBizEvent.createdAt), new Date(firstEvent.createdAt))
+      ? formatDistanceStrictLocalized(
+          new Date(completeBizEvent.createdAt),
+          new Date(firstEvent.createdAt),
+        )
       : null;
   const isComplete = !!completeBizEvent;
   const isDismissed = !!endedBizEvent;
@@ -158,7 +170,7 @@ const FlowProgressColumn = ({
             <TooltipTrigger className="cursor-default">
               <PlayIcon className="text-success h-5 w-5" />
             </TooltipTrigger>
-            <TooltipContent>Active</TooltipContent>
+            <TooltipContent>{t('users.sessions.status.active')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -168,14 +180,16 @@ const FlowProgressColumn = ({
             <TooltipTrigger className="cursor-default">
               <CancelIcon className="text-foreground/60 h-5 w-5" />
             </TooltipTrigger>
-            <TooltipContent>Dismissed</TooltipContent>
+            <TooltipContent>{t('users.sessions.status.dismissed')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
       <div className="flex flex-col">
         {!isComplete && <span>{lastSeenBizEvent?.data?.flow_step_progress ?? 0}%</span>}
         {isComplete && (
-          <div className="text-success font-bold text-left">{`Completed in ${completeDate}`}</div>
+          <div className="text-success font-bold text-left">
+            {t('users.sessions.completedIn', { date: completeDate })}
+          </div>
         )}
         <div className="text-left text-muted-foreground">
           <div className="text-muted-foreground">

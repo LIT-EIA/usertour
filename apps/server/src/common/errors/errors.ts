@@ -5,7 +5,7 @@ export class UnknownError extends BaseError {
   code = 'E0000';
   messageDict = {
     en: 'An unknown error has occurred. The Usertour team is working quickly to resolve it. Please try again later.',
-    'zh-CN': '出现未知错误，Usertour 团队正在火速处理中，请稍后重试。',
+    fr: "Une erreur inconnue s'est produite. L'équipe Usertour travaille rapidement pour la résoudre. Veuillez réessayer plus tard.",
   };
 }
 
@@ -13,7 +13,7 @@ export class ContentTooLargeError extends BaseError {
   code = 'E2004';
   messageDict = {
     en: 'Content is too large. Maximum length is 100k characters.',
-    'zh-CN': '内容过长。最大长度为 10 万字符。',
+    fr: 'Le contenu est trop volumineux. La longueur maximale est de 100 000 caractères.',
   };
 }
 
@@ -21,7 +21,7 @@ export class PayloadTooLargeError extends BaseError {
   code = 'E2005';
   messageDict = {
     en: 'Request payload is too large. Maximum size is 100KB.',
-    'zh-CN': '请求数据过大。最大大小为 100KB。',
+    fr: 'La charge utile de la requête est trop volumineuse. La taille maximale est de 100 Ko.',
   };
 }
 
@@ -29,7 +29,7 @@ export class ConnectionError extends BaseError {
   code = 'E0001';
   messageDict = {
     en: 'Cannot connect to the Usertour server, please try again later.',
-    'zh-CN': '无法连接到 Usertour 服务器，请稍后重试。',
+    fr: 'Impossible de se connecter au serveur Usertour, veuillez réessayer plus tard.',
   };
 }
 
@@ -37,7 +37,7 @@ export class ParamsError extends BaseError {
   code = 'E0003';
   messageDict = {
     en: 'System parameter error. The Usertour team is working quickly to address it. Please try again later.',
-    'zh-CN': '系统参数错误，Usertour 团队正在火速处理中，请稍后重试。',
+    fr: "Erreur de paramètre système. L'équipe Usertour travaille rapidement pour la résoudre. Veuillez réessayer plus tard.",
   };
 }
 
@@ -45,7 +45,7 @@ export class OAuthError extends BaseError {
   code = 'E0004';
   messageDict = {
     en: 'Authorization process failed, please try again',
-    'zh-CN': '授权过程失败，请重试',
+    fr: "Le processus d'autorisation a échoué, veuillez réessayer",
   };
 }
 
@@ -53,7 +53,7 @@ export class AccountNotFoundError extends BaseError {
   code = 'E0005';
   messageDict = {
     en: 'Account not found, please sign up',
-    'zh-CN': '账户不存在，请注册',
+    fr: "Compte introuvable, veuillez vous inscrire",
   };
 }
 
@@ -61,7 +61,7 @@ export class PasswordIncorrect extends BaseError {
   code = 'E0006';
   messageDict = {
     en: 'Password incorrect, please try again',
-    'zh-CN': '密码错误，请重试',
+    fr: 'Mot de passe incorrect, veuillez réessayer',
   };
 }
 
@@ -69,7 +69,7 @@ export class EmailAlreadyRegistered extends BaseError {
   code = 'E0007';
   messageDict = {
     en: 'Email already registered, please sign in or try another one',
-    'zh-CN': '邮箱已被注册，请登录或尝试其他邮箱',
+    fr: 'Cet e-mail est déjà enregistré, veuillez vous connecter ou en essayer un autre',
   };
 }
 
@@ -77,7 +77,7 @@ export class InvalidVerificationSession extends BaseError {
   code = 'E0008';
   messageDict = {
     en: 'Verification session not found or expired, please try again',
-    'zh-CN': '验证会话不存在或已过期，请重试',
+    fr: 'Session de vérification introuvable ou expirée, veuillez réessayer',
   };
 }
 
@@ -85,7 +85,7 @@ export class IncorrectVerificationCode extends BaseError {
   code = 'E0009';
   messageDict = {
     en: 'Verification code is incorrect, please try again',
-    'zh-CN': '验证码错误，请重试',
+    fr: 'Le code de vérification est incorrect, veuillez réessayer',
   };
 }
 
@@ -93,7 +93,7 @@ export class OperationTooFrequent extends BaseError {
   code = 'E0010';
   messageDict = {
     en: 'Operation too frequent, please try again later',
-    'zh-CN': '操作过于频繁，请稍后再试',
+    fr: 'Opération trop fréquente, veuillez réessayer plus tard',
   };
 }
 
@@ -101,7 +101,7 @@ export class AuthenticationExpiredError extends BaseError {
   code = 'E0011';
   messageDict = {
     en: 'Authentication expired, please sign in again',
-    'zh-CN': '身份验证已过期，请重新登录',
+    fr: 'La session a expiré, veuillez vous reconnecter',
   };
 }
 
@@ -109,7 +109,7 @@ export class UnsupportedFileTypeError extends BaseError {
   code = 'E0012';
   messageDict = {
     en: 'This file type is temporarily not supported',
-    'zh-CN': '暂不支持该文件类型',
+    fr: "Ce type de fichier n'est temporairement pas pris en charge",
   };
 }
 
@@ -117,7 +117,7 @@ export class NoPermissionError extends BaseError {
   code = 'E0013';
   messageDict = {
     en: 'You do not have permission to access this project',
-    'zh-CN': '您没有权限访问该项目',
+    fr: "Vous n'avez pas la permission d'accéder à ce projet",
   };
 }
 
@@ -125,7 +125,7 @@ export class ContentNotPublishedError extends BaseError {
   code = 'E0014';
   messageDict = {
     en: 'You have reached your Survey questions limit. Please upgrade your Usertour account under Settings → Billing.',
-    'zh-CN': '您已经达到了 Survey 问题的限制，请在设置 → 账单中升级您的 Usertour 账户。',
+    fr: 'Vous avez atteint votre limite de questions de sondage. Veuillez mettre à niveau votre compte Usertour dans Paramètres → Facturation.',
   };
 }
 
@@ -133,7 +133,7 @@ export class TeamMemberLimitError extends BaseError {
   code = 'E0015';
   messageDict = {
     en: 'You have reached your team member limit. Please upgrade your Usertour account under Settings → Billing.',
-    'zh-CN': '您已经达到了团队成员的限制，请在设置 → 账单中升级您的 Usertour 账户。',
+    fr: "Vous avez atteint votre limite de membres d'équipe. Veuillez mettre à niveau votre compte Usertour dans Paramètres → Facturation.",
   };
 }
 
@@ -141,7 +141,7 @@ export class InvalidLicenseError extends BaseError {
   code = 'E0016';
   messageDict = {
     en: 'Invalid license provided',
-    'zh-CN': '提供的许可证无效',
+    fr: 'Licence fournie invalide',
   };
 }
 
@@ -149,7 +149,7 @@ export class LicenseExpiredError extends BaseError {
   code = 'E0017';
   messageDict = {
     en: 'License has expired',
-    'zh-CN': '许可证已过期',
+    fr: 'La licence a expiré',
   };
 }
 
@@ -157,7 +157,7 @@ export class LicenseProjectMismatchError extends BaseError {
   code = 'E0018';
   messageDict = {
     en: 'License is not valid for this project',
-    'zh-CN': '许可证不适用于此项目',
+    fr: "La licence n'est pas valide pour ce projet",
   };
 }
 
@@ -165,7 +165,7 @@ export class LicenseDecodeError extends BaseError {
   code = 'E0019';
   messageDict = {
     en: 'Failed to decode license payload',
-    'zh-CN': '无法解码许可证内容',
+    fr: 'Échec du décodage des données de la licence',
   };
 }
 
@@ -178,7 +178,7 @@ export class InvalidApiKeyError extends OpenAPIError {
   statusCode = HttpStatus.FORBIDDEN;
   messageDict = {
     en: 'Invalid API key provided',
-    'zh-CN': '提供的 API 密钥无效',
+    fr: 'Clé API fournie invalide',
   };
 }
 
@@ -187,7 +187,7 @@ export class MissingApiKeyError extends OpenAPIError {
   statusCode = HttpStatus.UNAUTHORIZED;
   messageDict = {
     en: 'Missing API key',
-    'zh-CN': '缺少 API 密钥',
+    fr: 'Clé API manquante',
   };
 }
 
@@ -196,7 +196,7 @@ export class UserNotFoundError extends OpenAPIError {
   statusCode = HttpStatus.NOT_FOUND;
   messageDict = {
     en: 'User not found',
-    'zh-CN': '用户未找到',
+    fr: 'Utilisateur introuvable',
   };
 }
 
@@ -205,7 +205,7 @@ export class CompanyNotFoundError extends OpenAPIError {
   statusCode = HttpStatus.NOT_FOUND;
   messageDict = {
     en: 'Company not found',
-    'zh-CN': '公司未找到',
+    fr: 'Entreprise introuvable',
   };
 }
 
@@ -214,7 +214,7 @@ export class CompanyMembershipNotFoundError extends OpenAPIError {
   statusCode = HttpStatus.NOT_FOUND;
   messageDict = {
     en: 'Company membership not found',
-    'zh-CN': '公司成员关系未找到',
+    fr: "Adhésion à l'entreprise introuvable",
   };
 }
 
@@ -223,7 +223,7 @@ export class ContentNotFoundError extends OpenAPIError {
   statusCode = HttpStatus.NOT_FOUND;
   messageDict = {
     en: 'Content not found',
-    'zh-CN': '内容未找到',
+    fr: 'Contenu introuvable',
   };
 }
 
@@ -232,7 +232,7 @@ export class ContentSessionNotFoundError extends OpenAPIError {
   statusCode = HttpStatus.NOT_FOUND;
   messageDict = {
     en: 'Content session not found',
-    'zh-CN': '内容会话未找到',
+    fr: 'Session de contenu introuvable',
   };
 }
 
@@ -241,7 +241,7 @@ export class InvalidLimitError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Invalid limit parameter',
-    'zh-CN': '无效的限制参数',
+    fr: 'Paramètre de limite invalide',
   };
 }
 
@@ -250,7 +250,7 @@ export class InvalidCursorError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Invalid cursor parameter',
-    'zh-CN': '无效的游标参数',
+    fr: 'Paramètre de curseur invalide',
   };
 }
 
@@ -259,7 +259,7 @@ export class InvalidCursorPreviousError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Invalid previous cursor parameter',
-    'zh-CN': '无效的上一个游标参数',
+    fr: 'Paramètre de curseur précédent invalide',
   };
 }
 
@@ -268,7 +268,7 @@ export class InvalidRequestError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Invalid request',
-    'zh-CN': '无效的请求',
+    fr: 'Requête invalide',
   };
 }
 
@@ -277,7 +277,7 @@ export class RateLimitExceededError extends OpenAPIError {
   statusCode = HttpStatus.TOO_MANY_REQUESTS;
   messageDict = {
     en: 'Too many requests',
-    'zh-CN': '请求过于频繁',
+    fr: 'Trop de requêtes',
   };
 }
 
@@ -286,7 +286,7 @@ export class ServiceUnavailableError extends OpenAPIError {
   statusCode = HttpStatus.SERVICE_UNAVAILABLE;
   messageDict = {
     en: 'Service unavailable',
-    'zh-CN': '服务不可用',
+    fr: 'Service indisponible',
   };
 }
 
@@ -295,7 +295,7 @@ export class InvalidScopeError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Invalid scope parameter',
-    'zh-CN': '无效的范围参数',
+    fr: 'Paramètre de portée invalide',
   };
 }
 
@@ -304,7 +304,7 @@ export class InvalidOrderByError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Invalid orderBy parameter.',
-    'zh-CN': '无效的排序参数。',
+    fr: 'Paramètre orderBy invalide.',
   };
 }
 
@@ -313,13 +313,12 @@ export class ValidationError extends OpenAPIError {
   statusCode = HttpStatus.BAD_REQUEST;
   messageDict = {
     en: 'Validation error',
-    'zh-CN': '验证错误',
+    fr: 'Erreur de validation',
   };
 
   constructor(message: string) {
     super();
     this.messageDict.en = message;
-    this.messageDict['zh-CN'] = message;
   }
 }
 

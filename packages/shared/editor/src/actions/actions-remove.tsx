@@ -5,6 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
+import { useTranslation } from 'react-i18next';
 import { useActionsGroupContext } from '../contexts/actions-group-context';
 
 type ContentActionsRemoveProps = {
@@ -12,6 +13,7 @@ type ContentActionsRemoveProps = {
 };
 export const ContentActionsRemove = (props: ContentActionsRemoveProps) => {
   const { index } = props;
+  const { t } = useTranslation();
   const { conditions, setNewConditions } = useActionsGroupContext();
 
   const handleOnClick = () => {
@@ -32,7 +34,7 @@ export const ContentActionsRemove = (props: ContentActionsRemoveProps) => {
             />
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
-            Remove action
+            {t('actions.actions.removeAction')}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

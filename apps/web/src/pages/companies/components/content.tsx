@@ -17,9 +17,11 @@ import { UserEditDropdownMenu } from './edit-dropmenu';
 import { UserSegmentEditForm } from './edit-form';
 import { UserSegmentFilterSave } from './filter-save';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 // Inner component that uses the context
 function CompanyListContentInner({ environmentId }: { environmentId: string | undefined }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { currentSegment, refetch } = useSegmentListContext();
   const navigate = useNavigate();
@@ -35,7 +37,11 @@ function CompanyListContentInner({ environmentId }: { environmentId: string | un
       <div className="flex flex-col flex-shrink min-w-0 px-4 py-6 lg:px-8 grow">
         <div className="flex items-center justify-between">
           <div className="space-y-1 flex flex-row items-center relative">
-            <h2 className="text-xl font-semibold tracking-tight">{currentSegment?.name}</h2>
+            <h2 className="text-xl font-semibold tracking-tight">
+              {currentSegment?.dataType === 'ALL'
+                ? t('companies.segments.allCompaniesName')
+                : currentSegment?.name}
+            </h2>
             {currentSegment?.dataType !== 'ALL' && (
               <TooltipProvider>
                 <Tooltip>
@@ -53,7 +59,7 @@ function CompanyListContentInner({ environmentId }: { environmentId: string | un
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs bg-slate-700">
-                    <p>Edit company segment name</p>
+                    <p>{t('companies.segments.tooltips.editName')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

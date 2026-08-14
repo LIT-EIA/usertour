@@ -15,8 +15,9 @@ import {
 import { VersionOnLocalization } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const ContentLocalizationTable = () => {
   const { contentLocalizationList, loading, refetch } = useContentLocalizationListContext();
@@ -24,6 +25,7 @@ export const ContentLocalizationTable = () => {
   const [mutation] = useMutation(updateVersionLocationData);
   const { toast } = useToast();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleOnCheckedChange = async (enabled: boolean, contentLocale: VersionOnLocalization) => {
     try {
@@ -42,13 +44,13 @@ export const ContentLocalizationTable = () => {
         await refetch();
         toast({
           variant: 'success',
-          title: 'The changes have been applied successfully.',
+          title: t('contents.localization.toast.applySuccess'),
         });
       }
     } catch (_) {
       toast({
         variant: 'destructive',
-        title: 'The changes have been applied failed.',
+        title: t('contents.localization.toast.applyFailure'),
       });
     }
   };
@@ -61,9 +63,9 @@ export const ContentLocalizationTable = () => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-2/4">Locale</TableHead>
-          <TableHead className="w-1/4">Status</TableHead>
-          <TableHead className="w-1/4">UpdatedAt</TableHead>
+          <TableHead className="w-2/4">{t('contents.localization.taskTable.locale')}</TableHead>
+          <TableHead className="w-1/4">{t('contents.localization.taskTable.status')}</TableHead>
+          <TableHead className="w-1/4">{t('contents.localization.taskTable.updatedAt')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -84,7 +86,9 @@ export const ContentLocalizationTable = () => {
                       ?.name
                   }
                 </Link>
-                <span className="ml-2 text-destructive">13 missing</span>
+                <span className="ml-2 text-destructive">
+                  {t('contents.localization.taskTable.missingCount', { count: 13 })}
+                </span>
               </TableCell>
               <TableCell>
                 <Switch
@@ -96,12 +100,14 @@ export const ContentLocalizationTable = () => {
                   }}
                 />
               </TableCell>
-              <TableCell>{format(new Date(contentLocale.updatedAt), 'PPpp')}</TableCell>
+              <TableCell>{formatDate(new Date(contentLocale.updatedAt), 'PPpp')}</TableCell>
             </TableRow>
           ))
         ) : (
           <TableRow>
-            <TableCell className="h-24 text-center">No results.</TableCell>
+            <TableCell className="h-24 text-center">
+              {t('contents.localization.taskTable.noResults')}
+            </TableCell>
           </TableRow>
         )}
       </TableBody>

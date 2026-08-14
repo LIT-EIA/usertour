@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext } from './builder-context';
 import { useUpdateContentVersionMutation } from '@usertour-packages/shared-hooks';
 import { useToast } from '@usertour-packages/use-toast';
@@ -49,6 +50,7 @@ export function LauncherProvider(props: LauncherProviderProps): JSX.Element {
 
   const { invoke: updateContentVersionMutation } = useUpdateContentVersionMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [localData, setLocalData] = useState<LauncherData | undefined>();
   const [launcherTooltip, setLauncherTooltip] = useState<LauncherData['tooltip'] | undefined>();
   const [launcherTarget, setLauncherTarget] = useState<LauncherData['target'] | undefined>();
@@ -77,13 +79,21 @@ export function LauncherProvider(props: LauncherProviderProps): JSX.Element {
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: error instanceof Error ? error.message : 'Failed to save launcher!',
+          title:
+            error instanceof Error ? error.message : t('contentBuilder.launcher.saveFailed'),
         });
       } finally {
         setIsLoading(false);
       }
     },
-    [currentVersion, updateContentVersionMutation, fetchContentAndVersion, toast, setIsLoading],
+    [
+      currentVersion,
+      updateContentVersionMutation,
+      fetchContentAndVersion,
+      toast,
+      setIsLoading,
+      t,
+    ],
   );
 
   // Create a debounced version of saveData

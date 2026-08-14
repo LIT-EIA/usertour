@@ -22,7 +22,9 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { getContentTypeGenderContext } from '@/utils/content-type';
 
 interface RenameFormProps {
   data: Content;
@@ -46,6 +48,9 @@ export const ContentRenameForm = (props: RenameFormProps) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const typeContext = getContentTypeGenderContext(data.type);
+  const translatedType = t(`contents.types.${data.type}`);
 
   const showError = (title: string) => {
     toast({
@@ -92,7 +97,9 @@ export const ContentRenameForm = (props: RenameFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Rename {data.type} </DialogTitle>
+              <DialogTitle>
+                {t('contents.shared.rename.title', { type: translatedType })}
+              </DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -103,7 +110,13 @@ export const ContentRenameForm = (props: RenameFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder={`Enter ${data.type} name`} {...field} />
+                          <Input
+                            placeholder={t('contents.shared.rename.namePlaceholder', {
+                              type: translatedType,
+                              context: typeContext,
+                            })}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -115,12 +128,12 @@ export const ContentRenameForm = (props: RenameFormProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" type="button">
-                  Cancel
+                  {t('contents.shared.common.cancel')}
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('contents.shared.common.submit')}
               </Button>
             </DialogFooter>
           </form>

@@ -16,6 +16,7 @@ import { Segment } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback, useEffect, useState } from 'react';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 export const UserSegmentFilterSave = (props: { currentSegment?: Segment }) => {
   const { currentSegment } = props;
@@ -23,6 +24,7 @@ export const UserSegmentFilterSave = (props: { currentSegment?: Segment }) => {
   const { refetch, currentConditions, isRefetching } = useSegmentListContext();
   const { toast } = useToast();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
   const [isShowButton, setIsShowButton] = useState(false);
@@ -84,21 +86,21 @@ export const UserSegmentFilterSave = (props: { currentSegment?: Segment }) => {
           onClick={handleOnClick}
           disabled={isViewOnly}
         >
-          Save filter
+          {t('companies.filters.saveFilter')}
         </Button>
       )}
       <AlertDialog defaultOpen={open} open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Save filter</AlertDialogTitle>
+            <AlertDialogTitle>{t('companies.filters.saveFilter')}</AlertDialogTitle>
             <AlertDialogDescription>
               Confirm saving <span className="font-bold">{currentSegment?.name}</span> filter?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('companies.actions.cancel')}</AlertDialogCancel>
             <LoadingButton onClick={handleSubmit} loading={loading || isRefetching}>
-              Yes, save
+              {t('companies.filters.yesSave')}
             </LoadingButton>
           </AlertDialogFooter>
         </AlertDialogContent>

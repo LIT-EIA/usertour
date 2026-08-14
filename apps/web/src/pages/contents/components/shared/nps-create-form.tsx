@@ -28,6 +28,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface NpsCreateFormProps {
@@ -66,6 +67,8 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
   const { environment } = useAppContext();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const translatedType = t('contents.types.nps');
 
   const showError = (title: string) => {
     toast({
@@ -92,7 +95,7 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
       };
       const ret = await createContentMutation({ variables: data });
       if (!ret.data?.createContent?.id) {
-        showError('Create NPS Survey failed.');
+        showError(t('contents.create.failure', { type: translatedType }));
       }
       const content = ret.data?.createContent as Content;
       navigate(
@@ -111,7 +114,7 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New NPS Survey</DialogTitle>
+              <DialogTitle>{t('contents.create.title', { type: translatedType })}</DialogTitle>
             </DialogHeader>
             <div className="space-y-2 py-4 ">
               <FormField
@@ -119,10 +122,16 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-1 space-y-0">
-                    <FormLabel className="w-32 flex-none">NPS Survey name:</FormLabel>
+                    <FormLabel className="w-32 flex-none">{t('contents.create.nameLabel')}</FormLabel>
                     <FormControl>
                       <div className="flex flex-col space-x-1 w-full grow">
-                        <Input placeholder="Enter NPS Survey name" {...field} id="nps-name-input" />
+                        <Input
+                          placeholder={t('contents.create.namePlaceholder', {
+                            type: translatedType,
+                          })}
+                          {...field}
+                          id="nps-name-input"
+                        />
                         <FormMessage />
                       </div>
                     </FormControl>
@@ -132,11 +141,11 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('contents.shared.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading} id="create-flow-submit">
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('contents.create.submit', { type: translatedType })}
               </Button>
             </DialogFooter>
           </form>

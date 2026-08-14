@@ -1,14 +1,16 @@
 import { GearIcon } from '@radix-ui/react-icons';
 import { ElementIcon } from '@usertour-packages/icons';
+import { useTranslation } from 'react-i18next';
 import { useLauncherContext } from '../../../contexts';
 
 export const LauncherTargetPreview = () => {
   const { gotoLauncherTarget } = useLauncherContext();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-3">
       <div className="flex items-center">
-        <h1 className="text-sm">Target</h1>
+        <h1 className="text-sm">{t('contentBuilder.launcher.target')}</h1>
       </div>
 
       <div
@@ -17,7 +19,7 @@ export const LauncherTargetPreview = () => {
       >
         <div className="flex flex-row space-x-1 items-center">
           <ElementIcon className="h-4 w-4" />
-          <span className="text-sm">Target setting</span>
+          <span className="text-sm">{t('contentBuilder.launcher.targetSetting')}</span>
         </div>
         <GearIcon className="h-4 w-4" />
       </div>

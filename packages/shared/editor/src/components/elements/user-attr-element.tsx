@@ -19,12 +19,14 @@ import {
 } from '@usertour-packages/tooltip';
 import { Attribute } from '@usertour/types';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
 import { UserAttributeElementType } from '../../types/slate';
 import { usePopperEditorContext } from '../editor';
 
 export const UserAttributeElement = (props: RenderElementProps) => {
+  const { t } = useTranslation();
   const { zIndex, attributes } = usePopperEditorContext();
   const element = props.element as UserAttributeElementType;
   const editor = useSlateStatic();
@@ -119,7 +121,7 @@ export const UserAttributeElement = (props: RenderElementProps) => {
           <div className="flex flex-col gap-2.5">
             <Select onValueChange={handleButtonActionChange} defaultValue={element.attrCode}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a distribute" />
+                <SelectValue placeholder={t('contentBuilder.editor.userAttr.selectPlaceholder')} />
               </SelectTrigger>
               <SelectPortal style={{ zIndex: zIndex + 2 }}>
                 <SelectContent>
@@ -133,13 +135,13 @@ export const UserAttributeElement = (props: RenderElementProps) => {
                 </SelectContent>
               </SelectPortal>
             </Select>
-            <Label htmlFor="button-text">Fallback</Label>
+            <Label htmlFor="button-text">{t('contentBuilder.editor.userAttr.fallbackLabel')}</Label>
             <Input
               type="button-text"
               className="bg-background"
               id="button-text"
               value={fallback}
-              placeholder="Enter button text"
+              placeholder={t('contentBuilder.editor.userAttr.fallbackPlaceholder')}
               onChange={handleButtonTextChange}
             />
             <TooltipProvider>
@@ -155,7 +157,7 @@ export const UserAttributeElement = (props: RenderElementProps) => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Delete use attribute</p>
+                  <p>{t('contentBuilder.editor.userAttr.deleteTooltip')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

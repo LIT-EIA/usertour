@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@usertour-packages/select';
 import { HelpTooltip } from '@usertour-packages/shared-components';
+import { useTranslation } from 'react-i18next';
 
 interface PrecisionSelectProps {
   value?: string;
@@ -16,24 +17,26 @@ interface PrecisionSelectProps {
 }
 
 export const PrecisionSelect = ({ value, onChange, zIndex }: PrecisionSelectProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="items-center space-y-2">
       <div className="flex justify-start items-center space-x-1">
-        <Label>Precision</Label>
-        <HelpTooltip>How flexible Usertour should be when looking for the element. If</HelpTooltip>
+        <Label>{t('contentBuilder.shared.precision.label')}</Label>
+        <HelpTooltip>{t('contentBuilder.shared.precision.tooltip')}</HelpTooltip>
       </div>
       <Select onValueChange={onChange} defaultValue={value}>
         <SelectTrigger>
-          <SelectValue placeholder="Select a precision" />
+          <SelectValue placeholder={t('contentBuilder.shared.precision.selectPlaceholder')} />
         </SelectTrigger>
         <SelectContent style={{ zIndex }}>
           <SelectGroup>
-            <SelectItem value="loosest">Loosest</SelectItem>
-            <SelectItem value="looser">Looser</SelectItem>
-            <SelectItem value="loose">Loose</SelectItem>
-            <SelectItem value="strict">Strict</SelectItem>
-            <SelectItem value="stricter">Stricter</SelectItem>
-            <SelectItem value="strictest">Strictest</SelectItem>
+            <SelectItem value="loosest">{t('contentBuilder.shared.precision.loosest')}</SelectItem>
+            <SelectItem value="looser">{t('contentBuilder.shared.precision.looser')}</SelectItem>
+            <SelectItem value="loose">{t('contentBuilder.shared.precision.loose')}</SelectItem>
+            <SelectItem value="strict">{t('contentBuilder.shared.precision.strict')}</SelectItem>
+            <SelectItem value="stricter">{t('contentBuilder.shared.precision.stricter')}</SelectItem>
+            <SelectItem value="strictest">{t('contentBuilder.shared.precision.strictest')}</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>

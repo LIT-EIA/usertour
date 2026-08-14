@@ -11,8 +11,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
 
 import { Button } from '@usertour-packages/button';
@@ -48,13 +51,13 @@ export interface RulesContentProps {
   index: number;
 }
 
-const conditionsMapping = [
-  { value: 'seen', name: 'seen' },
-  { value: 'unseen', name: 'not seen' },
-  { value: 'completed', name: 'completed' },
-  { value: 'uncompleted', name: 'not completed' },
-  { value: 'actived', name: 'is currently actived' },
-  { value: 'unactived', name: 'is not currently actived' },
+const buildConditionsMapping = (t: TFunction) => [
+  { value: 'seen', name: t('conditions.types.content.operators.seen') },
+  { value: 'unseen', name: t('conditions.types.content.operators.unseen') },
+  { value: 'completed', name: t('conditions.types.content.operators.completed') },
+  { value: 'uncompleted', name: t('conditions.types.content.operators.uncompleted') },
+  { value: 'actived', name: t('conditions.types.content.operators.actived') },
+  { value: 'unactived', name: t('conditions.types.content.operators.unactived') },
 ];
 
 interface RulesContentContextValue {
@@ -62,6 +65,7 @@ interface RulesContentContextValue {
   setSelectedPreset: Dispatch<SetStateAction<SelectItemType | null>>;
   conditionValue: string;
   setConditionValue: Dispatch<SetStateAction<string>>;
+  conditionsMapping: ReturnType<typeof buildConditionsMapping>;
 }
 
 const RulesContentContext = createContext<RulesContentContextValue | undefined>(undefined);
@@ -76,6 +80,7 @@ function useRulesContentContext(): RulesContentContextValue {
 
 const RulesContentName = () => {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   const { selectedPreset, setSelectedPreset } = useRulesContentContext();
   const { contents } = useRulesContext();
   const handleOnSelected = (item: SelectItemType) => {
@@ -106,9 +111,9 @@ const RulesContentName = () => {
         </Popover.PopoverTrigger>
         <Popover.PopoverContent className="w-[350px] p-0">
           <Command filter={handleFilter}>
-            <CommandInput placeholder="Search flow..." />
-            <CommandEmpty>No items found.</CommandEmpty>
-            <CommandGroup heading="Flow">
+            <CommandInput placeholder={t('conditions.types.content.searchFlowPlaceholder')} />
+            <CommandEmpty>{t('common.selectPopover.noItems')}</CommandEmpty>
+            <CommandGroup heading={t('conditions.types.content.flow')}>
               <ScrollArea className="h-72">
                 {contents
                   ?.filter((c) => c.type === ContentDataType.FLOW)
@@ -143,7 +148,8 @@ const RulesContentName = () => {
 };
 
 const RulesContentRadios = () => {
-  const { conditionValue = 'seen', setConditionValue } = useRulesContentContext();
+  const { conditionValue = 'seen', setConditionValue, conditionsMapping } =
+    useRulesContentContext();
   return (
     <RadioGroup defaultValue={conditionValue} onValueChange={setConditionValue}>
       {conditionsMapping.map((condition, index) => (
@@ -160,6 +166,8 @@ const RulesContentRadios = () => {
 
 export const RulesContent = (props: RulesContentProps) => {
   const { index, data } = props;
+  const { t } = useTranslation();
+  const conditionsMapping = useMemo(() => buildConditionsMapping(t), [t]);
   const { updateConditionData } = useRulesGroupContext();
   const { contents, disabled } = useRulesContext();
 
@@ -174,6 +182,7 @@ export const RulesContent = (props: RulesContentProps) => {
     setSelectedPreset,
     conditionValue,
     setConditionValue,
+    conditionsMapping,
   };
 
   useEffect(() => {
@@ -236,12 +245,13 @@ export const RulesContent = (props: RulesContentProps) => {
               </RulesConditionIcon>
               <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
                 <RulesPopoverTrigger>
-                  Flow <span className="font-bold">{selectedPreset?.name} </span>
+                  {t('conditions.types.content.flow')}{' '}
+                  <span className="font-bold">{selectedPreset?.name} </span>
                   {conditionsMapping.find((c) => c.value === conditionValue)?.name}{' '}
                 </RulesPopoverTrigger>
                 <RulesPopoverContent>
                   <div className="flex flex-col space-y-2">
-                    <div>Flow</div>
+                    <div>{t('conditions.types.content.flow')}</div>
                     <RulesContentName />
                     <RulesContentRadios />
                   </div>

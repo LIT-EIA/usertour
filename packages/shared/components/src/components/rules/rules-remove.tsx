@@ -5,6 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
+import { useTranslation } from 'react-i18next';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
 
 type RulesRemoveProps = {
@@ -12,6 +13,7 @@ type RulesRemoveProps = {
 };
 export const RulesRemove = (props: RulesRemoveProps) => {
   const { index } = props;
+  const { t } = useTranslation();
   const { conditions, setNewConditions } = useRulesGroupContext();
 
   const handleOnClick = () => {
@@ -32,7 +34,7 @@ export const RulesRemove = (props: RulesRemoveProps) => {
             />
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
-            Remove condition
+            {t('conditions.actions.removeCondition')}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

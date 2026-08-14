@@ -7,8 +7,10 @@ import { ThemeSettingInput } from '@/components/molecules/theme/theme-setting-in
 import { ThemeSettingSelect } from '@/components/molecules/theme/theme-setting-select';
 import { fontItems } from '@/utils/webfonts';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsFont = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
   const update = (data: Partial<typeof settings.font>) => {
     const { font } = settings;
@@ -21,7 +23,7 @@ export const ThemeSettingsFont = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 ">
         <div className="flex flex-col space-y-3">
-          <div className="text-sm">Font family</div>
+          <div className="text-sm">{t('themeBuilder.fields.font.family')}</div>
           <ThemeSelectFont
             items={fontItems}
             defaultValue={settings.font.fontFamily}
@@ -30,7 +32,7 @@ export const ThemeSettingsFont = () => {
             }}
           />
           <ThemeSettingInput
-            text="Font size"
+            text={t('themeBuilder.fields.font.bodySize')}
             name="font-size"
             defaultValue={String(settings.font.fontSize)}
             onChange={(value: string) => {
@@ -38,7 +40,7 @@ export const ThemeSettingsFont = () => {
             }}
           />
           <ThemeSettingInput
-            text="Line height"
+            text={t('themeBuilder.fields.font.lineHeight')}
             name="line-height"
             defaultValue={String(settings.font.lineHeight)}
             onChange={(value: string) => {
@@ -46,7 +48,7 @@ export const ThemeSettingsFont = () => {
             }}
           />
           <ThemeSettingSelect
-            text="Font weight (normal)"
+            text={t('themeBuilder.fields.font.bodyWeight')}
             name="font-weight-normal"
             defaultValue={String(settings.font.fontWeightNormal)}
             onValueChange={(value: string) => {
@@ -54,7 +56,7 @@ export const ThemeSettingsFont = () => {
             }}
           />
           <ThemeSettingSelect
-            text="Font weight (bold)"
+            text={t('themeBuilder.fields.font.boldWeight')}
             defaultValue={String(settings.font.fontWeightBold)}
             onValueChange={(value: string) => {
               update({ fontWeightBold: Number(value) });
@@ -62,7 +64,7 @@ export const ThemeSettingsFont = () => {
             name="font-weight-bold"
           />
           <ThemeSettingInput
-            text="Header 1 font size"
+            text={t('themeBuilder.fields.font.h1Size')}
             name="font-size-header-1"
             defaultValue={String(settings.font.h1FontSize)}
             onChange={(value: string) => {
@@ -70,7 +72,7 @@ export const ThemeSettingsFont = () => {
             }}
           />
           <ThemeSettingInput
-            text="Header 2 font size"
+            text={t('themeBuilder.fields.font.h2Size')}
             name="font-size-header-2"
             defaultValue={String(settings.font.h2FontSize)}
             onChange={(value: string) => {
@@ -86,7 +88,7 @@ export const ThemeSettingsFont = () => {
             onChange={(value: string) => {
               update({ linkColor: value });
             }}
-            text="Link color"
+            text={t('themeBuilder.fields.font.linkColor')}
           />
         </div>
       </div>

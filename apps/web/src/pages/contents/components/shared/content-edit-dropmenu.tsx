@@ -14,6 +14,8 @@ import { ContentDuplicateForm } from './content-duplicate-form';
 import { ContentUnpublishForm } from './content-unpublish-form';
 import { ContentChangeEnvironmentForm } from './content-change-environment-form';
 import { isPublishedAtLeastOneEnvironment } from '@usertour/helpers';
+import { getContentTypeGenderContext } from '@/utils/content-type';
+import { useTranslation } from 'react-i18next';
 
 type ContentEditDropdownMenuProps = {
   content: Content;
@@ -27,6 +29,7 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
   const [openDuplicate, setOpenDuplicate] = useState(false);
   const [openUnpublish, setOpenUnpublish] = useState(false);
   const [openChangeEnvironment, setOpenChangeEnvironment] = useState(false);
+  const { t } = useTranslation();
 
   const isPublished = isPublishedAtLeastOneEnvironment(content);
 
@@ -67,7 +70,7 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
             disabled={!isPublished || disabled}
           >
             <UnPublishIcon className="mr-1" width={14} height={14} />
-            Unpublish
+            {t('contents.shared.menu.unpublish')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleDuplicateOpen}
@@ -75,7 +78,10 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
             disabled={disabled}
           >
             <CopyIcon className="mr-1" width={15} height={15} />
-            Duplicate {content.type}
+            {t('contents.shared.menu.duplicate', {
+              type: t(`contents.types.${content.type}`),
+              context: getContentTypeGenderContext(content.type),
+            })}
           </DropdownMenuItem>
           {!isPublished && (
             <DropdownMenuItem
@@ -84,7 +90,7 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
               disabled={disabled}
             >
               <ArrowRightIcon className="mr-1" width={15} height={15} />
-              Change Environment
+              {t('contents.shared.menu.changeEnvironment')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -94,7 +100,10 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
             disabled={isPublishedAtLeastOneEnvironment(content) || disabled}
           >
             <Delete2Icon className="mr-1" />
-            Delete {content.type}
+            {t('contents.shared.menu.delete', {
+              type: t(`contents.types.${content.type}`),
+              context: getContentTypeGenderContext(content.type),
+            })}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -106,7 +115,6 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
         name={content.type}
       />
       <ContentDeleteForm
-        name="flow"
         content={content}
         open={openDelete}
         onOpenChange={setOpenDelete}
@@ -115,7 +123,6 @@ export const ContentEditDropdownMenu = (props: ContentEditDropdownMenuProps) => 
         }}
       />
       <ContentUnpublishForm
-        name="flow"
         content={content}
         open={openUnpublish}
         onOpenChange={setOpenUnpublish}

@@ -20,6 +20,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
 
 const accountFormSchema = z.object({
@@ -55,6 +56,7 @@ export const AccountEmailForm = () => {
     defaultValues: { email: user?.email, password: '' },
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const onSubmit = async (data: AccountFormValues) => {
     if (!data.email) {
@@ -73,7 +75,7 @@ export const AccountEmailForm = () => {
         await refetch();
         toast({
           variant: 'success',
-          title: 'Modified email successfully',
+          title: t('settings.account.email.successToast'),
         });
       }
     } catch (error) {
@@ -88,7 +90,7 @@ export const AccountEmailForm = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-semibold tracking-tight">Change email</h3>
+        <h3 className="text-2xl font-semibold tracking-tight">{t('settings.account.email.title')}</h3>
         {/* <p className="text-sm text-muted-foreground">
           Update your login email.
         </p> */}
@@ -101,9 +103,9 @@ export const AccountEmailForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('settings.account.email.emailLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your name" {...field} />
+                  <Input placeholder={t('settings.account.email.emailPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,12 +116,12 @@ export const AccountEmailForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{t('settings.account.email.passwordLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="current-password"
-                    placeholder="Your name"
+                    placeholder={t('settings.account.email.passwordPlaceholder')}
                     {...field}
                   />
                 </FormControl>
@@ -130,7 +132,7 @@ export const AccountEmailForm = () => {
 
           <Button type="submit" disabled={form.watch('email') === user?.email}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            Save
+            {t('settings.common.save')}
           </Button>
         </form>
       </Form>

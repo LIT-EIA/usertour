@@ -1,5 +1,6 @@
 import { hasError } from '@usertour/helpers';
 import { Attribute, Content, RulesCondition, Segment } from '@usertour/types';
+import { useTranslation } from 'react-i18next';
 import { RulesContext } from './rules-context';
 import { RulesGroup } from './rules-group';
 
@@ -41,7 +42,7 @@ export const Rules = (props: RulesProps) => {
     isHorizontal = false,
     isShowIf = true,
     filterItems = [...defaultRulesItems],
-    addButtonText = 'Add condition',
+    addButtonText,
     attributes = [],
     segments = [],
     contents = [],
@@ -51,6 +52,7 @@ export const Rules = (props: RulesProps) => {
     onElementChange,
     disabled = false,
   } = props;
+  const { t } = useTranslation();
 
   const handleOnChange = (conds: RulesCondition[]) => {
     const isHasError = hasError(conds, attributes);
@@ -63,7 +65,7 @@ export const Rules = (props: RulesProps) => {
     isHorizontal,
     isShowIf,
     filterItems,
-    addButtonText,
+    addButtonText: addButtonText ?? t('conditions.actions.addCondition'),
     attributes,
     segments,
     contents,

@@ -9,6 +9,7 @@ import { ContentEditorSerialize, createValue5 } from '@usertour-packages/shared-
 import { Theme } from '@usertour/types';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ThemeEditDropdownMenu } from './theme-edit-dropmenu';
 
 type ThemeListPreviewProps = {
@@ -22,6 +23,7 @@ export const ThemeListPreview = (props: ThemeListPreviewProps) => {
   const { project, isViewOnly } = useAppContext();
   const [settings] = useState<ThemeTypesSetting>(theme.settings);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const handleOnClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = containerRef.current as any;
     if (el.contains(e.target) && project) {
@@ -48,7 +50,7 @@ export const ThemeListPreview = (props: ThemeListPreviewProps) => {
             </span>
             {theme.isDefault && (
               <span className="bg-primary px-1.5 py-0.5 rounded text-sm font-normal text-primary-foreground">
-                Default
+                {t('settings.themes.defaultBadge')}
               </span>
             )}
           </div>

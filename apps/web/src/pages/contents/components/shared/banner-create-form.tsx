@@ -31,6 +31,7 @@ import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface BannerCreateFormProps {
   isOpen: boolean;
@@ -76,6 +77,7 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
   }, [currentContent]);
   const openTarget = useOpenSelector(token, onOpenedBuilder);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -102,7 +104,7 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
       };
       const ret = await createContentMutation({ variables: data });
       if (!ret.data?.createContent?.id) {
-        showError('Create flow failed.');
+        showError(t('contents.create.failure', { type: t('contents.types.banner') }));
       }
       const content = ret.data?.createContent as Content;
       setCurrentContent(content);
@@ -113,7 +115,7 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
         return;
       }
       if (!buildUrl) {
-        showError('Please enter the URL you want to add an experience to.');
+        showError(t('contents.create.buildUrlRequired'));
         return;
       }
       const initParams = {
@@ -139,7 +141,9 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Banner</DialogTitle>
+              <DialogTitle>
+                {t('contents.create.title', { type: t('contents.types.banner'), context: 'feminine' })}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-2 py-4 ">
               <FormField
@@ -147,10 +151,16 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-1 space-y-0">
-                    <FormLabel className="w-32 flex-none">Banner name:</FormLabel>
+                    <FormLabel className="w-32 flex-none">{t('contents.create.nameLabel')}</FormLabel>
                     <FormControl>
                       <div className="flex flex-col space-x-1 w-full grow">
-                        <Input placeholder="Enter flow  name" {...field} />
+                        <Input
+                          placeholder={t('contents.create.namePlaceholder', {
+                            type: t('contents.types.banner'),
+                            context: 'feminine',
+                          })}
+                          {...field}
+                        />
                         <FormMessage />
                       </div>
                     </FormControl>
@@ -162,7 +172,7 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
                 name="type"
                 render={({ field }) => (
                   <FormItem className="flex flex-row space-y-0 space-x-2 space-y-0 pt-1">
-                    <FormLabel className="w-32">Builder Type</FormLabel>
+                    <FormLabel className="w-32">{t('contents.shared.edit.builderTypeLabel')}</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -174,14 +184,16 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
                             <RadioGroupItem value={BuilderType.EXTENSION} />
                           </FormControl>
                           <FormLabel className="font-normal cursor-pointer">
-                            Extension Builder
+                            {t('contents.shared.edit.extensionBuilder')}
                           </FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value={BuilderType.WEB} />
                           </FormControl>
-                          <FormLabel className="font-normal  cursor-pointer">Web Builder</FormLabel>
+                          <FormLabel className="font-normal  cursor-pointer">
+                            {t('contents.shared.edit.webBuilder')}
+                          </FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -190,9 +202,8 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
               />
               <span className="text-xs text-muted-foreground">
                 {form.getValues('type') === BuilderType.EXTENSION &&
-                  'Open the builder in new tab for WYSIWYG editing experience'}
-                {form.getValues('type') === BuilderType.WEB &&
-                  'Open the builder in the current tab for convenient editing experience'}
+                  t('contents.create.extensionBuilderHint')}
+                {form.getValues('type') === BuilderType.WEB && t('contents.create.webBuilderHint')}
               </span>
               {form.getValues('type') === BuilderType.EXTENSION && (
                 <FormField
@@ -200,11 +211,13 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
                   name="buildUrl"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-1 space-y-0">
-                      <FormLabel className="w-32 flex-none">Build Url</FormLabel>
+                      <FormLabel className="w-32 flex-none">
+                        {t('contents.shared.edit.buildUrlLabel')}
+                      </FormLabel>
                       <FormControl>
                         <div className="flex flex-col space-x-1 w-full grow">
                           <Input
-                            placeholder="Enter the URL you want to add an experience to"
+                            placeholder={t('contents.shared.edit.buildUrlPlaceholder')}
                             {...field}
                           />
                           <FormMessage />
@@ -217,11 +230,11 @@ export const BannerCreateForm = ({ onClose, isOpen }: BannerCreateFormProps) => 
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('contents.shared.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('contents.create.submit', { type: t('contents.types.banner') })}
               </Button>
             </DialogFooter>
           </form>

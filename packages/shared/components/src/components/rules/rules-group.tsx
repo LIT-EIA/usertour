@@ -19,8 +19,10 @@ import {
 } from '@usertour-packages/icons';
 import { RulesCondition } from '@usertour/types';
 import { deepClone } from '@usertour/helpers';
-import { ReactNode, useCallback, useEffect } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { useState } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useRulesContext } from './rules-context';
 import { RulesGroupContext } from '../contexts/rules-group-context';
 import { RulesContent } from './rules-content';
@@ -37,22 +39,22 @@ import { RulesUserFills } from './rules-user-fills';
 import { RulesTaskIsClicked } from './task-clicked';
 import isEqual from 'fast-deep-equal';
 
-export const RULES_ITEMS = [
+const buildRulesItems = (t: TFunction) => [
   {
     type: RulesType.USER_ATTR,
-    text: 'Attribute',
+    text: t('conditions.types.userAttr.label'),
     IconElement: UserIcon,
     RulesElement: RulesUserAttribute,
   },
   {
     type: RulesType.COMPANY_ATTR,
-    text: 'Company attribute',
+    text: t('conditions.types.userAttr.groups.company'),
     IconElement: UserIcon,
     RulesElement: RulesUserAttribute,
   },
   {
     type: RulesType.CURRENT_PAGE,
-    text: 'Current page(Url)',
+    text: t('conditions.types.currentPage.label'),
     IconElement: PagesIcon,
     RulesElement: RulesUrlPattern,
   },
@@ -64,64 +66,66 @@ export const RULES_ITEMS = [
   // },
   {
     type: RulesType.SEGMENT,
-    text: 'Segment',
+    text: t('conditions.types.segment.label'),
     IconElement: SegmentIcon,
     RulesElement: RulesSegment,
   },
   {
     type: RulesType.CONTENT,
-    text: 'Flow',
+    text: t('conditions.types.content.flow'),
     IconElement: ContentIcon,
     RulesElement: RulesContent,
   },
   {
     type: RulesType.TASK_IS_CLICKED,
-    text: 'Task is clicked',
+    text: t('conditions.types.taskClicked.label'),
     IconElement: TaskClickedIcon,
     RulesElement: RulesTaskIsClicked,
   },
   {
     type: RulesType.ELEMENT,
-    text: 'Element (present, clicked, disabled)',
+    text: t('conditions.types.element.label'),
     IconElement: ElementIcon,
     RulesElement: RulesElement,
   },
   {
     type: RulesType.TEXT_INPUT,
-    text: 'Text input value',
+    text: t('conditions.types.textInput.label'),
     IconElement: TextInputIcon,
     RulesElement: RulesTextInput,
   },
   {
     type: RulesType.PAGE_NAME,
-    text: 'Page name',
+    text: t('conditions.types.pageName.label'),
     IconElement: PagesIcon,
     RulesElement: RulesPageName,
   },
   {
     type: RulesType.TEXT_FILL,
-    text: 'User fills in input',
+    text: t('conditions.types.textFill.label'),
     IconElement: TextFillIcon,
     RulesElement: RulesUserFills,
   },
   {
     type: RulesType.TIME,
-    text: 'Current time',
+    text: t('conditions.types.time.label'),
     IconElement: TimeIcon,
     RulesElement: RulesCurrentTime,
   },
   {
     type: RulesType.GROUP,
-    text: 'Logic group (and, or)',
+    text: t('conditions.types.group.label'),
     IconElement: GroupIcon,
     RulesElement: null,
   },
 ];
 
+type RulesItems = ReturnType<typeof buildRulesItems>;
+
 interface RulesAddDropdownProps {
   children: ReactNode;
   onSelect: (type: string) => void;
-  items: typeof RULES_ITEMS;
+  items: RulesItems;
   disabled?: boolean;
 }
 
@@ -162,15 +166,18 @@ interface RulesGroupProps {
 export const RulesGroup = (props: RulesGroupProps) => {
   const { isSubItems = false, onChange, defaultConditions } = props;
   const { isHorizontal, filterItems, addButtonText, disabled } = useRulesContext();
+  const { t } = useTranslation();
 
   const [conditions, setConditions] = useState<RulesCondition[]>(deepClone(defaultConditions));
-  const [rulesItems, _] = useState<typeof RULES_ITEMS>(
-    RULES_ITEMS.filter((item) => {
-      if (filterItems.length > 0) {
-        return filterItems.includes(item.type);
-      }
-      return true;
-    }),
+  const rulesItems = useMemo<RulesItems>(
+    () =>
+      buildRulesItems(t).filter((item) => {
+        if (filterItems.length > 0) {
+          return filterItems.includes(item.type);
+        }
+        return true;
+      }),
+    [t, filterItems],
   );
 
   const [conditionType, setConditionType] = useState(

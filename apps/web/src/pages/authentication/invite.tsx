@@ -14,20 +14,22 @@ import {
   RegistrationSubmitButton,
 } from './components/registration-form';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const InviteHeader = () => {
   const { inviteCode, showRegistration } = useInviteContext();
   const { data } = useGetInviteQuery(inviteCode);
+  const { t } = useTranslation();
   return (
     <CardHeader className="space-y-1 text-center">
       <CardTitle>
         <p className="text-lg font-normal">
-          {data?.user?.name} invites you to join {data?.project?.name}
+          {t('auth.invite.titleTemplate', { userName: data?.user?.name, projectName: data?.project?.name })}
         </p>
         <p className="text-sm text-muted-foreground">
           {showRegistration
-            ? 'Create an account to join them.'
-            : 'Sign in with your account to join them.'}
+            ? t('auth.invite.signUpDescription')
+            : t('auth.invite.signInDescription')}
         </p>
       </CardTitle>
     </CardHeader>
@@ -55,16 +57,17 @@ const useInviteContext = () => {
 // Update SignInFooter to use context
 const SignInFooter = () => {
   const { setShowRegistration } = useInviteContext();
+  const { t } = useTranslation();
   return (
     <CardFooter>
       <div className="text-center text-sm text-muted-foreground">
-        No account yet?{' '}
+        {t('auth.signIn.noAccountPrompt')}{' '}
         <button
           type="button"
           className="underline underline-offset-4 hover:text-primary cursor-pointer"
           onClick={() => setShowRegistration(true)}
         >
-          Create account
+          {t('auth.signIn.signUpCta')}
         </button>
       </div>
     </CardFooter>
@@ -73,16 +76,17 @@ const SignInFooter = () => {
 
 const RegistrationFooter = () => {
   const { setShowRegistration } = useInviteContext();
+  const { t } = useTranslation();
   return (
     <CardFooter>
       <div className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
+        {t('auth.magicLink.alreadyHaveAccount')}{' '}
         <button
           type="button"
           className="underline underline-offset-4 hover:text-primary cursor-pointer"
           onClick={() => setShowRegistration(false)}
         >
-          Sign in instead
+          {t('auth.magicLink.signInInstead')}
         </button>
       </div>
     </CardFooter>

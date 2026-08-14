@@ -11,6 +11,7 @@ import {
 import { HelpTooltip } from '@usertour-packages/shared-components';
 import { Theme } from '@usertour/types';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ContentThemeProps {
   themeList: Theme[] | null;
@@ -21,12 +22,15 @@ interface ContentThemeProps {
 }
 
 export const ContentTheme = (props: ContentThemeProps) => {
+  const { t } = useTranslation();
   const { themeId: initialValue, themeList, onChange, onEdited, zIndex } = props;
 
   const themeOptions = useMemo(() => {
-    const defaultOption = [{ id: 'same', name: 'Same as flow theme' }];
+    const defaultOption = [
+      { id: 'same', name: t('contentBuilder.shared.theme.sameAsFlow') },
+    ];
     return themeList ? [...defaultOption, ...themeList] : defaultOption;
-  }, [themeList]);
+  }, [themeList, t]);
 
   const [themeId, setThemeId] = useState(initialValue ?? 'same');
 
@@ -42,15 +46,12 @@ export const ContentTheme = (props: ContentThemeProps) => {
     <div className="space-y-3">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-1">
-          <h1 className="text-sm">Theme</h1>
-          <HelpTooltip>
-            If this step has special requirements, you can use a different theme than the rest of
-            the flow uses. You can design your themes under Settings - Themes.
-          </HelpTooltip>
+          <h1 className="text-sm">{t('contentBuilder.shared.theme.label')}</h1>
+          <HelpTooltip>{t('contentBuilder.shared.theme.stepTooltip')}</HelpTooltip>
         </div>
 
         <Button variant="link" onClick={onEdited} className="p-0 h-full">
-          Edit this theme
+          {t('contentBuilder.shared.theme.edit')}
           <OpenInNewWindowIcon className="ml-1" />
         </Button>
       </div>
@@ -59,7 +60,9 @@ export const ContentTheme = (props: ContentThemeProps) => {
         <SelectTrigger className="justify-start flex h-8">
           <CubeIcon className="flex-none mr-2" />
           <div className="grow text-left">
-            <SelectValue placeholder="Same as flow theme" />
+            <SelectValue
+              placeholder={t('contentBuilder.shared.theme.sameAsFlow')}
+            />
           </div>
         </SelectTrigger>
         <SelectContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>

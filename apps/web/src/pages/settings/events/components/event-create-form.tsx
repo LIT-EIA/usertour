@@ -40,6 +40,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { ScrollArea } from '@usertour-packages/scroll-area';
 
@@ -83,6 +84,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
   const [selectedAttributeValue, setSelectedAttributeValue] = useState<string>('');
   const { project } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -126,7 +128,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
 
       const ret = await createMutation({ variables: { data } });
       if (!ret.data?.createEvent?.id) {
-        showError('Create Event failed.');
+        showError(t('settings.events.createFailure'));
       }
       onClose();
     } catch (error) {
@@ -149,7 +151,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
       } else {
         toast({
           variant: 'warning',
-          title: 'That attribute is already associated with the event.',
+          title: t('settings.events.attributeAlreadyAssociated'),
         });
         setSelectedAttributeValue('');
       }
@@ -169,7 +171,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Event</DialogTitle>
+              <DialogTitle>{t('settings.events.createTitle')}</DialogTitle>
             </DialogHeader>
             <div className="flex mt-4 mb-4 ">
               <div className="flex flex-col mr-6 w-2/3 ">
@@ -180,26 +182,22 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex flex-row">
-                          Display name
+                          {t('settings.events.form.displayNameLabel')}
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs bg-slate-700">
-                                <p>
-                                  Human-friendly name shown in Usertour. we recommend using Word
-                                  Case (i.e.uppercasefrst letter, spaces between words) such
-                                  as"Billing Plan".
-                                </p>
+                                <p>{t('settings.events.form.displayNameTooltip')}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter display name" className="w-72" {...field} />
+                          <Input placeholder={t('settings.events.form.displayNamePlaceholder')} className="w-72" {...field} />
                         </FormControl>
-                        <FormDescription>Can be changed later</FormDescription>
+                        <FormDescription>{t('settings.common.changeableLater')}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -210,26 +208,22 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex flex-row">
-                          Code name
+                          {t('settings.events.form.codeNameLabel')}
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs bg-slate-700">
-                                <p>
-                                  Code-friendly name used in Webhooks and integrations to analytics
-                                  providers. we recommend using snake_case (i.e. lowercaseletters
-                                  with words separated by underscore).
-                                </p>
+                                <p>{t('settings.events.form.codeNameTooltip')}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter code name" className="w-72" {...field} />
+                          <Input placeholder={t('settings.events.form.codeNamePlaceholder')} className="w-72" {...field} />
                         </FormControl>
-                        <FormDescription>Can NOT be changed later</FormDescription>
+                        <FormDescription>{t('settings.common.notChangeableLater')}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -241,20 +235,20 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Description
+                        {t('settings.common.description')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>Put any additional information for your ownreference here.</p>
+                              <p>{t('settings.events.form.descriptionTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Optional description" className="w-full" {...field} />
+                        <Input placeholder={t('settings.common.descriptionPlaceholder')} className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -269,16 +263,14 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Event attributes
+                        {t('settings.events.form.attributesLabel')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>
-                                Determines what kind of values will be stored in this attribute.
-                              </p>
+                              <p>{t('settings.events.form.attributesTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -319,7 +311,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                             <FormControl>
                               <SelectTrigger className="w-full">
                                 <span className="text-gray-500">
-                                  {selectedAttributeValue ? '' : 'Select an attribute'}
+                                  {selectedAttributeValue ? '' : t('settings.events.form.attributesPlaceholder')}
                                 </span>
                               </SelectTrigger>
                             </FormControl>
@@ -342,7 +334,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                             className="px-0.5 ml-1 h-fit "
                             onClick={() => setSelectAttributeStatus(false)}
                           >
-                            Cancel
+                            {t('settings.common.cancel')}
                           </Button>
                         </div>
                       ) : (
@@ -354,7 +346,7 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                           }}
                         >
                           <PlusIcon width={16} height={16} />
-                          Add attribute
+                          {t('settings.events.form.addAttribute')}
                         </div>
                       )}
                       <FormMessage />
@@ -365,11 +357,11 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Create Event
+                {t('settings.events.createButton')}
               </Button>
             </DialogFooter>
           </form>

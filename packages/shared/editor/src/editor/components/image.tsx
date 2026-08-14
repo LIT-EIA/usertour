@@ -23,6 +23,7 @@ import {
 } from '@usertour-packages/tooltip';
 import Upload from 'rc-upload';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 /* eslint-disable @next/next/no-img-element */
 import {
@@ -114,52 +115,55 @@ const MarginControls = ({
   element: ContentEditorImageElement;
   onMarginChange: (position: MarginPosition, value: string) => void;
   onMarginEnabledChange: (enabled: boolean) => void;
-}) => (
-  <>
-    <div className="flex gap-x-2">
-      <Checkbox
-        id="margin"
-        checked={element.margin?.enabled}
-        onCheckedChange={onMarginEnabledChange}
-      />
-      <Label htmlFor="margin">Margin</Label>
-    </div>
-    {element.margin?.enabled && (
+}) => {
+  const { t } = useTranslation();
+  return (
+    <>
       <div className="flex gap-x-2">
-        <div className="flex flex-col justify-center">
-          <Input
-            value={element.margin?.left}
-            placeholder="Left"
-            onChange={(e) => onMarginChange('left', e.target.value)}
-            className="bg-background flex-none w-20"
-          />
-        </div>
-        <div className="flex flex-col justify-center gap-y-2">
-          <Input
-            value={element.margin?.top}
-            onChange={(e) => onMarginChange('top', e.target.value)}
-            placeholder="Top"
-            className="bg-background flex-none w-20"
-          />
-          <Input
-            value={element.margin?.bottom}
-            onChange={(e) => onMarginChange('bottom', e.target.value)}
-            placeholder="Bottom"
-            className="bg-background flex-none w-20"
-          />
-        </div>
-        <div className="flex flex-col justify-center">
-          <Input
-            value={element.margin?.right}
-            placeholder="Right"
-            onChange={(e) => onMarginChange('right', e.target.value)}
-            className="bg-background flex-none w-20"
-          />
-        </div>
+        <Checkbox
+          id="margin"
+          checked={element.margin?.enabled}
+          onCheckedChange={onMarginEnabledChange}
+        />
+        <Label htmlFor="margin">{t('contentBuilder.editor.margin.label')}</Label>
       </div>
-    )}
-  </>
-);
+      {element.margin?.enabled && (
+        <div className="flex gap-x-2">
+          <div className="flex flex-col justify-center">
+            <Input
+              value={element.margin?.left}
+              placeholder={t('contentBuilder.editor.common.left')}
+              onChange={(e) => onMarginChange('left', e.target.value)}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+          <div className="flex flex-col justify-center gap-y-2">
+            <Input
+              value={element.margin?.top}
+              onChange={(e) => onMarginChange('top', e.target.value)}
+              placeholder={t('contentBuilder.editor.common.top')}
+              className="bg-background flex-none w-20"
+            />
+            <Input
+              value={element.margin?.bottom}
+              onChange={(e) => onMarginChange('bottom', e.target.value)}
+              placeholder={t('contentBuilder.editor.common.bottom')}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+          <div className="flex flex-col justify-center">
+            <Input
+              value={element.margin?.right}
+              placeholder={t('contentBuilder.editor.common.right')}
+              onChange={(e) => onMarginChange('right', e.target.value)}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 // Action buttons component
 const ActionButtons = ({
@@ -174,80 +178,94 @@ const ActionButtons = ({
   onAddLeft: () => void;
   onAddRight: () => void;
   isLoading: boolean;
-}) => (
-  <div className="flex items-center">
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="flex-none hover:bg-red-200"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            disabled={isLoading}
-          >
-            <DeleteIcon className="fill-red-500" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Delete image</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button className="flex-none" variant="ghost" size="icon" disabled={isLoading}>
-            <Upload
-              accept="image/*"
-              customRequest={(option) => onReplace(option as ContentEditorUploadRequestOption)}
+}) => {
+  const { t } = useTranslation();
+  const entity = t('contentBuilder.editor.actionButtons.entity.image');
+  return (
+    <div className="flex items-center">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="flex-none hover:bg-red-200"
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+              disabled={isLoading}
             >
-              <ImageEditIcon className="mx-1 fill-foreground" />
-            </Upload>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Replace image</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+              <DeleteIcon className="fill-red-500" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.delete', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-    <div className="grow" />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex-none" variant="ghost" size="icon" disabled={isLoading}>
+              <Upload
+                accept="image/*"
+                customRequest={(option) => onReplace(option as ContentEditorUploadRequestOption)}
+              >
+                <ImageEditIcon className="mx-1 fill-foreground" />
+              </Upload>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.image.replace')}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="flex-none"
-            variant="ghost"
-            size="icon"
-            onClick={onAddLeft}
-            disabled={isLoading}
-          >
-            <InsertColumnLeftIcon className="fill-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Insert image to the left</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+      <div className="grow" />
 
-    <div className="flex-none mx-1 leading-10">Insert image</div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="flex-none"
+              variant="ghost"
+              size="icon"
+              onClick={onAddLeft}
+              disabled={isLoading}
+            >
+              <InsertColumnLeftIcon className="fill-foreground" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.insertLeft', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="flex-none"
-            variant="ghost"
-            size="icon"
-            onClick={onAddRight}
-            disabled={isLoading}
-          >
-            <InsertColumnRightIcon className="fill-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Insert image to the right</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  </div>
-);
+      <div className="flex-none mx-1 leading-10">
+        {t('contentBuilder.editor.actionButtons.insert', { entity })}
+      </div>
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="flex-none"
+              variant="ghost"
+              size="icon"
+              onClick={onAddRight}
+              disabled={isLoading}
+            >
+              <InsertColumnRightIcon className="fill-foreground" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.insertRight', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+};
 
 // Main editable image component
 export interface ContentEditorImageProps {
@@ -258,6 +276,7 @@ export interface ContentEditorImageProps {
 
 export const ContentEditorImage = (props: ContentEditorImageProps) => {
   const { element, path, id } = props;
+  const { t } = useTranslation();
   const {
     zIndex,
     customUploadRequest,
@@ -295,10 +314,12 @@ export const ContentEditorImage = (props: ContentEditorImageProps) => {
         if (url) {
           updateElement({ ...element, url }, id);
         } else {
-          setError('Failed to upload image');
+          setError(t('contentBuilder.editor.image.uploadFailed'));
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Upload failed');
+        setError(
+          err instanceof Error ? err.message : t('contentBuilder.editor.image.uploadFailed'),
+        );
       }
     },
     [customUploadRequest, element, id, updateElement],
@@ -373,8 +394,8 @@ export const ContentEditorImage = (props: ContentEditorImageProps) => {
           src={element.url}
           style={imageStyle}
           className="cursor-pointer"
-          alt="Editable content"
-          onError={() => setError('Failed to load image')}
+          alt={t('contentBuilder.editor.image.previewAlt')}
+          onError={() => setError(t('contentBuilder.editor.image.loadFailed'))}
         />
       </Popover.Trigger>
       <Popover.Portal>
@@ -385,13 +406,13 @@ export const ContentEditorImage = (props: ContentEditorImageProps) => {
           sideOffset={10}
         >
           <div className="flex flex-col gap-2.5">
-            <Label htmlFor="image-width">Image width</Label>
+            <Label htmlFor="image-width">{t('contentBuilder.editor.image.width')}</Label>
             <div className="flex gap-x-2">
               <Input
                 id="image-width"
                 type="text"
                 value={ensureDimensionWithDefaults(element.width).value?.toString() || ''}
-                placeholder="Column width"
+                placeholder={t('contentBuilder.editor.image.width')}
                 onChange={handleWidthValueChange}
                 className="bg-background flex-none w-[120px]"
               />
@@ -400,13 +421,17 @@ export const ContentEditorImage = (props: ContentEditorImageProps) => {
                 value={ensureDimensionWithDefaults(element.width).type}
               >
                 <SelectTrigger className="shrink">
-                  <SelectValue placeholder="Select a distribute" />
+                  <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                 </SelectTrigger>
                 <SelectPortal style={{ zIndex: zIndex + EDITOR_SELECT }}>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value={WIDTH_TYPES.PERCENT}>%</SelectItem>
-                      <SelectItem value={WIDTH_TYPES.PIXELS}>pixels</SelectItem>
+                      <SelectItem value={WIDTH_TYPES.PERCENT}>
+                        {t('contentBuilder.editor.width.percent')}
+                      </SelectItem>
+                      <SelectItem value={WIDTH_TYPES.PIXELS}>
+                        {t('contentBuilder.editor.width.pixels')}
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </SelectPortal>
@@ -482,6 +507,7 @@ export type ContentEditorImageSerializeType = {
 
 export const ContentEditorImageSerialize = (props: ContentEditorImageSerializeType) => {
   const { element, className } = props;
+  const { t } = useTranslation();
 
   if (!element.url) {
     return null;
@@ -489,7 +515,12 @@ export const ContentEditorImageSerialize = (props: ContentEditorImageSerializeTy
 
   return (
     <div className="group relative flex max-w-lg flex-col">
-      <img src={element.url} style={transformsStyle(element)} className={className} alt="Content" />
+      <img
+        src={element.url}
+        style={transformsStyle(element)}
+        className={className}
+        alt={t('contentBuilder.editor.image.previewAlt')}
+      />
     </div>
   );
 };

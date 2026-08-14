@@ -4,6 +4,7 @@ import {
   AdminSidebarBodyTemplate,
   AdminSidebarBodyTitleTemplate,
 } from '@/components/templates/admin-sidebar-template';
+import { useTranslation } from 'react-i18next';
 
 // Skeleton for individual segment item
 export const CompanySegmentItemSkeleton = () => {
@@ -17,9 +18,10 @@ export const CompanySegmentItemSkeleton = () => {
 
 // Skeleton for the segment list section only
 export const CompanySegmentListSkeleton = () => {
+  const { t } = useTranslation();
   return (
     <AdminSidebarBodyTemplate>
-      <AdminSidebarBodyTitleTemplate>Segments</AdminSidebarBodyTitleTemplate>
+      <AdminSidebarBodyTitleTemplate>{t('companies.sidebar.segments')}</AdminSidebarBodyTitleTemplate>
       {Array.from({ length: 5 }, (_, index) => (
         <CompanySegmentItemSkeleton key={index} />
       ))}

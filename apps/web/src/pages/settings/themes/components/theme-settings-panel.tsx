@@ -20,6 +20,7 @@ import { ThemeSettingsSurvey } from './settings/theme-settings-survey';
 import { ThemeSettingsTooltip } from './settings/theme-settings-tooltip';
 import { ThemeSettingsXbutton } from './settings/theme-settings-xbutton';
 import { ConditionalVariationsPanel } from './conditional-variations-panel';
+import { useTranslation } from 'react-i18next';
 
 const AccordionItem = forwardRef(({ children, className, ...props }: any, forwardedRef) => (
   <Accordion.Item
@@ -125,96 +126,99 @@ export const ThemeSettingsPanel = ({
 };
 
 // Accordion content for reuse
-export const ThemeSettingsAccordionContent = () => (
-  <>
-    <AccordionItem value="basic">
-      <AccordionTrigger>Base colors</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsBasicColor />
-      </AccordionContent>
-    </AccordionItem>
+export const ThemeSettingsAccordionContent = () => {
+  const { t } = useTranslation();
+  return (
+    <>
+      <AccordionItem value="basic">
+        <AccordionTrigger>{t('themeBuilder.sections.baseColors')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsBasicColor />
+        </AccordionContent>
+      </AccordionItem>
 
-    <AccordionItem value="font">
-      <AccordionTrigger>Font</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsFont />
-      </AccordionContent>
-    </AccordionItem>
+      <AccordionItem value="font">
+        <AccordionTrigger>{t('themeBuilder.sections.font')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsFont />
+        </AccordionContent>
+      </AccordionItem>
 
-    <AccordionItem value="border">
-      <AccordionTrigger>Chrome border</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsBorder />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="xbutton">
-      <AccordionTrigger>X Button</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsXbutton />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="progress">
-      <AccordionTrigger>Progress bar</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsProgress />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="buttons">
-      <AccordionTrigger>Buttons</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsButtons />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="tooptip">
-      <AccordionTrigger>Tooltip</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsTooltip />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="modal">
-      <AccordionTrigger>Modal</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsModal />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="survey">
-      <AccordionTrigger>Survey</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsSurvey />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="checklist">
-      <AccordionTrigger>Checklist</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsChecklist />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="checklist-launcher">
-      <AccordionTrigger>Checklist launcher</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsChecklistLauncher />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="launcher-beacon">
-      <AccordionTrigger>Launcher beacons</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsBeacon />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="launcher-icons">
-      <AccordionTrigger>Launcher icons</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsLauncherIcons />
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="backdrop">
-      <AccordionTrigger>Backdrop</AccordionTrigger>
-      <AccordionContent>
-        <ThemeSettingsBackdrop />
-      </AccordionContent>
-    </AccordionItem>
-  </>
-);
+      <AccordionItem value="border">
+        <AccordionTrigger>{t('themeBuilder.sections.chromeBorder')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsBorder />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="xbutton">
+        <AccordionTrigger>{t('themeBuilder.sections.xButton')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsXbutton />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="progress">
+        <AccordionTrigger>{t('themeBuilder.sections.progressBar')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsProgress />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="buttons">
+        <AccordionTrigger>{t('themeBuilder.sections.buttons')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsButtons />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="tooptip">
+        <AccordionTrigger>{t('themeBuilder.sections.tooltip')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsTooltip />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="modal">
+        <AccordionTrigger>{t('themeBuilder.sections.modal')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsModal />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="survey">
+        <AccordionTrigger>{t('themeBuilder.sections.survey')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsSurvey />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="checklist">
+        <AccordionTrigger>{t('themeBuilder.sections.checklist')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsChecklist />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="checklist-launcher">
+        <AccordionTrigger>{t('themeBuilder.sections.checklistLauncher')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsChecklistLauncher />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="launcher-beacon">
+        <AccordionTrigger>{t('themeBuilder.sections.launcherBeacons')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsBeacon />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="launcher-icons">
+        <AccordionTrigger>{t('themeBuilder.sections.launcherIcons')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsLauncherIcons />
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="backdrop">
+        <AccordionTrigger>{t('themeBuilder.sections.backdrop')}</AccordionTrigger>
+        <AccordionContent>
+          <ThemeSettingsBackdrop />
+        </AccordionContent>
+      </AccordionItem>
+    </>
+  );
+};
 
 // Default panel for regular theme settings
 export const ThemeSettingsDefaultPanel = ({

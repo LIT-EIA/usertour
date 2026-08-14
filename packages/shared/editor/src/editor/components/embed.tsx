@@ -29,6 +29,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { ContentOmbedInfo } from '@usertour/types';
 import { ChangeEvent, useCallback, useMemo, useState, forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 /* eslint-disable @next/next/no-img-element */
 import {
@@ -226,6 +227,7 @@ const DimensionControl = ({
   onTypeChange: (type: string) => void;
   placeholder: string;
 }) => {
+  const { t } = useTranslation();
   const dimension = ensureDimensionWithDefaults({ type, value });
 
   return (
@@ -242,13 +244,13 @@ const DimensionControl = ({
         />
         <Select onValueChange={onTypeChange} value={dimension.type}>
           <SelectTrigger className="shrink w-56">
-            <SelectValue placeholder="Select unit" />
+            <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
           </SelectTrigger>
           <SelectPortal style={{ zIndex: EDITOR_SELECT }}>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="percent">%</SelectItem>
-                <SelectItem value="pixels">pixels</SelectItem>
+                <SelectItem value="percent">{t('contentBuilder.editor.width.percent')}</SelectItem>
+                <SelectItem value="pixels">{t('contentBuilder.editor.width.pixels')}</SelectItem>
               </SelectGroup>
             </SelectContent>
           </SelectPortal>
@@ -266,48 +268,51 @@ const MarginControl = ({
   margin?: ContentEditorMargin;
   onValueChange: (e: ChangeEvent<HTMLInputElement>, position: string) => void;
   onCheckedChange: (checked: boolean) => void;
-}) => (
-  <>
-    <div className="flex gap-x-2">
-      <Checkbox id="margin" checked={margin?.enabled} onCheckedChange={onCheckedChange} />
-      <Label htmlFor="margin">Margin</Label>
-    </div>
-    {margin?.enabled && (
+}) => {
+  const { t } = useTranslation();
+  return (
+    <>
       <div className="flex gap-x-2">
-        <div className="flex flex-col justify-center">
-          <Input
-            value={margin?.left ?? ''}
-            placeholder="Left"
-            onChange={(e) => onValueChange(e, 'left')}
-            className="bg-background flex-none w-20"
-          />
-        </div>
-        <div className="flex flex-col justify-center gap-y-2">
-          <Input
-            value={margin?.top ?? ''}
-            onChange={(e) => onValueChange(e, 'top')}
-            placeholder="Top"
-            className="bg-background flex-none w-20"
-          />
-          <Input
-            value={margin?.bottom ?? ''}
-            onChange={(e) => onValueChange(e, 'bottom')}
-            placeholder="Bottom"
-            className="bg-background flex-none w-20"
-          />
-        </div>
-        <div className="flex flex-col justify-center">
-          <Input
-            value={margin?.right ?? ''}
-            placeholder="Right"
-            onChange={(e) => onValueChange(e, 'right')}
-            className="bg-background flex-none w-20"
-          />
-        </div>
+        <Checkbox id="margin" checked={margin?.enabled} onCheckedChange={onCheckedChange} />
+        <Label htmlFor="margin">{t('contentBuilder.editor.margin.label')}</Label>
       </div>
-    )}
-  </>
-);
+      {margin?.enabled && (
+        <div className="flex gap-x-2">
+          <div className="flex flex-col justify-center">
+            <Input
+              value={margin?.left ?? ''}
+              placeholder={t('contentBuilder.editor.common.left')}
+              onChange={(e) => onValueChange(e, 'left')}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+          <div className="flex flex-col justify-center gap-y-2">
+            <Input
+              value={margin?.top ?? ''}
+              onChange={(e) => onValueChange(e, 'top')}
+              placeholder={t('contentBuilder.editor.common.top')}
+              className="bg-background flex-none w-20"
+            />
+            <Input
+              value={margin?.bottom ?? ''}
+              onChange={(e) => onValueChange(e, 'bottom')}
+              placeholder={t('contentBuilder.editor.common.bottom')}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+          <div className="flex flex-col justify-center">
+            <Input
+              value={margin?.right ?? ''}
+              placeholder={t('contentBuilder.editor.common.right')}
+              onChange={(e) => onValueChange(e, 'right')}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 const ActionButtons = ({
   onDelete,
@@ -317,48 +322,58 @@ const ActionButtons = ({
   onDelete: () => void;
   onAddLeft: () => void;
   onAddRight: () => void;
-}) => (
-  <div className="flex items-center">
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="flex-none hover:bg-red-200"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-          >
-            <DeleteIcon className="fill-red-700" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Delete embed</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+}) => {
+  const { t } = useTranslation();
+  const entity = t('contentBuilder.editor.actionButtons.entity.embed');
+  return (
+    <div className="flex items-center">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="flex-none hover:bg-red-200"
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+            >
+              <DeleteIcon className="fill-red-700" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.delete', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-    <div className="grow" />
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button className="flex-none" variant="ghost" size="icon" onClick={onAddLeft}>
-            <InsertColumnLeftIcon className="fill-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Insert embed to the left</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-    <div className="flex-none mx-1 leading-10">Embed URL</div>
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button className="flex-none" variant="ghost" size="icon" onClick={onAddRight}>
-            <InsertColumnRightIcon className="fill-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Insert embed to the right</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  </div>
-);
+      <div className="grow" />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddLeft}>
+              <InsertColumnLeftIcon className="fill-foreground" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.insertLeft', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <div className="flex-none mx-1 leading-10">{t('contentBuilder.editor.embed.url')}</div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddRight}>
+              <InsertColumnRightIcon className="fill-foreground" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.insertRight', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+};
 
 // Main component
 export interface ContentEditorEmbedProps {
@@ -368,6 +383,7 @@ export interface ContentEditorEmbedProps {
 }
 
 export const ContentEditorEmbed = ({ element, path, id }: ContentEditorEmbedProps) => {
+  const { t } = useTranslation();
   const { zIndex, insertElementInColumn, deleteElementInColumn, updateElement, getOembedInfo } =
     useContentEditorContext();
 
@@ -522,17 +538,13 @@ export const ContentEditorEmbed = ({ element, path, id }: ContentEditorEmbedProp
         >
           <div className="flex flex-col gap-2.5">
             <div className="flex flex-row space-x-1">
-              <Label htmlFor="embed-url">Embed URL</Label>
-              <QuestionTooltip>
-                Enter the URL of any content you want to embed. This could be a YouTube video, a
-                form, documentation, a website, or even a direct link to a video file. We support
-                most embeddable content from the web.
-              </QuestionTooltip>
+              <Label htmlFor="embed-url">{t('contentBuilder.editor.embed.url')}</Label>
+              <QuestionTooltip>{t('contentBuilder.editor.embed.urlTooltip')}</QuestionTooltip>
             </div>
             <div className="flex gap-x-2">
               <Input
                 id="embed-url"
-                placeholder="Enter URL"
+                placeholder={t('contentBuilder.editor.embed.urlPlaceholder')}
                 value={element.url}
                 onChange={handleUrlChange}
                 className="bg-background w-80"
@@ -546,26 +558,28 @@ export const ContentEditorEmbed = ({ element, path, id }: ContentEditorEmbedProp
                 disabled={isLoading || !element.url.trim()}
               >
                 <ArrowRightIcon className="mr-1" />
-                {isLoading ? 'Loading...' : 'Load'}
+                {isLoading
+                  ? t('contentBuilder.editor.embed.loading')
+                  : t('contentBuilder.editor.embed.load')}
               </Button>
             </div>
 
             <DimensionControl
-              label="Display width"
+              label={t('contentBuilder.editor.embed.displayWidth')}
               value={element.width?.value}
               type={element.width?.type as DimensionType}
               onValueChange={handleWidthValueChange}
               onTypeChange={handleWidthTypeChange}
-              placeholder="Display width"
+              placeholder={t('contentBuilder.editor.embed.displayWidth')}
             />
 
             <DimensionControl
-              label="Display height"
+              label={t('contentBuilder.editor.embed.displayHeight')}
               value={element.height?.value}
               type={element.height?.type as DimensionType}
               onValueChange={handleHeightValueChange}
               onTypeChange={handleHeightTypeChange}
-              placeholder="Display height"
+              placeholder={t('contentBuilder.editor.embed.displayHeight')}
             />
 
             <MarginControl

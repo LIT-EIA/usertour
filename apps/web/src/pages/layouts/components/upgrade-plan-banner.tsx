@@ -2,8 +2,10 @@ import { Button } from '@usertour-packages/button';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptionContext } from '@/contexts/subscription-context';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 export const UpgradePlanBanner = ({ projectId }: { projectId: string }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUsage, totalLimit, loading } = useSubscriptionContext();
   const { globalConfig } = useAppContext();
@@ -37,11 +39,9 @@ export const UpgradePlanBanner = ({ projectId }: { projectId: string }) => {
                 clipRule="evenodd"
               />
             </svg>
-            <span>
-              You've reached your session limit. Upgrade your plan to create more sessions.
-            </span>
+            <span>{t('settings.billing.banner.sessionLimitMessage')}</span>
           </div>
-          <Button onClick={handleUpgradeClick}>Upgrade Plan</Button>
+          <Button onClick={handleUpgradeClick}>{t('settings.billing.banner.upgradeButton')}</Button>
         </div>
       </div>
     </div>

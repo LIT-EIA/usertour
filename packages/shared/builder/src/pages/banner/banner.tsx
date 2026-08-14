@@ -5,19 +5,22 @@ import { EXTENSION_SIDEBAR_MAIN } from '@usertour-packages/constants';
 import { ScrollArea } from '@usertour-packages/scroll-area';
 import { cn } from '@usertour/helpers';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBuilderContext } from '../../contexts';
+import { useSidebarWidthClass } from '../../hooks/use-sidebar-width';
 import { SidebarFooter } from '../sidebar/sidebar-footer';
 import { SidebarHeader } from '../sidebar/sidebar-header';
 import { SidebarMini } from '../sidebar/sidebar-mini';
 import { SidebarTheme } from '../sidebar/sidebar-theme';
 
 const BannerBuilderBody = () => {
+  const { t } = useTranslation();
   return (
     <CardContent className="bg-background-900 grow p-0 overflow-hidden">
       <ScrollArea className="h-full ">
         <div className="flex-col space-y-3 p-4">
           <SidebarTheme />
-          Banner
+          {t('contentBuilder.banner.label')}
         </div>
       </ScrollArea>
     </CardContent>
@@ -46,11 +49,12 @@ const BannerBuilderFooter = () => {
 export const BannerBuilder = () => {
   const { position, zIndex } = useBuilderContext();
   const sidbarRef = useRef<HTMLDivElement | null>(null);
+  const widthClass = useSidebarWidthClass();
   return (
     <>
       <div
         style={{ zIndex: zIndex + EXTENSION_SIDEBAR_MAIN }}
-        className={cn('w-80 h-screen p-2 fixed top-0', position === 'left' ? 'left-0' : 'right-0')}
+        className={cn(widthClass, 'h-screen p-2 fixed top-0', position === 'left' ? 'left-0' : 'right-0')}
         ref={sidbarRef}
       >
         <SidebarMini container={sidbarRef} />

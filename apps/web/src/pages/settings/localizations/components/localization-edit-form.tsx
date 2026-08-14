@@ -35,6 +35,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface EditFormProps {
@@ -71,6 +72,7 @@ export const LocalizationEditForm = (props: EditFormProps) => {
   const [updateMutation] = useMutation(updateLocalization);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -104,7 +106,7 @@ export const LocalizationEditForm = (props: EditFormProps) => {
         const ret = await updateMutation({ variables: { data } });
 
         if (!ret.data?.updateLocalization?.id) {
-          showError('Update localization failed.');
+          showError(t('settings.localizations.updateFailure'));
         }
         onClose();
       } catch (error) {
@@ -121,7 +123,7 @@ export const LocalizationEditForm = (props: EditFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Rename Localization </DialogTitle>
+              <DialogTitle>{t('settings.localizations.editTitle')}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col space-y-2 mt-4 mb-4">
               <FormField
@@ -130,14 +132,14 @@ export const LocalizationEditForm = (props: EditFormProps) => {
                 render={() => (
                   <FormItem>
                     <FormLabel className="flex flex-row">
-                      Locale
+                      {t('settings.localizations.form.localeLabel')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
-                            A locale represents a user's language and region.
+                            {t('settings.localizations.form.localeTooltip')}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -161,20 +163,20 @@ export const LocalizationEditForm = (props: EditFormProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex flex-row">
-                      Name
+                      {t('settings.localizations.form.nameLabel')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
-                            Human-readable name of the locale
+                            {t('settings.localizations.form.nameTooltip')}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter display name" {...field} />
+                      <Input placeholder={t('settings.localizations.form.namePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,24 +188,20 @@ export const LocalizationEditForm = (props: EditFormProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex flex-row">
-                      Code
+                      {t('settings.localizations.form.codeLabel')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
-                            The value that users of this locale must have in their locale_code
-                            attribute in your Usertour.js installation. It's important that this
-                            code matches exactly. If a user has a missing or invalid locale code,
-                            they will be regarded as having no locale, which means they'll see the
-                            flow in the base locale.
+                            {t('settings.localizations.form.codeTooltip')}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter code name" {...field} />
+                      <Input placeholder={t('settings.localizations.form.codePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -213,11 +211,11 @@ export const LocalizationEditForm = (props: EditFormProps) => {
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Save Localization
+                {t('settings.localizations.saveButton')}
               </Button>
             </DialogFooter>
           </form>

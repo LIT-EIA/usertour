@@ -13,6 +13,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback } from 'react';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 interface BizUserDeleteFormProps {
   bizUserIds: string[];
@@ -26,6 +27,7 @@ export const BizUserDeleteForm = (props: BizUserDeleteFormProps) => {
   const { invoke: deleteBizUser, loading } = useDeleteBizUserMutation();
   const { environment } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = useCallback(async () => {
     if (bizUserIds.length === 0 || !environment?.id) {
@@ -66,7 +68,7 @@ export const BizUserDeleteForm = (props: BizUserDeleteFormProps) => {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isSingleUser ? 'Confirm deleting the user' : 'Confirm deleting the users'}
+            {isSingleUser ? t('users.dialogs.deleteUsers.title_one') : t('users.dialogs.deleteUsers.title_other')}
           </AlertDialogTitle>
           <AlertDialogDescription>
             This will delete all traces of the {isSingleUser ? 'user' : 'selected users'} from your
@@ -76,7 +78,7 @@ export const BizUserDeleteForm = (props: BizUserDeleteFormProps) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t('users.actions.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} loading={loading} variant="destructive">
             {actionText}
           </LoadingButton>

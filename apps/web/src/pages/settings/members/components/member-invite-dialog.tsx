@@ -40,6 +40,7 @@ import { AlertCircle } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
@@ -78,6 +79,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { project } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { members = [] } = useMemberContext();
   const { globalConfig } = useAppContext();
   const navigate = useNavigate();
@@ -128,7 +130,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
         formValues.role,
       );
       if (!success) {
-        showError('Create Member failed.');
+        showError(t('settings.team.invite.failure'));
       }
       onClose();
     } catch (error) {
@@ -142,14 +144,13 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
       <Dialog open={isOpen} onOpenChange={(op) => !op && onClose()}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Add Team Member</DialogTitle>
+            <DialogTitle>{t('settings.team.invite.title')}</DialogTitle>
           </DialogHeader>
           <Alert className="bg-primary/10 border-primary/5">
             <AlertCircle className="h-4 w-4 !text-primary" />
-            <AlertTitle>Maximum team members reached</AlertTitle>
+            <AlertTitle>{t('settings.team.invite.limitTitle')}</AlertTitle>
             <AlertDescription>
-              You have reached the maximum number of members allowed on your current plan. To add
-              more members, you'll have to{' '}
+              {t('settings.team.invite.limitDescriptionPrefix')}
               <Button
                 variant="link"
                 className="p-0 h-auto font-normal inline"
@@ -158,7 +159,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
                   navigate(`/project/${project?.id}/settings/billing`);
                 }}
               >
-                Upgrade your plan
+                {t('settings.team.invite.upgradeInline')}
               </Button>
             </AlertDescription>
           </Alert>
@@ -170,7 +171,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
                 navigate(`/project/${project?.id}/settings/billing`);
               }}
             >
-              Upgrade
+              {t('settings.team.invite.upgradeButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -184,7 +185,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Add Team Member</DialogTitle>
+              <DialogTitle>{t('settings.team.invite.title')}</DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -194,9 +195,9 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name</FormLabel>
+                        <FormLabel>{t('settings.team.invite.nameLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter Member name" {...field} />
+                          <Input placeholder={t('settings.team.invite.namePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -207,9 +208,9 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('settings.team.invite.emailLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter Member email" {...field} />
+                          <Input placeholder={t('settings.team.invite.emailPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -220,15 +221,15 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
                     name="role"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Role</FormLabel>
+                        <FormLabel>{t('settings.team.invite.roleLabel')}</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a role" />
+                              <SelectValue placeholder={t('settings.team.invite.rolePlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value={TeamMemberRole.ADMIN}>Admin</SelectItem>
-                              <SelectItem value={TeamMemberRole.VIEWER}>Viewer</SelectItem>
+                              <SelectItem value={TeamMemberRole.ADMIN}>{t('settings.team.roles.admin')}</SelectItem>
+                              <SelectItem value={TeamMemberRole.VIEWER}>{t('settings.team.roles.viewer')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -241,11 +242,11 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Send invite
+                {t('settings.team.invite.submit')}
               </Button>
             </DialogFooter>
           </form>

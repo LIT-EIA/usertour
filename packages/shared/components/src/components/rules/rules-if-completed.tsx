@@ -9,6 +9,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { ContentDataType } from '@usertour/types';
 import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface RulesIfCompletedProps {
   defaultValue: boolean;
@@ -19,6 +20,7 @@ interface RulesIfCompletedProps {
 
 export const RulesIfCompleted = (props: RulesIfCompletedProps) => {
   const { defaultValue, onCheckedChange, contentType, disabled = false } = props;
+  const { t } = useTranslation();
   const [checked, setChecked] = useState(defaultValue);
   const id = useId();
   return (
@@ -35,7 +37,7 @@ export const RulesIfCompleted = (props: RulesIfCompletedProps) => {
         }}
       />
       <Label htmlFor={id} className="flex flex-col space-y-1">
-        <span className="font-normal">Only start if not complete</span>
+        <span className="font-normal">{t('conditions.standalone.ifCompleted.label')}</span>
       </Label>
       <TooltipProvider>
         <Tooltip>
@@ -43,8 +45,7 @@ export const RulesIfCompleted = (props: RulesIfCompletedProps) => {
             <QuestionMarkCircledIcon />
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
-            If enabled, the {contentType} will only auto-start if the user has not completed it
-            before.
+            {t('conditions.standalone.ifCompleted.tooltip', { contentType })}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

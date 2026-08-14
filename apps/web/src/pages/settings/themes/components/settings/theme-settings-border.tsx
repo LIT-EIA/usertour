@@ -5,8 +5,10 @@ import { Label } from '@usertour-packages/label';
 import { Switch } from '@usertour-packages/switch';
 import { ChangeEvent } from 'react';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsBorder = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
 
   const updateBorder = (data: Partial<typeof settings.border>) => {
@@ -23,7 +25,7 @@ export const ThemeSettingsBorder = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
         <ThemeSettingInput
-          text="Border radius"
+          text={t('themeBuilder.fields.common.borderRadius')}
           name="border-radius"
           defaultValue={settings.border.borderRadius}
           onChange={(value: string) => {
@@ -32,7 +34,7 @@ export const ThemeSettingsBorder = () => {
         />
         <div className="flex flex-row items-center space-x-2 h-9">
           <Label htmlFor="border-switch" className="flex flex-col space-y-1">
-            <span className="font-normal">Border</span>
+            <span className="font-normal">{t('themeBuilder.fields.common.border')}</span>
           </Label>
           <Switch
             id="border-switch"
@@ -72,7 +74,7 @@ export const ThemeSettingsBorder = () => {
             onChange={(value: string) => {
               updateBorder({ borderColor: value });
             }}
-            text="Border color"
+            text={t('themeBuilder.fields.common.borderColor')}
           />
         )}
       </div>

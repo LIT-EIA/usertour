@@ -6,6 +6,7 @@ import { ScrollArea } from '@usertour-packages/scroll-area';
 import { cn } from '@usertour/helpers';
 import { useRef } from 'react';
 import { useBuilderContext } from '../../contexts';
+import { useSidebarWidthClass } from '../../hooks/use-sidebar-width';
 import { SidebarContents } from './sidebar-contents';
 import { SidebarCreate } from './sidebar-create';
 import { SidebarFooter } from './sidebar-footer';
@@ -16,11 +17,12 @@ import { SidebarTheme } from './sidebar-theme';
 export const BuilderSideBar = () => {
   const { position, currentContent, currentVersion, zIndex } = useBuilderContext();
   const sidbarRef = useRef<HTMLDivElement | null>(null);
+  const widthClass = useSidebarWidthClass();
 
   return (
     <div
       style={{ zIndex: zIndex + EXTENSION_SIDEBAR_MAIN }}
-      className={cn('w-80 h-screen p-2 fixed top-0', position === 'left' ? 'left-0' : 'right-0')}
+      className={cn(widthClass, 'h-screen p-2 fixed top-0', position === 'left' ? 'left-0' : 'right-0')}
       ref={sidbarRef}
     >
       <SidebarMini container={sidbarRef} />

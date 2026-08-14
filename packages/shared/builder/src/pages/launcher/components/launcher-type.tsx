@@ -1,11 +1,13 @@
 import { EXTENSION_SIDEBAR_MAIN } from '@usertour-packages/constants';
 import { Input } from '@usertour-packages/input';
 import { LauncherDataType, LauncherIconSource } from '@usertour/types';
+import { useTranslation } from 'react-i18next';
 import { LauncherContentType, IconPicker } from '../../../components/';
 import { useLauncherContext } from '../../../contexts';
 
 export const LauncherType = () => {
   const { updateLocalData, zIndex, localData } = useLauncherContext();
+  const { t } = useTranslation();
   const sidebarZIndex = zIndex + EXTENSION_SIDEBAR_MAIN;
 
   if (!localData) {
@@ -15,7 +17,7 @@ export const LauncherType = () => {
   return (
     <div className="space-y-3">
       <div className="flex items-center">
-        <h1 className="text-sm">Appearance</h1>
+        <h1 className="text-sm">{t('contentBuilder.launcher.appearance')}</h1>
       </div>
 
       <LauncherContentType
@@ -45,7 +47,7 @@ export const LauncherType = () => {
       {localData.type === LauncherDataType.BUTTON && (
         <Input
           value={localData.buttonText ?? ''}
-          placeholder="Button text"
+          placeholder={t('contentBuilder.launcher.buttonText')}
           onChange={(e) => {
             updateLocalData({ buttonText: e.target.value || undefined });
           }}

@@ -5,6 +5,7 @@ import { BizCompanyDeleteForm } from './company-delete-form';
 import { useCallback } from 'react';
 import { useState } from 'react';
 import { useCompanyListContext } from '@/contexts/company-list-context';
+import { useTranslation } from 'react-i18next';
 
 interface DeleteCompanyFromSegmentProps {
   table: Table<any>;
@@ -16,6 +17,7 @@ export const DeleteCompanyFromSegment = (props: DeleteCompanyFromSegmentProps) =
   const [openDelete, setOpenDelete] = useState(false);
   const [bizCompanyIds, setBizCompanyIds] = useState<string[]>([]);
   const { refetch } = useCompanyListContext();
+  const { t } = useTranslation();
 
   const handleOnClick = useCallback(() => {
     const rows = table.getFilteredSelectedRowModel().rows;
@@ -48,7 +50,7 @@ export const DeleteCompanyFromSegment = (props: DeleteCompanyFromSegmentProps) =
         onClick={handleOnClick}
       >
         <Delete2Icon className="mr-1" />
-        Delete company
+        {t('companies.actions.deleteCompany')}
       </Button>
       <BizCompanyDeleteForm
         open={openDelete}

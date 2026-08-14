@@ -20,6 +20,7 @@ import {
 import { Switch } from '@usertour-packages/switch';
 import { ChecklistCompletionOrder, ChecklistInitialDisplay } from '@usertour/types';
 import { uuidV4 } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 import { useBuilderContext, useChecklistContext } from '../../contexts';
 import { SidebarContainer } from '../sidebar';
 import { SidebarFooter } from '../sidebar/sidebar-footer';
@@ -31,22 +32,23 @@ import { ChecklistContents } from './components/checklist-contents';
 const flexBetween = 'flex items-center justify-between space-x-2';
 const labelStyles = 'flex justify-start items-center space-x-1';
 
-const defaultItem = {
-  name: 'New Item',
-  description: 'New Item Description',
-  clickedActions: [],
-  isCompleted: false,
-  completeConditions: [],
-  onlyShowTask: false,
-  onlyShowTaskConditions: [],
-};
-
 const ChecklistCoreBody = () => {
   const { localData, zIndex, addItem, updateLocalData } = useChecklistContext();
+  const { t } = useTranslation();
 
   if (!localData) {
     return null;
   }
+
+  const defaultItem = {
+    name: t('contentBuilder.checklist.newItemName'),
+    description: t('contentBuilder.checklist.newItemDescription'),
+    clickedActions: [],
+    isCompleted: false,
+    completeConditions: [],
+    onlyShowTask: false,
+    onlyShowTaskConditions: [],
+  };
 
   return (
     <CardContent className="bg-background-900 grow p-0 overflow-hidden">
@@ -57,7 +59,9 @@ const ChecklistCoreBody = () => {
           {/* Launcher Button Text */}
           <div className="flex flex-col space-y-2">
             <div className={labelStyles}>
-              <Label htmlFor="launcher-button-text">Launcher button text</Label>
+              <Label htmlFor="launcher-button-text">
+                {t('contentBuilder.checklist.launcherButtonText')}
+              </Label>
             </div>
             <Input
               className="bg-background-900"
@@ -66,7 +70,7 @@ const ChecklistCoreBody = () => {
               onChange={(e) => {
                 updateLocalData({ buttonText: e.target.value });
               }}
-              placeholder="None"
+              placeholder={t('contentBuilder.checklist.none')}
             />
           </div>
 
@@ -79,16 +83,13 @@ const ChecklistCoreBody = () => {
             onClick={() => addItem({ ...defaultItem, id: uuidV4() })}
           >
             <PlusCircledIcon className="mr-2" />
-            Add item
+            {t('contentBuilder.checklist.addItem')}
           </Button>
 
           {/* Initial Display Select */}
           <div className={labelStyles}>
-            <Label htmlFor="initial-display">Initially show as</Label>
-            <QuestionTooltip>
-              Whether to show the whole checklist (including its tasks) or just the launcher button
-              when the checklist starts.
-            </QuestionTooltip>
+            <Label htmlFor="initial-display">{t('contentBuilder.checklist.initialDisplay')}</Label>
+            <QuestionTooltip>{t('contentBuilder.checklist.initialDisplayTooltip')}</QuestionTooltip>
           </div>
           <Select
             onValueChange={(value) =>
@@ -99,15 +100,17 @@ const ChecklistCoreBody = () => {
             defaultValue={localData.initialDisplay}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a option" />
+              <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
             </SelectTrigger>
             <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value={ChecklistInitialDisplay.EXPANDED}>
-                    Expanded checklist
+                    {t('contentBuilder.checklist.expandedChecklist')}
                   </SelectItem>
-                  <SelectItem value={ChecklistInitialDisplay.BUTTON}>Launcher button</SelectItem>
+                  <SelectItem value={ChecklistInitialDisplay.BUTTON}>
+                    {t('contentBuilder.checklist.launcherButton')}
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </SelectPortal>
@@ -115,7 +118,7 @@ const ChecklistCoreBody = () => {
 
           {/* Task Completion Order Select */}
           <div className={labelStyles}>
-            <Label htmlFor="completion-order">Task completion order</Label>
+            <Label htmlFor="completion-order">{t('contentBuilder.checklist.completionOrder')}</Label>
           </div>
           <Select
             onValueChange={(value) =>
@@ -126,13 +129,17 @@ const ChecklistCoreBody = () => {
             defaultValue={localData.completionOrder}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a option" />
+              <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
             </SelectTrigger>
             <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value={ChecklistCompletionOrder.ANY}>In any order</SelectItem>
-                  <SelectItem value={ChecklistCompletionOrder.ORDERED}>In order</SelectItem>
+                  <SelectItem value={ChecklistCompletionOrder.ANY}>
+                    {t('contentBuilder.checklist.anyOrder')}
+                  </SelectItem>
+                  <SelectItem value={ChecklistCompletionOrder.ORDERED}>
+                    {t('contentBuilder.checklist.inOrder')}
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </SelectPortal>
@@ -142,9 +149,9 @@ const ChecklistCoreBody = () => {
           <div className={flexBetween}>
             <div className={labelStyles}>
               <Label htmlFor="prevent-dismiss-checklist" className="font-normal">
-                Prevent dismissal
+                {t('contentBuilder.checklist.preventDismissal')}
               </Label>
-              <QuestionTooltip>Prevent users from dismissing the checklist.</QuestionTooltip>
+              <QuestionTooltip>{t('contentBuilder.checklist.preventDismissalTooltip')}</QuestionTooltip>
             </div>
             <Switch
               id="prevent-dismiss-checklist"
@@ -158,10 +165,10 @@ const ChecklistCoreBody = () => {
           <div className={flexBetween}>
             <div className={labelStyles}>
               <Label htmlFor="auto-dismiss-checklist" className="font-normal">
-                Auto-dismiss checklist
+                {t('contentBuilder.checklist.autoDismiss')}
               </Label>
               <QuestionTooltip>
-                Automatically dismiss the checklist when all tasks are completed.
+                {t('contentBuilder.checklist.autoDismissTooltip')}
               </QuestionTooltip>
             </div>
             <Switch

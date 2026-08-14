@@ -11,7 +11,8 @@ import {
   useState,
   useEffect,
 } from 'react';
-import { themeDetailSelectorTypes } from '@/utils/theme';
+import { getThemeDetailSelectorTypes } from '@/utils/theme';
+import { useTranslation } from 'react-i18next';
 
 export interface ThemeDetailProviderProps {
   children: ReactNode;
@@ -35,10 +36,11 @@ export const ThemeDetailContext = createContext<ThemeDetailContextValue | undefi
 
 export function ThemeDetailProvider(props: ThemeDetailProviderProps): JSX.Element {
   const { children, themeId } = props;
+  const { t } = useTranslation();
   const [settings, setSettings] = useState<ThemeTypesSetting | null>(null);
   const [variations, setVariations] = useState<ThemeVariation[]>([]);
   const [selectedType, setSelectedType] = useState<ThemeDetailSelectorType>(
-    themeDetailSelectorTypes[0],
+    getThemeDetailSelectorTypes(t)[0],
   );
   const { data, refetch, loading } = useQuery(getTheme, {
     variables: { themeId },

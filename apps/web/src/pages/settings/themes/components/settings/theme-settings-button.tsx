@@ -6,6 +6,7 @@ import { Label } from '@usertour-packages/label';
 import { Switch } from '@usertour-packages/switch';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 type ThemeSettingsButtonProps = {
   text: string;
@@ -13,6 +14,7 @@ type ThemeSettingsButtonProps = {
 };
 export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
   const { text, name } = props;
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
   const [data, setData] = useState<ThemeTypesSettingsButton>(settings.buttons[name]);
 
@@ -50,7 +52,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
     <div className="py-[15px] px-5 space-y-3">
       <div className="text-base">{text}</div>
       <ThemeSettingSelect
-        text="Font weight"
+        text={t('themeBuilder.fields.common.fontWeight')}
         defaultValue={String(data.fontWeight)}
         onValueChange={(value: string) => {
           update({ fontWeight: Number(value) });
@@ -59,7 +61,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
       />
       <div className="flex flex-row w-full">
         <div className="flex flex-col space-y-1 basis-1/3">
-          <div className="text-sm">Font color</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.fontColor')}</div>
           <ThemeColorPicker
             defaultColor={data.textColor.color}
             showAutoButton={true}
@@ -72,7 +74,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
           />
         </div>
         <div className="flex flex-col space-y-1 basis-1/3">
-          <div className="text-sm">Hover</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.hover')}</div>
           <ThemeColorPicker
             defaultColor={data.textColor.hover}
             showAutoButton={true}
@@ -85,7 +87,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
           />
         </div>
         <div className="flex flex-col space-y-1 basis-1/3">
-          <div className="text-sm">Click</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.click')}</div>
           <ThemeColorPicker
             defaultColor={data.textColor.active}
             showAutoButton={true}
@@ -102,7 +104,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
       </div>
       <div className="flex flex-row w-full">
         <div className="flex flex-col space-y-1 basis-1/3">
-          <div className="text-sm">Background</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.background')}</div>
           <ThemeColorPicker
             defaultColor={data.backgroundColor.background}
             showAutoButton={true}
@@ -117,7 +119,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
           />
         </div>
         <div className="flex flex-col space-y-1 basis-1/3">
-          <div className="text-sm">Hover</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.hover')}</div>
           <ThemeColorPicker
             defaultColor={data.backgroundColor.hover}
             showAutoButton={true}
@@ -132,7 +134,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
           />
         </div>
         <div className="flex flex-col space-y-1 basis-1/3">
-          <div className="text-sm">Click</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.click')}</div>
           <ThemeColorPicker
             defaultColor={data.backgroundColor.active}
             showAutoButton={true}
@@ -150,7 +152,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
 
       <div className="flex flex-row items-center space-x-2 h-9">
         <Label htmlFor={`${name}-button-border-switch`} className="flex flex-col space-y-1">
-          <span className="font-normal">Border</span>
+          <span className="font-normal">{t('themeBuilder.fields.common.border')}</span>
         </Label>
         <Switch
           id="border-switch"
@@ -184,7 +186,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
       {data.border.enabled && (
         <div className="flex flex-row w-full">
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Border color</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.borderColor')}</div>
             <ThemeColorPicker
               defaultColor={data.border.color.color}
               showAutoButton={true}
@@ -202,7 +204,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Hover</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.hover')}</div>
             <ThemeColorPicker
               defaultColor={data.border.color.hover}
               showAutoButton={true}
@@ -220,7 +222,7 @@ export const ThemeSettingsButton = (props: ThemeSettingsButtonProps) => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Click</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.click')}</div>
             <ThemeColorPicker
               defaultColor={data.border.color.active}
               showAutoButton={true}

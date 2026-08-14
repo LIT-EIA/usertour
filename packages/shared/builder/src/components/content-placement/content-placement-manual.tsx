@@ -3,6 +3,7 @@ import { Input } from '@usertour-packages/input';
 import { Label } from '@usertour-packages/label';
 import { HelpTooltip } from '@usertour-packages/shared-components';
 import { ChangeEvent, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentError, ContentErrorAnchor, ContentErrorContent } from '../content-error';
 import { useContentPlacement } from './content-placement-context';
 import { SelectorButtons } from './selector-buttons';
@@ -10,6 +11,7 @@ import { SequenceSelect } from './sequence-select';
 
 export const ContentPlacementManual = () => {
   const { target, onTargetChange, zIndex, isShowError } = useContentPlacement();
+  const { t } = useTranslation();
 
   const handleContentChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -45,20 +47,17 @@ export const ContentPlacementManual = () => {
         {/* <h1 className="text-sm">{subTitle}</h1> */}
         <div className="flex flex-col space-y-2">
           <div className="flex justify-start items-center space-x-1">
-            <Label htmlFor="element-text">Element text</Label>
-            <HelpTooltip>
-              Usertour will select an element containing the text you write here.
-            </HelpTooltip>
+            <Label htmlFor="element-text">
+              {t('contentBuilder.shared.elementText')}
+            </Label>
+            <HelpTooltip>{t('contentBuilder.shared.elementTextTooltip')}</HelpTooltip>
           </div>
           <Input id="element-text" value={target?.content ?? ''} onChange={handleContentChange} />
           <div className="flex justify-start items-center space-x-1	">
-            <Label htmlFor="css-selector">CSS selector</Label>
-            <HelpTooltip>
-              Advanced feature: If possible, we recommend selecting elements using text. lf an
-              element does not have text, or the text is very generic, you can select it using a CSS
-              selector instead. lf both text and CSS selector is filled in, Usertour will select an
-              element matching both.
-            </HelpTooltip>
+            <Label htmlFor="css-selector">
+              {t('contentBuilder.shared.cssSelector')}
+            </Label>
+            <HelpTooltip>{t('contentBuilder.shared.cssSelectorTooltip')}</HelpTooltip>
           </div>
 
           <ContentErrorAnchor>
@@ -79,7 +78,7 @@ export const ContentPlacementManual = () => {
         </div>
       </div>
       <ContentErrorContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
-        CSS selector is required
+        {t('contentBuilder.shared.cssSelectorRequired')}
       </ContentErrorContent>
     </ContentError>
   );

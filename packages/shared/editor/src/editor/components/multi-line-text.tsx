@@ -5,6 +5,7 @@ import { Label } from '@usertour-packages/label';
 import { Switch } from '@usertour-packages/switch';
 import { Textarea } from '@usertour-packages/textarea';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import { ContentEditorMultiLineTextElement } from '../../types/editor';
@@ -15,10 +16,6 @@ import { isEmptyString } from '@usertour/helpers';
 import { BindAttribute } from './bind-attribute';
 import { BizAttributeTypes } from '@usertour/types';
 
-// Constants
-const DEFAULT_PLACEHOLDER = 'Enter text...';
-const DEFAULT_BUTTON_TEXT = 'Submit';
-
 interface ContentEditorMultiLineTextProps {
   element: ContentEditorMultiLineTextElement;
   id: string;
@@ -27,6 +24,9 @@ interface ContentEditorMultiLineTextProps {
 
 export const ContentEditorMultiLineText = (props: ContentEditorMultiLineTextProps) => {
   const { element, id } = props;
+  const { t } = useTranslation();
+  const defaultPlaceholder = t('contentBuilder.editor.textInput.defaultPlaceholder');
+  const defaultButtonText = t('contentBuilder.editor.textInput.defaultButtonText');
   const {
     updateElement,
     zIndex,
@@ -85,12 +85,12 @@ export const ContentEditorMultiLineText = (props: ContentEditorMultiLineTextProp
           <Popover.Trigger asChild>
             <div className="flex flex-col gap-2 items-center w-full">
               <Textarea
-                placeholder={localData.placeholder || DEFAULT_PLACEHOLDER}
+                placeholder={localData.placeholder || defaultPlaceholder}
                 className="border-sdk-question bg-sdk-background"
                 disabled
               />
               <div className="flex justify-end w-full">
-                <Button forSdk={true}>{localData.buttonText || DEFAULT_BUTTON_TEXT}</Button>
+                <Button forSdk={true}>{localData.buttonText || defaultButtonText}</Button>
               </div>
             </div>
           </Popover.Trigger>
@@ -104,15 +104,15 @@ export const ContentEditorMultiLineText = (props: ContentEditorMultiLineTextProp
             >
               <div className="flex flex-col gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="question-name">Question name</Label>
+                  <Label htmlFor="question-name">{t('contentBuilder.editor.question.name')}</Label>
                   <Input
                     id="question-name"
                     value={localData.name || ''}
                     onChange={(e) => handleDataChange({ name: e.target.value })}
-                    placeholder="Enter question name"
+                    placeholder={t('contentBuilder.editor.multipleChoice.namePlaceholder')}
                   />
                 </div>
-                <Label>When answer is submitted</Label>
+                <Label>{t('contentBuilder.editor.question.whenSubmitted')}</Label>
                 <ContentActions
                   zIndex={zIndex}
                   isShowIf={false}
@@ -127,22 +127,22 @@ export const ContentEditorMultiLineText = (props: ContentEditorMultiLineTextProp
                 />
 
                 <div className="space-y-2">
-                  <Label htmlFor="placeholder">Placeholder</Label>
+                  <Label htmlFor="placeholder">{t('contentBuilder.editor.textInput.placeholder')}</Label>
                   <Input
                     id="placeholder"
                     value={localData.placeholder || ''}
                     onChange={(e) => handleDataChange({ placeholder: e.target.value })}
-                    placeholder="Enter placeholder text"
+                    placeholder={t('contentBuilder.editor.textInput.placeholderHint')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="button-text">Button text</Label>
+                  <Label htmlFor="button-text">{t('contentBuilder.editor.textInput.buttonText')}</Label>
                   <Input
                     id="button-text"
                     value={localData.buttonText || ''}
                     onChange={(e) => handleDataChange({ buttonText: e.target.value })}
-                    placeholder="Enter button text"
+                    placeholder={t('contentBuilder.editor.textInput.buttonTextHint')}
                   />
                 </div>
 
@@ -152,7 +152,7 @@ export const ContentEditorMultiLineText = (props: ContentEditorMultiLineTextProp
                     checked={localData.required || false}
                     onCheckedChange={(checked) => handleDataChange({ required: checked })}
                   />
-                  <Label htmlFor="required">Required</Label>
+                  <Label htmlFor="required">{t('contentBuilder.editor.textInput.required')}</Label>
                 </div>
                 <BindAttribute
                   bindToAttribute={localData.bindToAttribute || false}
@@ -169,7 +169,7 @@ export const ContentEditorMultiLineText = (props: ContentEditorMultiLineTextProp
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent side="bottom" style={{ zIndex }}>
-        Question name is required
+        {t('contentBuilder.editor.question.nameRequired')}
       </EditorErrorContent>
     </EditorError>
   );
@@ -182,6 +182,9 @@ export const ContentEditorMultiLineTextSerialize = (props: {
   onClick?: (element: ContentEditorMultiLineTextElement, value: string) => Promise<void> | void;
 }) => {
   const { element, onClick } = props;
+  const { t } = useTranslation();
+  const defaultPlaceholder = t('contentBuilder.editor.textInput.defaultPlaceholder');
+  const defaultButtonText = t('contentBuilder.editor.textInput.defaultButtonText');
   const [value, setValue] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
@@ -199,7 +202,7 @@ export const ContentEditorMultiLineTextSerialize = (props: {
   return (
     <div className="flex flex-col gap-2 items-center w-full">
       <Textarea
-        placeholder={element.data.placeholder || DEFAULT_PLACEHOLDER}
+        placeholder={element.data.placeholder || defaultPlaceholder}
         className="border-sdk-question bg-sdk-background"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -210,7 +213,7 @@ export const ContentEditorMultiLineTextSerialize = (props: {
           onClick={handleClick}
           disabled={loading || (element.data.required && isEmptyString(value))}
         >
-          {element.data.buttonText || DEFAULT_BUTTON_TEXT}
+          {element.data.buttonText || defaultButtonText}
         </Button>
       </div>
     </div>

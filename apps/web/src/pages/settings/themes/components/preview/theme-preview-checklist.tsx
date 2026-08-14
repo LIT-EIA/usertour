@@ -11,7 +11,8 @@ import {
 import { PopperMadeWith } from '@usertour-packages/sdk/src/popper';
 import { ChecklistData, ChecklistInitialDisplay, ThemeTypesSetting } from '@usertour/types';
 import { useEffect, useState } from 'react';
-import { defaultChecklistData } from '@/utils/theme';
+import { getDefaultChecklistData } from '@/utils/theme';
+import { useTranslation } from 'react-i18next';
 
 interface ThemePreviewChecklistProps {
   expanded?: boolean;
@@ -20,9 +21,10 @@ interface ThemePreviewChecklistProps {
 
 export const ThemePreviewChecklist = (props: ThemePreviewChecklistProps) => {
   const { expanded = true, settings } = props;
+  const { t } = useTranslation();
 
   const [data] = useState<ChecklistData>({
-    ...defaultChecklistData,
+    ...getDefaultChecklistData(t),
     initialDisplay: expanded ? ChecklistInitialDisplay.EXPANDED : ChecklistInitialDisplay.BUTTON,
   });
 

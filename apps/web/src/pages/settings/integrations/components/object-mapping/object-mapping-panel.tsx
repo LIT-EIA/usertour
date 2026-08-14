@@ -12,6 +12,7 @@ import {
 import { useState } from 'react';
 import { useListAttributesQuery } from '@usertour-packages/shared-hooks';
 import { cn } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 const UsertourMappingIcon = ({ className }: { className?: string }) => (
   <UsertourIcon2 className={cn('w-4 h-4 text-primary', className)} />
@@ -74,6 +75,7 @@ const ObjectMappingFieldPair = ({
   disabled = false,
   centerIcon,
 }: ObjectMappingFieldPairProps) => {
+  const { t } = useTranslation();
   // Attribute creation state
   const [showCreateAttributeForm, setShowCreateAttributeForm] = useState(false);
 
@@ -96,7 +98,7 @@ const ObjectMappingFieldPair = ({
         items={sourceFields}
         value={sourceValue}
         onValueChange={onSourceChange}
-        placeholder="Select field"
+        placeholder={t('settings.integrations.objectMapping.fieldPlaceholder')}
         showCreateAttribute={showCreateAttributeLeft}
         onCreateAttribute={handleCreateAttribute}
         disabled={disabled}
@@ -106,7 +108,7 @@ const ObjectMappingFieldPair = ({
         items={targetFields}
         value={targetValue}
         onValueChange={onTargetChange}
-        placeholder="Select field"
+        placeholder={t('settings.integrations.objectMapping.fieldPlaceholder')}
         showCreateAttribute={showCreateAttributeRight}
         onCreateAttribute={handleCreateAttribute}
         disabled={disabled}
@@ -144,6 +146,7 @@ const ObjectMappingSection = ({
   sourceObjectType,
   targetObjectType,
 }: ObjectMappingSectionProps) => {
+  const { t } = useTranslation();
   // Internal state for adding new mappings
   const [newSourceValue, setNewSourceValue] = useState('');
   const [newTargetValue, setNewTargetValue] = useState('');
@@ -213,7 +216,7 @@ const ObjectMappingSection = ({
           />
           {mapping.isNew && (
             <span className="ml-2 px-2 py-0.5 text-xs rounded bg-primary/10 text-primary font-medium">
-              New
+              {t('settings.integrations.objectMapping.newBadge')}
             </span>
           )}
           <Button variant="ghost" size="icon" onClick={() => handleRemoveMapping(idx)}>
@@ -243,7 +246,7 @@ const ObjectMappingSection = ({
           disabled={!newSourceValue || !newTargetValue}
           onClick={handleAddMapping}
         >
-          Add
+          {t('settings.integrations.objectMapping.addButton')}
         </Button>
       </div>
     </div>
@@ -259,6 +262,7 @@ export const ObjectMappingPanel = ({
   initialMapping,
   onMappingChange,
 }: ObjectMappingPanelProps) => {
+  const { t } = useTranslation();
   const { attributes, refetch } = useListAttributesQuery(projectId, selectedBizType);
 
   // Dynamic usertour fields based on selected object type and available attributes
@@ -324,7 +328,7 @@ export const ObjectMappingPanel = ({
       {/* Object match row */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <span className="font-medium">Match objects by</span>
+          <span className="font-medium">{t('settings.integrations.objectMapping.matchBy')}</span>
           <InfoIcon className="w-4 h-4 text-muted-foreground" />
         </div>
         <div className="flex items-center gap-2">
@@ -351,7 +355,7 @@ export const ObjectMappingPanel = ({
 
       {/* Fields to sync from source to target */}
       <ObjectMappingSection
-        title="Fields to sync from source to target"
+        title={t('settings.integrations.objectMapping.sourceToTargetTitle')}
         sourceFields={sourceFields}
         targetFields={usertourFields}
         mappings={mappingConfig.sourceToTarget}
@@ -367,7 +371,7 @@ export const ObjectMappingPanel = ({
 
       {/* Fields to sync from target to source */}
       <ObjectMappingSection
-        title="Fields to sync from target to source"
+        title={t('settings.integrations.objectMapping.targetToSourceTitle')}
         sourceFields={usertourFields}
         targetFields={sourceFields}
         mappings={mappingConfig.targetToSource}

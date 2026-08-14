@@ -35,6 +35,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface CreateFormProps {
   isOpen: boolean;
@@ -64,6 +65,7 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
   const [createMutation] = useMutation(createSegment);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -94,7 +96,7 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
       const ret = await createMutation({ variables: { data } });
 
       if (!ret.data?.createSegment?.id) {
-        showError('Create Segment failed.');
+        showError(t('users.toast.segments.createFailed'));
       }
       onClose();
     } catch (error) {
@@ -109,7 +111,7 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create User Segment</DialogTitle>
+              <DialogTitle>{t('users.segments.create')}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col space-y-4 mt-4 mb-4">
               <FormField
@@ -117,9 +119,9 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex flex-row">Name</FormLabel>
+                    <FormLabel className="flex flex-row">{t('users.segments.form.name')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter user segment name" className="w-full" {...field} />
+                      <Input placeholder={t('users.segments.form.namePlaceholder')} className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -131,14 +133,14 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex flex-row">
-                      Segment Type
+                      {t('users.segments.form.segmentType')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
-                            <p>Determines which kind of segment can be set.</p>
+                            <p>{t('users.segments.form.segmentTypeTooltip')}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -153,13 +155,13 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
                           <FormControl>
                             <RadioGroupItem value="CONDITION" />
                           </FormControl>
-                          <FormLabel className="font-normal">Filter</FormLabel>
+                          <FormLabel className="font-normal">{t('users.segments.form.filter')}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="MANUAL" />
                           </FormControl>
-                          <FormLabel className="font-normal">Manual</FormLabel>
+                          <FormLabel className="font-normal">{t('users.segments.form.manual')}</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -169,11 +171,11 @@ export const UserSegmentCreateForm = (props: CreateFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('users.actions.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Create Segment
+                {t('users.segments.form.createSegment')}
               </Button>
             </DialogFooter>
           </form>

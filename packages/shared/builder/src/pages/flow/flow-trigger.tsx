@@ -21,6 +21,7 @@ import {
 import { cn, cuid } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentTrigger } from '../../components/content-trigger';
 import { BuilderMode, useBuilderContext } from '../../contexts';
 import { TriggerProvider, useTriggerContext } from '../../contexts';
@@ -71,6 +72,7 @@ const FlowBuilderTriggerBody = (props: { attributes: Attribute[]; loading: boole
   const { contents } = useContentListContext();
   const { showError, setShowError } = useTriggerContext();
   const { token } = useToken();
+  const { t } = useTranslation();
   const emptyTrigger = { conditions: [], actions: [] };
 
   useEffect(() => {
@@ -81,7 +83,7 @@ const FlowBuilderTriggerBody = (props: { attributes: Attribute[]; loading: boole
     const step: Step = {
       ...defaultStep,
       type: 'tooltip',
-      name: 'Untitled',
+      name: t('contentBuilder.flow.untitledStep'),
       data: createValue1,
       sequence,
     };
@@ -162,7 +164,7 @@ const FlowBuilderTriggerBody = (props: { attributes: Attribute[]; loading: boole
     <CardContent className="bg-background-900 grow p-0 overflow-hidden">
       <ScrollArea className="h-full ">
         <div className="flex-col space-y-3 p-4">
-          <h1 className="text-sm">Triggers</h1>
+          <h1 className="text-sm">{t('contentBuilder.flow.triggers')}</h1>
           {loading && (
             <div className="flex justify-center items-center h-full">
               <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
@@ -207,7 +209,7 @@ const FlowBuilderTriggerBody = (props: { attributes: Attribute[]; loading: boole
             ))}
           <Button className="w-full" variant="secondary" onClick={handleOnClick}>
             <PlusCircledIcon className="mr-2" />
-            Add trigger
+            {t('contentBuilder.flow.addTrigger')}
           </Button>
         </div>
       </ScrollArea>
@@ -224,6 +226,7 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
   const [updateContentStepMutation] = useMutation(updateContentStep);
   const { toast } = useToast();
   const { setShowError } = useTriggerContext();
+  const { t } = useTranslation();
 
   const handleSave = useCallback(async () => {
     setShowError(false);
@@ -266,7 +269,7 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
     <CardFooter className="flex-none p-5">
       <Button className="w-full h-10" disabled={isLoading} onClick={handleSave}>
         {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-        Save
+        {t('contentBuilder.common.save')}
       </Button>
     </CardFooter>
   );

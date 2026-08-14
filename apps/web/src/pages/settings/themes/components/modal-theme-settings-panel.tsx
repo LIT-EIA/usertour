@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
+import { useTranslation } from 'react-i18next';
 
 interface ModalThemeSettingsPanelProps {
   settings: ThemeTypesSetting;
@@ -49,6 +50,7 @@ export const ModalThemeSettingsPanel = ({
   errorMessage = '',
   showError = false,
 }: ModalThemeSettingsPanelProps) => {
+  const { t } = useTranslation();
   // Track initial data for comparison
   const initialDataRef = useRef<{
     settings: ThemeTypesSetting;
@@ -119,7 +121,7 @@ export const ModalThemeSettingsPanel = ({
               <OutlineInput
                 value={currentTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Enter variation title..."
+                placeholder={t('themeBuilder.placeholders.variationTitle')}
                 className="h-8 shadow-none focus-visible:ring-0 focus:border-b text-base"
               />
             </div>
@@ -136,7 +138,9 @@ export const ModalThemeSettingsPanel = ({
                       <Delete2Icon />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">Delete condition variation</TooltipContent>
+                  <TooltipContent side="bottom">
+                    {t('themeBuilder.tooltips.deleteConditionVariation')}
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -145,12 +149,12 @@ export const ModalThemeSettingsPanel = ({
           <div className="flex justify-center gap-4 p-4 border-b border-gray-200 ">
             {onCancel && (
               <Button variant="outline" size="sm" onClick={onCancel}>
-                Cancel
+                {t('themeBuilder.actions.cancel')}
               </Button>
             )}
             {onSave && (
               <Button size="sm" onClick={onSave} disabled={isSaveDisabled}>
-                Apply changes
+                {t('themeBuilder.actions.applyChanges')}
               </Button>
             )}
           </div>
@@ -163,7 +167,7 @@ export const ModalThemeSettingsPanel = ({
                 isHorizontal={true}
                 isShowIf={false}
                 filterItems={['group', 'user-attr', 'current-page']}
-                addButtonText={'Add condition'}
+                addButtonText={t('themeBuilder.actions.addCondition')}
                 attributes={attributeList || []}
                 disabled={false}
               />

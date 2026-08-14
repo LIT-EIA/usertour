@@ -15,6 +15,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { Localization } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocalizationDeleteForm } from './localization-delete-form';
 import { LocalizationEditForm } from './localization-edit-form';
 
@@ -28,6 +29,7 @@ export const LocalizationListAction = (props: LocalizationListActionProps) => {
   const { refetch } = useLocalizationListContext();
   const [setDefaultMutation] = useMutation(setDefaultLocalization);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const handleOpen = () => {
     setOpen(true);
   };
@@ -51,7 +53,7 @@ export const LocalizationListAction = (props: LocalizationListActionProps) => {
       // onSubmit("setAsDefault");
       toast({
         variant: 'success',
-        title: 'The localization has been successfully set as default',
+        title: t('settings.localizations.setDefaultSuccess'),
       });
     } catch (error) {
       toast({
@@ -73,12 +75,12 @@ export const LocalizationListAction = (props: LocalizationListActionProps) => {
           <DropdownMenuContent align="start" className="w-[200px]">
             <DropdownMenuItem onClick={handleOpen}>
               <EditIcon className="w-6" width={12} height={12} />
-              Edit localization
+              {t('settings.localizations.editMenuItem')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSetAsDefault} disabled={localization.isDefault}>
               <StarFilledIcon className="mr-1" width={15} height={15} />
-              Set as company default
+              {t('settings.localizations.setDefaultMenuItem')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

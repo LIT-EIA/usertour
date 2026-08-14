@@ -25,12 +25,14 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Path, Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
 import { ButtonData, ButtonElementType } from '../../types/slate';
 import { usePopperEditorContext } from '../editor';
 
 export const ButtonElement = (props: RenderElementProps & { className?: string }) => {
+  const { t } = useTranslation();
   const { zIndex } = usePopperEditorContext();
   const element = props.element as ButtonElementType;
   const [buttonText, setButtonText] = useState(element.data.text);
@@ -47,7 +49,7 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
       editor,
       {
         type: 'button',
-        data: { text: 'Button', type: 'default', action: 'goto' },
+        data: { text: t('contentBuilder.editor.defaultContent.buttonText'), type: 'default', action: 'goto' },
         children: [{ text: '' }],
       },
       {
@@ -61,7 +63,7 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
       editor,
       {
         type: 'button',
-        data: { text: 'Button', type: 'default', action: 'goto' },
+        data: { text: t('contentBuilder.editor.defaultContent.buttonText'), type: 'default', action: 'goto' },
         children: [{ text: '' }],
       },
       {
@@ -128,35 +130,35 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
           alignOffset={-2}
         >
           <div className="flex flex-col gap-2.5">
-            <Label htmlFor="button-text">Button text</Label>
+            <Label htmlFor="button-text">{t('contentBuilder.editor.button.text')}</Label>
             <Input
               type="button-text"
               className="bg-background"
               id="button-text"
               value={buttonText}
-              placeholder="Enter button text"
+              placeholder={t('contentBuilder.editor.button.textPlaceholder')}
               onChange={handleButtonTextChange}
             />
-            <Label>Button style</Label>
+            <Label>{t('contentBuilder.editor.button.style')}</Label>
             <Select onValueChange={handleButtonStyleChange} defaultValue={element.data.type}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a distribute" />
+                <SelectValue placeholder={t('contentBuilder.editor.button.stylePlaceholder')} />
               </SelectTrigger>
               <SelectPortal style={{ zIndex: zIndex + 2 }}>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="default">Primary</SelectItem>
-                    <SelectItem value="secondary">Secondary</SelectItem>
-                    <SelectItem value="destructive">Destructive</SelectItem>
-                    <SelectItem value="outline">Outline</SelectItem>
+                    <SelectItem value="default">{t('contentBuilder.editor.button.stylePrimary')}</SelectItem>
+                    <SelectItem value="secondary">{t('contentBuilder.editor.button.styleSecondary')}</SelectItem>
+                    <SelectItem value="destructive">{t('contentBuilder.editor.button.styleDestructive')}</SelectItem>
+                    <SelectItem value="outline">{t('contentBuilder.editor.button.styleOutline')}</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </SelectPortal>
             </Select>
-            <Label>When button is clicked</Label>
+            <Label>{t('contentBuilder.editor.button.whenClicked')}</Label>
             <Select onValueChange={handleButtonActionChange} defaultValue={element.data.action}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a distribute" />
+                <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
               </SelectTrigger>
               <SelectPortal style={{ zIndex: zIndex + 2 }}>
                 <SelectContent>
@@ -164,19 +166,19 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                     <SelectItem value="goto">
                       <div className="flex">
                         <ArrowRightIcon className="mx-2 my-1" />
-                        Go to step
+                        {t('contentBuilder.editor.button.actionGoTo')}
                       </div>
                     </SelectItem>
                     <SelectItem value="skip">
                       <div className="flex">
                         <CloseIcon className="flex-none mx-2 my-1" />
-                        <div className="grow">Skip</div>
+                        <div className="grow">{t('contentBuilder.editor.button.actionSkip')}</div>
                       </div>
                     </SelectItem>
                     <SelectItem value="dismiss">
                       <div className="flex">
                         <CloseIcon className="flex-none mx-2 my-1" />
-                        <div className="grow">Dismiss flow</div>
+                        <div className="grow">{t('contentBuilder.editor.button.actionDismiss')}</div>
                       </div>
                     </SelectItem>
                   </SelectGroup>
@@ -197,7 +199,11 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Delete button</p>
+                    <p>
+                      {t('contentBuilder.editor.actionButtons.delete', {
+                        entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                      })}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -215,11 +221,19 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Insert button to the left</p>
+                    <p>
+                      {t('contentBuilder.editor.actionButtons.insertLeft', {
+                        entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                      })}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <div className="flex-none mx-1 leading-10">Insert button</div>
+              <div className="flex-none mx-1 leading-10">
+                {t('contentBuilder.editor.actionButtons.insert', {
+                  entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                })}
+              </div>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -233,7 +247,11 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Insert button to the right</p>
+                    <p>
+                      {t('contentBuilder.editor.actionButtons.insertRight', {
+                        entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                      })}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

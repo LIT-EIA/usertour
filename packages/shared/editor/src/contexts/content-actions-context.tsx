@@ -1,5 +1,6 @@
 import { Attribute, Content, ContentVersion, RulesCondition, Segment, Step } from '@usertour/types';
 import { ReactNode, createContext, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface ContentActionsProviderProps {
   onDataChange?: (conds: RulesCondition[], hasError: boolean) => void;
@@ -46,10 +47,11 @@ export const ContentActionsContext = createContext<ContentActionsContextValue | 
 );
 
 export function ContentActionsProvider(props: ContentActionsProviderProps) {
+  const { t } = useTranslation();
   const {
     isHorizontal = false,
     isShowIf = true,
-    addButtonText = 'Add action',
+    addButtonText = t('actions.actions.addAction'),
     attributes,
     segments,
     contents,

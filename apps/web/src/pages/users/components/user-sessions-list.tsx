@@ -1,7 +1,7 @@
 import { useUserSessionsContext } from '@/contexts/user-sessions-context';
 import { BizSession, ContentDataType, Event } from '@usertour/types';
 import { ListSkeleton } from '@/components/molecules/skeleton';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/utils/common';
 import {
   LauncherProgressColumn,
   ChecklistProgressColumn,
@@ -29,19 +29,21 @@ import {
 } from '@usertour-packages/tooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@usertour-packages/card';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 const ProgressColumn = ({ session, eventList }: { session: BizSession; eventList: Event[] }) => {
+  const { t } = useTranslation();
   const { bizEvent, content, version } = session;
 
   if (!bizEvent || bizEvent.length === 0 || !content) {
-    return <div className="text-muted-foreground">No activity</div>;
+    return <div className="text-muted-foreground">{t('users.sessions.noActivity')}</div>;
   }
 
   const contentType = content.type;
 
   if (contentType === ContentDataType.CHECKLIST) {
     if (!version) {
-      return <div className="text-muted-foreground">No version data</div>;
+      return <div className="text-muted-foreground">{t('users.sessions.noVersionData')}</div>;
     }
     return <ChecklistProgressColumn original={session} eventList={eventList} version={version} />;
   }
@@ -54,7 +56,7 @@ const ProgressColumn = ({ session, eventList }: { session: BizSession; eventList
     return <LauncherProgressColumn original={session} eventList={eventList} />;
   }
 
-  return <div className="text-muted-foreground">Unknown content type</div>;
+  return <div className="text-muted-foreground">{t('users.sessions.unknownContent')}</div>;
 };
 
 const CreateAtColumn = ({ session }: { session: BizSession }) => {
@@ -64,7 +66,7 @@ const CreateAtColumn = ({ session }: { session: BizSession }) => {
   if (!bizEvent?.length) {
     return (
       <div className="flex space-x-2">
-        {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+        {formatRelativeTime(new Date(createdAt), { addSuffix: true })}
       </div>
     );
   }
@@ -74,7 +76,7 @@ const CreateAtColumn = ({ session }: { session: BizSession }) => {
 
   return (
     <div className="flex space-x-2">
-      {formatDistanceToNow(new Date(lastEventTime), { addSuffix: true })}
+      {formatRelativeTime(new Date(lastEventTime), { addSuffix: true })}
     </div>
   );
 };
@@ -84,9 +86,10 @@ const ContentColumn = ({
   environmentId,
 }: { session: BizSession; environmentId: string }) => {
   const { content } = session;
+  const { t } = useTranslation();
 
   if (!content) {
-    return <div className="text-muted-foreground">Unknown content</div>;
+    return <div className="text-muted-foreground">{t('users.sessions.unknownContent')}</div>;
   }
 
   const iconClassName = 'w-4 h-4';
@@ -119,6 +122,7 @@ const ContentColumn = ({
 const LoadMoreButton = () => {
   const { loadMore, totalCount, userSessions, loading } = useUserSessionsContext();
   const hasMore = userSessions.length < totalCount;
+  const { t } = useTranslation();
 
   if (!hasMore) {
     return null;
@@ -134,10 +138,10 @@ const LoadMoreButton = () => {
         {loading ? (
           <div className="flex items-center space-x-2">
             <SpinnerIcon className="w-4 h-4 animate-spin" />
-            <span>Loading...</span>
+            <span>{t('users.detail.companies.loading')}</span>
           </div>
         ) : (
-          'Load More Sessions'
+          t('users.sessions.loadMore')
         )}
       </Button>
     </div>
@@ -148,6 +152,7 @@ export const UserSessionsList = () => {
   const { userSessions, loading, totalCount, refetch } = useUserSessionsContext();
   const { eventList } = useEventListContext();
   const { environment } = useAppContext();
+  const { t } = useTranslation();
 
   const handleRefresh = () => {
     refetch();
@@ -171,7 +176,7 @@ export const UserSessionsList = () => {
                   <ReloadIcon className={cn('w-4 h-4', loading && 'animate-spin')} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Reload</TooltipContent>
+              <TooltipContent>{t('users.sessions.reload')}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -181,17 +186,21 @@ export const UserSessionsList = () => {
           <ListSkeleton length={5} />
         ) : userSessions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
-            <img src="/images/rocket.png" alt="No sessions" className="w-16 h-16 mb-4 opacity-50" />
-            <p className="text-muted-foreground text-center">No sessions found for this user.</p>
+            <img
+              src="/images/rocket.png"
+              alt={t('users.sessions.noSessions')}
+              className="w-16 h-16 mb-4 opacity-50"
+            />
+            <p className="text-muted-foreground text-center">{t('users.sessions.noSessions')}</p>
           </div>
         ) : (
           <div className="flex flex-col w-full grow">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-1/3">Content</TableHead>
-                  <TableHead className="w-1/3">Progress</TableHead>
-                  <TableHead className="w-1/3">Last activity</TableHead>
+                  <TableHead className="w-1/3">{t('users.sessions.table.content')}</TableHead>
+                  <TableHead className="w-1/3">{t('users.sessions.table.progress')}</TableHead>
+                  <TableHead className="w-1/3">{t('users.sessions.table.lastActivity')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

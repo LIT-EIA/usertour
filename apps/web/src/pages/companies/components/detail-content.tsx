@@ -5,7 +5,7 @@ import { CompanyIcon, UserProfile, Delete2Icon, SpinnerIcon } from '@usertour-pa
 import { AttributeBizTypes, BizCompany, BizUser, BizUserOnCompany } from '@usertour/types';
 import { useEffect, useState, createContext, useContext, ReactNode, Fragment } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/utils/common';
 import { IdCardIcon, CalendarIcon, ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import {
   Tooltip,
@@ -40,6 +40,7 @@ import { queryBizUser } from '@usertour-packages/gql';
 import { PaginationState } from '@tanstack/react-table';
 import { ListSkeleton } from '@/components/molecules/skeleton';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Company User List Context
 interface CompanyUserListContextValue {
@@ -225,6 +226,7 @@ const getMembershipData = (user: BizUser, companyId: string) => {
 // --- CompanyUserList components ---
 const LoadMoreButton = () => {
   const { loading, hasNextPage, loadMore } = useCompanyUserListContext();
+  const { t } = useTranslation();
 
   if (!hasNextPage) {
     return null;
@@ -240,10 +242,10 @@ const LoadMoreButton = () => {
         {loading ? (
           <div className="flex items-center space-x-2">
             <SpinnerIcon className="w-4 h-4 animate-spin" />
-            <span>Loading...</span>
+            <span>{t('companies.detail.loading')}</span>
           </div>
         ) : (
-          'Load More Users'
+          t('companies.detail.loadMoreUsers')
         )}
       </Button>
     </div>
@@ -255,6 +257,7 @@ const CompanyUserList = () => {
     useCompanyUserListContext();
   const { attributeList } = useAttributeListContext();
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleRowClick = (id: string) => {
     setExpandedRowId(expandedRowId === id ? null : id);
@@ -270,7 +273,9 @@ const CompanyUserList = () => {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Company members ({totalCount})</CardTitle>
+          <CardTitle>
+            {t('companies.detail.companyMembers')} ({totalCount})
+          </CardTitle>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -284,7 +289,7 @@ const CompanyUserList = () => {
                   <ReloadIcon className={cn('w-4 h-4', loading && 'animate-spin')} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Reload</TooltipContent>
+              <TooltipContent>{t('companies.detail.tooltips.reload')}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -294,16 +299,20 @@ const CompanyUserList = () => {
           <ListSkeleton length={5} />
         ) : contents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
-            <img src="/images/rocket.png" alt="No users" className="w-16 h-16 mb-4 opacity-50" />
-            <p className="text-muted-foreground text-center">No users found for this company.</p>
+            <img
+              src="/images/rocket.png"
+              alt={t('companies.detail.noUsersFound')}
+              className="w-16 h-16 mb-4 opacity-50"
+            />
+            <p className="text-muted-foreground text-center">{t('companies.detail.noUsersFound')}</p>
           </div>
         ) : (
           <div className="flex flex-col w-full grow">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-1/2">User</TableHead>
-                  <TableHead className="w-1/2">Membership Attributes</TableHead>
+                  <TableHead className="w-1/2">{t('companies.detail.user')}</TableHead>
+                  <TableHead className="w-1/2">{t('companies.detail.membershipAttributes')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -455,6 +464,7 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
   const [bizCompanyAttributes, setBizCompanyAttributes] = useState<any[]>([]);
   const { attributeList } = useAttributeListContext();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!contents) {
@@ -499,10 +509,10 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
       <div className="flex flex-col items-center justify-center py-8">
         <img
           src="/images/rocket.png"
-          alt="Company not found"
+          alt={t('companies.detail.notFound')}
           className="w-16 h-16 mb-4 opacity-50"
         />
-        <p className="text-muted-foreground text-center">Company not found.</p>
+        <p className="text-muted-foreground text-center">{t('companies.detail.notFound')}</p>
       </div>
     );
   }
@@ -517,12 +527,12 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
               navigator(`/env/${environmentId}/companies`);
             }}
           />
-          <span>Company Detail</span>
+          <span>{t('companies.detail.title')}</span>
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t('companies.detail.actionsLabel')}</span>
                   <DotsHorizontalIcon className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -532,7 +542,7 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
                   className="text-destructive focus:text-destructive"
                 >
                   <Delete2Icon className="mr-2 h-4 w-4" />
-                  Delete Company
+                  {t('companies.actions.deleteCompany')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -546,27 +556,29 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
             <CardHeader>
               <CardTitle className="flex items-center">
                 <CompanyIcon width={18} height={18} className="mr-2" />
-                Company details
+                {t('companies.detail.companyDetails')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2 gap-x-12">
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={IdCardIcon} tooltip="Company ID" />
+                  <TooltipIcon icon={IdCardIcon} tooltip={t('companies.detail.tooltips.companyId')} />
                   <TruncatedText text={bizCompany?.externalId || ''} maxLength={15} />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={CompanyIcon} tooltip="Name" />
+                  <TooltipIcon icon={CompanyIcon} tooltip={t('companies.detail.tooltips.name')} />
                   <TruncatedText
-                    text={bizCompany?.data?.name || 'Unnamed company'}
+                    text={bizCompany?.data?.name || t('companies.detail.unnamedCompany')}
                     maxLength={20}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={CalendarIcon} tooltip="Created" />
+                  <TooltipIcon icon={CalendarIcon} tooltip={t('companies.detail.tooltips.created')} />
                   <span>
-                    {bizCompany?.createdAt && formatDistanceToNow(new Date(bizCompany?.createdAt))}{' '}
-                    ago
+                    {bizCompany?.createdAt &&
+                      t('companies.detail.createdAgo', {
+                        time: formatRelativeTime(new Date(bizCompany.createdAt)),
+                      })}
                   </span>
                 </div>
               </div>
@@ -576,13 +588,13 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UserProfile width={18} height={18} className="mr-2" />
-                Company attributes
+                {t('companies.detail.companyAttributes')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-row border-b py-2 text-sm opacity-80">
-                <div className="w-1/2 ">Name</div>
-                <div className="w-1/2 ">Value</div>
+                <div className="w-1/2 ">{t('companies.detail.attributeColumns.name')}</div>
+                <div className="w-1/2 ">{t('companies.detail.attributeColumns.value')}</div>
               </div>
               {bizCompanyAttributes.map(({ name, value }, key) => (
                 <div className="flex flex-row py-2 text-sm" key={key}>

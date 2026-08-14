@@ -12,22 +12,24 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@usertour-packages/dropdown-menu';
+import { useTranslation } from 'react-i18next';
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
 }
 
 export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps<TData>) {
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="ml-auto hidden h-8 lg:flex">
           <MixerHorizontalIcon className="mr-2 h-4 w-4" />
-          View
+          {t('contents.listView.viewOptions.view')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('contents.listView.viewOptions.toggleColumns')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()

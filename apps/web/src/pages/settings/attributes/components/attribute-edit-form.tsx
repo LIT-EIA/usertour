@@ -43,6 +43,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface EditFormProps {
@@ -87,6 +88,7 @@ export const AttributeEditForm = (props: EditFormProps) => {
   const [updateMutation] = useMutation(updateAttribute);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -128,7 +130,7 @@ export const AttributeEditForm = (props: EditFormProps) => {
         const ret = await updateMutation({ variables: { data } });
 
         if (!ret.data?.updateAttribute?.id) {
-          showError('Update attribute failed.');
+          showError(t('settings.attributes.updateFailure'));
         }
         onClose();
       } catch (error) {
@@ -145,7 +147,7 @@ export const AttributeEditForm = (props: EditFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Rename Attribute </DialogTitle>
+              <DialogTitle>{t('settings.attributes.editTitle')}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col space-y-2 mt-4 mb-4">
               <div className="flex flex-row justify-between">
@@ -155,14 +157,14 @@ export const AttributeEditForm = (props: EditFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Objet type
+                        {t('settings.attributes.form.bizTypeLabel')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>Determines which kind of objects this attribute can be set for.</p>
+                              <p>{t('settings.attributes.form.bizTypeTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -174,32 +176,32 @@ export const AttributeEditForm = (props: EditFormProps) => {
                       >
                         <FormControl>
                           <SelectTrigger className="w-72">
-                            <SelectValue placeholder="Select a object type" />
+                            <SelectValue placeholder={t('settings.attributes.form.bizTypePlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="w-72">
                           <SelectItem value={String(AttributeBizTypes.User)}>
                             <div className="flex flex-row">
                               <UserIcon width={16} height={16} className="mr-1" />
-                              User
+                              {t('settings.attributes.form.bizTypes.user')}
                             </div>
                           </SelectItem>
                           <SelectItem value={String(AttributeBizTypes.Company)}>
                             <div className="flex flex-row">
                               <CompanyIcon width={16} height={16} className="mr-1" />
-                              Company
+                              {t('settings.attributes.form.bizTypes.company')}
                             </div>
                           </SelectItem>
                           <SelectItem value={String(AttributeBizTypes.Membership)}>
                             <div className="flex flex-row">
                               <UserIcon2 width={16} height={16} className="mr-1" />
-                              Company Membership
+                              {t('settings.attributes.form.bizTypes.membership')}
                             </div>
                           </SelectItem>
                           <SelectItem value={String(AttributeBizTypes.Event)}>
                             <div className="flex flex-row">
                               <EventIcon2 width={16} height={16} className="mr-1" />
-                              Event
+                              {t('settings.attributes.form.bizTypes.event')}
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -214,16 +216,14 @@ export const AttributeEditForm = (props: EditFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Data type
+                        {t('settings.attributes.form.dataTypeLabel')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>
-                                Determines what kind of values will be stored in this attribute.
-                              </p>
+                              <p>{t('settings.attributes.form.dataTypeTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -231,17 +231,17 @@ export const AttributeEditForm = (props: EditFormProps) => {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="w-72">
-                            <SelectValue placeholder="Select a data type" />
+                            <SelectValue placeholder={t('settings.attributes.form.dataTypePlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="w-72">
-                          <SelectItem value={String(BizAttributeTypes.Number)}>Number</SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.String)}>String</SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.Boolean)}>Boolean</SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.Number)}>{t('settings.attributes.form.dataTypes.number')}</SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.String)}>{t('settings.attributes.form.dataTypes.string')}</SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.Boolean)}>{t('settings.attributes.form.dataTypes.boolean')}</SelectItem>
                           <SelectItem value={String(BizAttributeTypes.DateTime)}>
-                            DateTime
+                            {t('settings.attributes.form.dataTypes.dateTime')}
                           </SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.List)}>List</SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.List)}>{t('settings.attributes.form.dataTypes.list')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -256,24 +256,20 @@ export const AttributeEditForm = (props: EditFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Display name
+                        {t('settings.attributes.form.displayNameLabel')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>
-                                Human-friendly name shown in Usertour. we recommend using Word Case
-                                (i.e.uppercasefrst letter, spaces between words) such as"Billing
-                                Plan".
-                              </p>
+                              <p>{t('settings.attributes.form.displayNameTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter display name" className="w-72" {...field} />
+                        <Input placeholder={t('settings.attributes.form.displayNamePlaceholder')} className="w-72" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -285,25 +281,21 @@ export const AttributeEditForm = (props: EditFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Code name
+                        {t('settings.attributes.form.codeNameLabel')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>
-                                Code-friendly name used in Webhooks and integrations to analytics
-                                providers. we recommend using snake_case (i.e. lowercaseletters with
-                                words separated by underscore).
-                              </p>
+                              <p>{t('settings.attributes.form.codeNameTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter code name"
+                          placeholder={t('settings.attributes.form.codeNamePlaceholder')}
                           className="w-72"
                           disabled={true}
                           {...field}
@@ -320,20 +312,20 @@ export const AttributeEditForm = (props: EditFormProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex flex-row">
-                      Description
+                      {t('settings.common.description')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
-                            <p>Put any additional information for your ownreference here.</p>
+                            <p>{t('settings.attributes.form.descriptionTooltip')}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Optional description" className="w-full" {...field} />
+                      <Input placeholder={t('settings.common.descriptionPlaceholder')} className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -343,11 +335,11 @@ export const AttributeEditForm = (props: EditFormProps) => {
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Save Attribute
+                {t('settings.attributes.saveButton')}
               </Button>
             </DialogFooter>
           </form>

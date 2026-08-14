@@ -37,6 +37,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface ContentChangeEnvironmentFormProps {
   content: Content;
@@ -63,6 +64,7 @@ export const ContentChangeEnvironmentForm = (
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -114,12 +116,12 @@ export const ContentChangeEnvironmentForm = (
       if (ret.data?.updateContent?.id) {
         toast({
           variant: 'success',
-          title: 'Environment assignment updated successfully',
+          title: t('contents.shared.changeEnvironment.successToast'),
         });
         onSuccess();
         onOpenChange(false);
       } else {
-        showError('Failed to update environment assignment.');
+        showError(t('contents.shared.changeEnvironment.failureToast'));
       }
     } catch (error) {
       showError(getErrorMessage(error));
@@ -133,10 +135,9 @@ export const ContentChangeEnvironmentForm = (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Change Environment Assignment</DialogTitle>
+              <DialogTitle>{t('contents.shared.changeEnvironment.title')}</DialogTitle>
               <DialogDescription>
-                Select the environment this draft should be assigned to. Only drafts assigned to
-                the selected environment will be visible in the Drafts section.
+                {t('contents.shared.changeEnvironment.description')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2 pb-4 pt-4">
@@ -145,11 +146,13 @@ export const ContentChangeEnvironmentForm = (
                 name="environmentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Environment</FormLabel>
+                    <FormLabel>{t('contents.shared.changeEnvironment.environmentLabel')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select an environment" />
+                          <SelectValue
+                            placeholder={t('contents.shared.changeEnvironment.selectPlaceholder')}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -168,12 +171,12 @@ export const ContentChangeEnvironmentForm = (
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" type="button">
-                  Cancel
+                  {t('contents.shared.common.cancel')}
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Update
+                {t('contents.shared.changeEnvironment.updateButton')}
               </Button>
             </DialogFooter>
           </form>

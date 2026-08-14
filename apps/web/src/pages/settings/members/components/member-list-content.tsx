@@ -12,12 +12,14 @@ import type { TeamMember } from '@usertour/types';
 import { useMemberContext } from '@/contexts/member-context';
 import { Badge } from '@usertour-packages/badge';
 import { UserAvatar } from '@/components/molecules/user-avatar';
+import { useTranslation } from 'react-i18next';
 
 interface MemberListContentTableRowProps {
   data: TeamMember;
 }
 const MemberListContentTableRow = (props: MemberListContentTableRowProps) => {
   const { data } = props;
+  const { t } = useTranslation();
 
   return (
     <TableRow className="cursor-pointer">
@@ -25,7 +27,7 @@ const MemberListContentTableRow = (props: MemberListContentTableRowProps) => {
         <div className="flex flex-row items-center gap-2">
           <UserAvatar email={data.email} name={data.name} />
           <span>{data.name}</span>
-          {data.isInvite && <Badge variant="success">Invite pending</Badge>}
+          {data.isInvite && <Badge variant="success">{t('settings.team.invitePending')}</Badge>}
         </div>
       </TableCell>
       <TableCell>{data.email}</TableCell>
@@ -40,6 +42,7 @@ const MemberListContentTableRow = (props: MemberListContentTableRowProps) => {
 
 export const MemberListContent = () => {
   const { members, loading } = useMemberContext();
+  const { t } = useTranslation();
 
   if (loading) {
     return <ListSkeleton />;
@@ -52,9 +55,9 @@ export const MemberListContent = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
+              <TableHead>{t('settings.team.columns.name')}</TableHead>
+              <TableHead>{t('settings.team.columns.email')}</TableHead>
+              <TableHead>{t('settings.team.columns.role')}</TableHead>
               {/* <TableHead>CreatedAt</TableHead> */}
               <TableHead />
             </TableRow>
@@ -67,7 +70,7 @@ export const MemberListContent = () => {
               })}
             {isEmpty && (
               <TableRow>
-                <TableCell className="h-24 text-center">No results.</TableCell>
+                <TableCell className="h-24 text-center">{t('dataTable.noResults')}</TableCell>
               </TableRow>
             )}
           </TableBody>

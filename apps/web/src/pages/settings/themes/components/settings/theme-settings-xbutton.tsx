@@ -1,7 +1,9 @@
 import { ThemeSelectColor } from '@/components/molecules/theme/theme-select-color';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsXbutton = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
   const update = (data: Partial<typeof settings.xbutton>) => {
     const { xbutton } = settings;
@@ -22,7 +24,7 @@ export const ThemeSettingsXbutton = () => {
           onChange={(value: string) => {
             update({ color: value });
           }}
-          text="Color"
+          text={t('themeBuilder.fields.common.color')}
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useDeleteSegmentMutation } from '@usertour-packages/shared-hooks';
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -22,6 +23,7 @@ export const UserSegmentDeleteForm = (props: {
   const { segment, open, onOpenChange, onSubmit } = props;
   const { invoke: deleteSegment, loading } = useDeleteSegmentMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = async () => {
     if (!segment) {
@@ -32,7 +34,7 @@ export const UserSegmentDeleteForm = (props: {
       if (success) {
         toast({
           variant: 'success',
-          title: `The segment ${segment.name} has been successfully deleted`,
+          title: t('users.toast.segments.segmentDeleted', { segmentName: segment.name }),
         });
         onSubmit(true);
         return;
@@ -50,13 +52,13 @@ export const UserSegmentDeleteForm = (props: {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete segment</AlertDialogTitle>
+          <AlertDialogTitle>{t('users.dialogs.deleteSegment.title')}</AlertDialogTitle>
           <AlertDialogDescription>Confirm deleting {segment.name}?</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t('users.actions.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} loading={loading} variant="destructive">
-            Yes, delete segment
+            {t('users.dialogs.deleteSegment.confirmButton')}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

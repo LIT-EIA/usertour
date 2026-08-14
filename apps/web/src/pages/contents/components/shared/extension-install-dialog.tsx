@@ -13,6 +13,7 @@ import {
 import { CheckedIcon, IndeterminateCircleIcon, WarningCircleIcon } from '@usertour-packages/icons';
 import { useDetectExtension } from '@usertour-packages/shared-hooks';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ExtensionInstallFormProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ interface ExtensionInstallFormProps {
 export const ExtensionInstallDialog = (props: ExtensionInstallFormProps) => {
   const { onOpenChange, isOpen, onInstalled } = props;
   const { isInstalled, isTimeout, start, stop } = useDetectExtension();
+  const { t } = useTranslation();
   useEffect(() => {
     if (isOpen) {
       start();
@@ -41,38 +43,37 @@ export const ExtensionInstallDialog = (props: ExtensionInstallFormProps) => {
     <Dialog open={isOpen} defaultOpen={false} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl	">
         <DialogHeader>
-          <DialogTitle>Install the Usertour Builder</DialogTitle>
-          <DialogDescription>Get the Chrome extension to continue.</DialogDescription>
+          <DialogTitle>{t('contents.shared.extensionInstall.title')}</DialogTitle>
+          <DialogDescription>{t('contents.shared.extensionInstall.description')}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-row bg-muted/50 p-4 rounded-lg space-x-2">
           <img src="/images/install-6.png" className="h-24" />
           <div className="flex flex-col p-2 space-y-2">
             <div className="flex flex-row items-center justify-between">
-              <span>The Usertour Builder</span>
+              <span>{t('contents.shared.extensionInstall.builderName')}</span>
               {!isInstalled && (
                 <span className="bg-accent rounded px-2 py-1 text-sm font-bold flex flex-row items-center space-x-1 text-foreground/80 ">
                   <IndeterminateCircleIcon width={16} height={16} />
-                  <span className="text-xs">Not installed</span>
+                  <span className="text-xs">{t('contents.shared.extensionInstall.notInstalled')}</span>
                 </span>
               )}
               {isInstalled && <CheckedIcon className="text-success" width={20} height={20} />}
             </div>
             <div className="text-sm text-muted-foreground">
-              The Usertour Builder Chrome extension lets you create and edit in-app experiences for
-              websites.
+              {t('contents.shared.extensionInstall.extensionDescription')}
             </div>
           </div>
         </div>
         {isTimeout && (
           <div className="text-destructive text-xs flex flex-row items-center space-x-1">
             <WarningCircleIcon width={16} height={16} />
-            <span>Chrome extension not found, please try installing again.</span>
+            <span>{t('contents.shared.extensionInstall.notFound')}</span>
           </div>
         )}
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" type="button">
-              Cancel
+              {t('contents.shared.common.cancel')}
             </Button>
           </DialogClose>
           <Button
@@ -84,7 +85,7 @@ export const ExtensionInstallDialog = (props: ExtensionInstallFormProps) => {
               );
             }}
           >
-            Install Chrome extension
+            {t('contents.shared.extensionInstall.installButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

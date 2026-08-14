@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -86,13 +87,14 @@ interface SessionResponseProps {
 }
 
 const SessionResponse = ({ answerEvents }: SessionResponseProps) => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center w-full h-full justify-center">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-1/2">Question</TableHead>
-            <TableHead className="w-1/2">Answer</TableHead>
+            <TableHead className="w-1/2">{t('users.sessions.detail.questionTable.question')}</TableHead>
+            <TableHead className="w-1/2">{t('users.sessions.detail.questionTable.answer')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -120,7 +122,7 @@ const SessionResponse = ({ answerEvents }: SessionResponseProps) => {
             ))
           ) : (
             <TableRow>
-              <TableCell className="h-24 text-center">No results.</TableCell>
+              <TableCell className="h-24 text-center">{t('users.sessions.detail.questionTable.noQuestions')}</TableCell>
             </TableRow>
           )}
         </TableBody>

@@ -15,6 +15,7 @@ import { BuilderType, Content } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ContentEditForm } from './content-edit-form';
 import { ExtensionInstallDialog } from './extension-install-dialog';
 
@@ -32,6 +33,7 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
   const [builderType, setBuilderType] = useState<BuilderType | undefined>();
   const [createVersion] = useMutation(createContentVersion);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleOpenWebBuilder = useCallback(async () => {
     const isInstalled = await isInstalledExtension();
@@ -52,7 +54,7 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
       if (!data?.createContentVersion?.id) {
         return toast({
           variant: 'destructive',
-          title: 'Failed to create a new version.',
+          title: t('contents.shared.edit.createVersionFailure'),
         });
       }
       versionId = data?.createContentVersion?.id;
@@ -114,7 +116,7 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
           className="rounded-r-none border-r-0 relative	"
         >
           <OpenInNewWindowIcon className="mr-2" />
-          Edit In Builder
+          {t('contents.detail.editInBuilder')}
           <Separator orientation="vertical" className="h-[20px] absolute right-0" />
         </Button>
         <DropdownMenu>
@@ -130,10 +132,10 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
             >
               <div className="flex flex-row items-center">
                 <OpenInNewWindowIcon className="mr-2" />
-                Edit In Extension Builder
+                {t('contents.detail.editInExtensionBuilder')}
               </div>
               <div className="text-xs	 text-muted-foreground">
-                Open the builder in new tab for WYSIWYG editing experience
+                {t('contents.create.extensionBuilderHint')}
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -142,10 +144,10 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
             >
               <div className="flex flex-row items-center">
                 <EnterIcon className="mr-2" />
-                Edit In Web Builder
+                {t('contents.detail.editInWebBuilder')}
               </div>
               <div className="text-xs	 text-muted-foreground">
-                Open the builder in the current tab for convenient editing experience
+                {t('contents.create.webBuilderHint')}
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>

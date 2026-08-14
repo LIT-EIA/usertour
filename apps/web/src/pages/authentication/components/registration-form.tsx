@@ -7,6 +7,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import {
   Form,
   FormControl,
@@ -104,10 +105,11 @@ const RegistrationRoot = ({
   const { invoke } = useSignupMutation();
   const { toast } = useToast();
   const { registrationCode } = useParams();
+  const { t } = useTranslation();
 
   const formSchema = inviteCode
     ? registFormSchemaBase.omit({ companyName: true }).refine(passwordMatchRefine, {
-        message: 'Passwords do not match.',
+        message: t('auth.errors.passwordsDoNotMatch'),
         path: ['confirmPassword'],
       })
     : registFormSchema;
@@ -134,7 +136,7 @@ const RegistrationRoot = ({
     const isInvite = !!inviteCode;
 
     if (!isAccept || !code) {
-      showError('You must accept our terms of service and privacy policy.');
+      showError(t('auth.errors.acceptTerms'));
       return;
     }
     try {
@@ -187,6 +189,7 @@ RegistrationRoot.displayName = 'RegistrationRoot';
 // Form Fields component
 const RegistrationFormFields = () => {
   const { form, inviteCode } = useRegistrationContext();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -196,9 +199,9 @@ const RegistrationFormFields = () => {
           name="userName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Your name</FormLabel>
+              <FormLabel>{t('auth.signUp.nameLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your full name" {...field} />
+                <Input placeholder={t('auth.signUp.namePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -210,9 +213,9 @@ const RegistrationFormFields = () => {
             name="companyName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company name</FormLabel>
+                <FormLabel>{t('auth.signUp.projectNameLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your company name" {...field} />
+                  <Input placeholder={t('auth.signUp.projectNamePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -224,9 +227,9 @@ const RegistrationFormFields = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('auth.signUp.passwordLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder="Pick a strong password" type="password" {...field} />
+                <Input placeholder={t('auth.signUp.passwordPlaceholder')} type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -237,9 +240,9 @@ const RegistrationFormFields = () => {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm password</FormLabel>
+              <FormLabel>{t('auth.setupAdmin.confirmPasswordLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder="Confirm your password" type="password" {...field} />
+                <Input placeholder={t('auth.setupAdmin.confirmPasswordPlaceholder')} type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -260,13 +263,13 @@ const RegistrationFormFields = () => {
           )}
         />
         <span className="text-sm text-muted-foreground">
-          I accept Usertour's{' '}
+          {t('auth.signUp.acceptTermsPrefix')}{' '}
           <Link to="/terms" className="underline underline-offset-4 hover:text-primary">
-            Terms of Service
+            {t('auth.signUp.termsOfService')}
           </Link>{' '}
-          and{' '}
+          {t('auth.signUp.and')}{' '}
           <Link to="/privacy" className="underline underline-offset-4 hover:text-primary">
-            Privacy Policy
+            {t('auth.signUp.privacyPolicy')}
           </Link>
         </span>
       </div>
@@ -282,7 +285,8 @@ interface RegistrationSubmitButtonProps {
 }
 
 const RegistrationSubmitButton = (props: RegistrationSubmitButtonProps) => {
-  const { buttonText = "Let's get started", className } = props;
+  const { t } = useTranslation();
+  const { buttonText = t('auth.signUp.submitButton'), className } = props;
   const { isLoading } = useRegistrationContext();
 
   return (

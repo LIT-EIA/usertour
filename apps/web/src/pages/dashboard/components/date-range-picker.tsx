@@ -1,7 +1,8 @@
 'use client';
 
 import { CalendarIcon } from '@radix-ui/react-icons';
-import { addDays, format } from 'date-fns';
+import { addDays } from 'date-fns';
+import { formatDate as format } from '@/utils/common';
 import * as React from 'react';
 import { DateRange } from 'react-day-picker';
 

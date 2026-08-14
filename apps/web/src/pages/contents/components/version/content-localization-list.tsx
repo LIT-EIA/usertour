@@ -5,8 +5,10 @@ import { ContentLocalizationListProvider } from '@/contexts/content-localization
 import { useContentVersionContext } from '@/contexts/content-version-context';
 import { LocalizationListProvider } from '@/contexts/localization-list-context';
 import { ContentLocalizationTable } from './content-localization-table';
+import { useTranslation } from 'react-i18next';
 
 export const ContentLocalizationList = () => {
+  const { t } = useTranslation();
   const { version } = useContentVersionContext();
   const { project } = useAppContext();
 
@@ -20,7 +22,7 @@ export const ContentLocalizationList = () => {
         <ContentLocalizationListProvider versionId={version?.id}>
           <div className="flex p-14 mt-12 space-x-8 justify-center ">
             <div className="flex flex-col p-4 shadow bg-white rounded-lg space-y-6 w-full  max-w-screen-xl mx-auto">
-              <h3 className="text-lg font-medium">Localization</h3>
+              <h3 className="text-lg font-medium">{t('contents.localization.title')}</h3>
               <Separator />
               <ContentLocalizationTable />
             </div>

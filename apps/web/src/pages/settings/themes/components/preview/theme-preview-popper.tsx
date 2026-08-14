@@ -12,6 +12,7 @@ import { ContentEditorSerialize, createValue5 } from '@usertour-packages/shared-
 import { ProgressBarPosition, ProgressBarType, ThemeTypesSetting } from '@usertour/types';
 import { useRef } from 'react';
 import { Rect } from '../theme-editor';
+import { useTranslation } from 'react-i18next';
 
 interface ThemePreviewPopperProps {
   settings?: ThemeTypesSetting;
@@ -24,6 +25,7 @@ export const ThemePreviewPopper = ({
   customStyle,
   viewRect,
 }: ThemePreviewPopperProps) => {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const progressType = settings?.progress.type;
   const progressPosition = settings?.progress.position;
@@ -43,7 +45,7 @@ export const ThemePreviewPopper = ({
   return (
     <div className="h-full w-full scale-100">
       <Button className="ml-8 mt-16 w-40 rounded-xl	" ref={ref}>
-        Tooltip target
+        {t('themeBuilder.preview.tooltipTargetLabel')}
       </Button>
       <Popper triggerRef={ref} open={true} zIndex={1111} globalStyle={customStyle}>
         <PopperOverlay blockTarget={true} viewportRect={viewRect} />

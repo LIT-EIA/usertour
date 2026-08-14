@@ -26,6 +26,7 @@ import {
 import { useBizSessionContext } from '@/contexts/biz-session-context';
 import { useState } from 'react';
 import { columns } from './columns';
+import { useTranslation } from 'react-i18next';
 import { DataTablePagination } from './data-table-pagination';
 import { SessionActionDropdownMenu } from '@/components/molecules/session-action-dropmenu';
 import { Button } from '@usertour-packages/button';
@@ -37,6 +38,7 @@ export const BizSessionsDataTable = () => {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const { t } = useTranslation();
   const { setPagination, pagination, pageCount, bizSessions, refetch, loading } =
     useBizSessionContext();
 
@@ -138,7 +140,7 @@ export const BizSessionsDataTable = () => {
             ) : (
               <TableRow key="no-results">
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {t('contents.analytics.sessionsTable.noSessions')}
                 </TableCell>
               </TableRow>
             )}

@@ -7,8 +7,10 @@ import { Switch } from '@usertour-packages/switch';
 import { Alert, AlertDescription } from '@usertour-packages/alert';
 import { useThemeSettingsContext } from '../theme-settings-panel';
 import { WarningIcon } from '@usertour-packages/icons';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsProgress = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
   const update = (data: Partial<typeof settings.progress>) => {
     const { progress } = settings;
@@ -19,17 +21,17 @@ export const ThemeSettingsProgress = () => {
   };
 
   const progressTypeItems = [
-    { name: 'Full width progress bar', value: ProgressBarType.FULL_WIDTH },
-    { name: 'Narrow progress bar', value: ProgressBarType.NARROW },
-    { name: 'Chain rounded', value: ProgressBarType.CHAIN_ROUNDED },
-    { name: 'Chain squared', value: ProgressBarType.CHAIN_SQUARED },
-    { name: 'Dots', value: ProgressBarType.DOTS },
-    { name: 'Numbered (1 of 3)', value: ProgressBarType.NUMBERED },
+    { name: t('themeBuilder.options.progressBarType.fullWidth'), value: ProgressBarType.FULL_WIDTH },
+    { name: t('themeBuilder.options.progressBarType.narrow'), value: ProgressBarType.NARROW },
+    { name: t('themeBuilder.options.progressBarType.chainRounded'), value: ProgressBarType.CHAIN_ROUNDED },
+    { name: t('themeBuilder.options.progressBarType.chainSquared'), value: ProgressBarType.CHAIN_SQUARED },
+    { name: t('themeBuilder.options.progressBarType.dots'), value: ProgressBarType.DOTS },
+    { name: t('themeBuilder.options.progressBarType.numbered'), value: ProgressBarType.NUMBERED },
   ];
 
   const positionItems = [
-    { name: 'Top', value: ProgressBarPosition.TOP },
-    { name: 'Bottom', value: ProgressBarPosition.BOTTOM },
+    { name: t('themeBuilder.options.progressBarPosition.top'), value: ProgressBarPosition.TOP },
+    { name: t('themeBuilder.options.progressBarPosition.bottom'), value: ProgressBarPosition.BOTTOM },
   ];
 
   const showPositionSelector = settings.progress.type !== ProgressBarType.FULL_WIDTH;
@@ -38,19 +40,19 @@ export const ThemeSettingsProgress = () => {
   const getHeightInputProps = () => {
     switch (settings.progress.type) {
       case ProgressBarType.FULL_WIDTH:
-        return { text: 'Progress bar height', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.progressBarHeight'), name: 'progress-bar-height' };
       case ProgressBarType.NARROW:
-        return { text: 'Progress bar height', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.progressBarHeight'), name: 'progress-bar-height' };
       case ProgressBarType.CHAIN_ROUNDED:
-        return { text: 'Chain height', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.chainHeight'), name: 'progress-bar-height' };
       case ProgressBarType.CHAIN_SQUARED:
-        return { text: 'Chain height', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.chainHeight'), name: 'progress-bar-height' };
       case ProgressBarType.DOTS:
-        return { text: 'Dot size', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.dotSize'), name: 'progress-bar-height' };
       case ProgressBarType.NUMBERED:
-        return { text: 'Font size', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.fontSize'), name: 'progress-bar-height' };
       default:
-        return { text: 'Progress bar height', name: 'progress-bar-height' };
+        return { text: t('themeBuilder.fields.progress.progressBarHeight'), name: 'progress-bar-height' };
     }
   };
 
@@ -108,7 +110,7 @@ export const ThemeSettingsProgress = () => {
       <div className="py-[15px] px-5 space-y-3">
         <div className="flex flex-row items-center space-x-2 h-8">
           <Label htmlFor="progress-switch" className="flex flex-col space-y-1">
-            <span className="font-normal">Show progress bar</span>
+            <span className="font-normal">{t('themeBuilder.fields.progress.showProgressBar')}</span>
           </Label>
           <Switch
             id="progress-switch"
@@ -123,7 +125,7 @@ export const ThemeSettingsProgress = () => {
         {settings.progress.enabled && (
           <>
             <ThemeSettingSelect
-              text="Progress bar type"
+              text={t('themeBuilder.fields.progress.progressBarType')}
               name="progress-bar-type"
               defaultValue={settings.progress.type}
               items={progressTypeItems}
@@ -136,7 +138,7 @@ export const ThemeSettingsProgress = () => {
 
             {showPositionSelector && (
               <ThemeSettingSelect
-                text="Progress bar position"
+                text={t('themeBuilder.fields.progress.progressBarPosition')}
                 name="progress-bar-position"
                 defaultValue={settings.progress.position}
                 items={positionItems}
@@ -147,7 +149,7 @@ export const ThemeSettingsProgress = () => {
             )}
 
             <ThemeSelectColor
-              text="Progress bar color"
+              text={t('themeBuilder.fields.progress.progressBarColor')}
               name="progress-bar-color"
               defaultColor={settings.progress.color}
               showAutoButton={true}
@@ -170,8 +172,7 @@ export const ThemeSettingsProgress = () => {
                 <Alert variant="warning">
                   <WarningIcon className="w-4 h-4" />
                   <AlertDescription className="text-sm">
-                    Progress bar may not work correctly with non-linear flows that have conditional
-                    steps or branching paths.
+                    {t('themeBuilder.alerts.progressNonLinear')}
                   </AlertDescription>
                 </Alert>
               )}

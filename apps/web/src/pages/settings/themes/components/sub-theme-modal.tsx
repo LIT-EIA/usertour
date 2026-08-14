@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react';
 import { cuid } from '@usertour/helpers';
 import { ModalThemeSettingsPanel } from './modal-theme-settings-panel';
 import { ThemePreviewPanel } from './theme-preview-panel';
+import { useTranslation } from 'react-i18next';
 
 interface SubThemeModalProps {
   isOpen?: boolean;
@@ -38,12 +39,13 @@ export const SubThemeModal = ({
   attributeList,
   onConditionsChange,
 }: SubThemeModalProps) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [subThemeSettings, setSubThemeSettings] = useState<ThemeTypesSetting>(defaultSettings);
   const [conditions, setConditions] = useState<any[]>([]);
   const [title, setTitle] = useState<string>('');
   const [selectedType, setSelectedType] = useState<ThemeDetailSelectorType>({
-    name: 'Tooltip',
+    name: t('themeBuilder.previewTypes.tooltip'),
     type: ThemeDetailPreviewType.TOOLTIP,
   });
   const [customStyle, setCustomStyle] = useState<string>('');
@@ -90,13 +92,13 @@ export const SubThemeModal = ({
 
   const validateForm = () => {
     if (!title.trim()) {
-      setErrorInfo('Please enter a title for this variation');
+      setErrorInfo(t('themeBuilder.validation.variationTitleRequired'));
       setShowError(true);
       return false;
     }
 
     if (!conditions || conditions.length === 0) {
-      setErrorInfo('Please add at least one condition');
+      setErrorInfo(t('themeBuilder.validation.variationConditionRequired'));
       setShowError(true);
       return false;
     }
@@ -143,12 +145,14 @@ export const SubThemeModal = ({
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
             <PlusIcon className="h-4 w-4" />
-            Add Sub Theme
+            {t('themeBuilder.actions.addVariation')}
           </Button>
         </DialogTrigger>
       )}
       <DialogTitle className="sr-only">
-        {initialVariation ? 'Edit Conditional Variation' : 'Create Conditional Variation'}
+        {initialVariation
+          ? t('themeBuilder.dialogs.editVariation.title')
+          : t('themeBuilder.dialogs.createVariation.title')}
       </DialogTitle>
       <DialogContentSimple2 className="flex flex-row max-w-[80vw] max-h-[90vh] w-full h-full overflow-hidden p-0 gap-0">
         <ModalThemeSettingsPanel

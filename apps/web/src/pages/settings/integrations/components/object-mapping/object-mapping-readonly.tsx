@@ -14,7 +14,7 @@ import {
   IntegrationObjectMappingSettings,
 } from '@usertour/types';
 import { cn } from '@usertour/helpers';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { Button } from '@usertour-packages/button';
 import {
   DropdownMenu,
@@ -38,6 +38,7 @@ import {
 import { LoadingButton } from '../../../../../components/molecules/loading-button';
 import { ObjectMappingDialog } from './object-mapping-dialog';
 import { Switch } from '@usertour-packages/switch';
+import { useTranslation } from 'react-i18next';
 
 const UsertourMappingIcon = ({ className }: { className?: string }) => (
   <UsertourIcon2 className={cn('w-4 h-4 text-primary', className)} />
@@ -77,6 +78,7 @@ export const ObjectMappingReadonly = ({
   onUpdate,
 }: ObjectMappingReadonlyProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { invoke: deleteMapping, loading } = useDeleteIntegrationObjectMappingMutation();
@@ -93,23 +95,23 @@ export const ObjectMappingReadonly = ({
 
       if (success) {
         toast({
-          title: 'Success',
-          description: 'Object mapping deleted successfully',
+          title: t('common.success'),
+          description: t('settings.integrations.objectMapping.readonly.deleteSuccessToast'),
         });
         onDelete?.(mapping.id);
         setShowDeleteDialog(false);
       } else {
         toast({
-          title: 'Error',
-          description: 'Failed to delete object mapping',
+          title: t('common.error'),
+          description: t('settings.integrations.objectMapping.readonly.deleteFailureToast'),
           variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Failed to delete mapping:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete object mapping',
+        title: t('common.error'),
+        description: t('settings.integrations.objectMapping.readonly.deleteFailureToast'),
         variant: 'destructive',
       });
     }
@@ -144,7 +146,7 @@ export const ObjectMappingReadonly = ({
                   onClick={() => setIsEditDialogOpen(true)}
                 >
                   <EditIcon className="w-4 h-4 mr-2" />
-                  Edit
+                  {t('settings.integrations.objectMapping.readonly.editAction')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:bg-destructive/10 focus:text-destructive"
@@ -156,7 +158,7 @@ export const ObjectMappingReadonly = ({
                   ) : (
                     <Delete2Icon className="w-4 h-4 mr-2" />
                   )}
-                  Delete
+                  {t('settings.integrations.objectMapping.readonly.deleteAction')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -164,17 +166,27 @@ export const ObjectMappingReadonly = ({
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Object Mapping</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete the mapping between{' '}
-                    <strong>{mapping.sourceObjectType}</strong> and{' '}
-                    <strong>{mapping.destinationObjectType}</strong>? This action cannot be undone.
-                  </AlertDialogDescription>
+                  <AlertDialogTitle>
+                    {t('settings.integrations.objectMapping.readonly.deleteDialogTitle')}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        'settings.integrations.objectMapping.readonly.deleteDialogDescription',
+                        {
+                          source: mapping.sourceObjectType,
+                          target: mapping.destinationObjectType,
+                        },
+                      ),
+                    }}
+                  />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel disabled={loading}>
+                    {t('settings.common.cancel')}
+                  </AlertDialogCancel>
                   <LoadingButton onClick={handleDelete} loading={loading} variant="destructive">
-                    Delete
+                    {t('settings.integrations.objectMapping.readonly.deleteAction')}
                   </LoadingButton>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -182,7 +194,9 @@ export const ObjectMappingReadonly = ({
           </CardTitle>
           {mapping.lastSyncedAt && (
             <p className="text-sm text-muted-foreground">
-              Last synced: {format(new Date(mapping.lastSyncedAt), 'MMM dd, yyyy HH:mm')}
+              {t('settings.integrations.objectMapping.readonly.lastSynced', {
+                date: formatDate(new Date(mapping.lastSyncedAt), 'MMM dd, yyyy HH:mm'),
+              })}
             </p>
           )}
         </CardHeader>
@@ -191,7 +205,7 @@ export const ObjectMappingReadonly = ({
           {matchObjects && (
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium">Match objects by</span>
+                <span className="font-medium">{t('settings.integrations.objectMapping.matchBy')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <ObjectMappingReadonlyButton
@@ -211,7 +225,9 @@ export const ObjectMappingReadonly = ({
           {sourceToTarget.length > 0 && (
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium">Fields to sync from source to target</span>
+                <span className="font-medium">
+                  {t('settings.integrations.objectMapping.sourceToTargetTitle')}
+                </span>
               </div>
               {sourceToTarget.map((mappingItem: IntegrationObjectMappingItem, idx: number) => (
                 <div key={idx} className="flex items-center gap-2 py-1">
@@ -233,7 +249,9 @@ export const ObjectMappingReadonly = ({
           {targetToSource.length > 0 && (
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium">Fields to sync from target to source</span>
+                <span className="font-medium">
+                  {t('settings.integrations.objectMapping.targetToSourceTitle')}
+                </span>
               </div>
               {targetToSource.map((mappingItem: IntegrationObjectMappingItem, idx: number) => (
                 <div key={idx} className="flex items-center gap-2 py-1">
@@ -252,11 +270,15 @@ export const ObjectMappingReadonly = ({
           )}
           <div className="flex items-center gap-3 mb-4">
             <Switch className="data-[state=unchecked]:bg-input" checked={isSyncStream} disabled />
-            <span>
-              Stream <span className="font-semibold text-primary">User events</span>
-              <span className="mx-1">→</span>
-              <span className="font-semibold text-blue-500">Contact activity</span>
-            </span>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t('settings.integrations.objectMapping.streamSwitch')
+                  .replace(/<user>/, '<span class="font-semibold text-primary">')
+                  .replace(/<\/user>/, '</span>')
+                  .replace(/<contact>/, '<span class="font-semibold text-blue-500">')
+                  .replace(/<\/contact>/, '</span>'),
+              }}
+            />
           </div>
         </CardContent>
       </Card>

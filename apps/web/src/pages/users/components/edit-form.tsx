@@ -28,6 +28,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface EditFormProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const UserSegmentEditForm = (props: EditFormProps) => {
   const [mutation] = useMutation(updateSegment);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -82,7 +84,7 @@ export const UserSegmentEditForm = (props: EditFormProps) => {
         };
         const response = await mutation({ variables: { data } });
         if (!response.data?.updateSegment?.id) {
-          showError('Update Segment failed.');
+          showError(t('users.toast.segments.updateFailed'));
         }
         onClose();
       } catch (error) {
@@ -99,7 +101,7 @@ export const UserSegmentEditForm = (props: EditFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Update User Segment</DialogTitle>
+              <DialogTitle>{t('users.segments.update')}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col space-y-4 mt-4 mb-4">
               <FormField
@@ -107,9 +109,9 @@ export const UserSegmentEditForm = (props: EditFormProps) => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex flex-row">Name</FormLabel>
+                    <FormLabel className="flex flex-row">{t('users.segments.form.name')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter user segment name" className="w-full" {...field} />
+                      <Input placeholder={t('users.segments.form.namePlaceholder')} className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -118,11 +120,11 @@ export const UserSegmentEditForm = (props: EditFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('users.actions.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Save Segment
+                {t('users.segments.form.updateSegment')}
               </Button>
             </DialogFooter>
           </form>
