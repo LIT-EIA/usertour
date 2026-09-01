@@ -7,6 +7,7 @@ import {
   AdminSidebarHeaderTemplate,
 } from '@/components/templates/admin-sidebar-template';
 import { BookmarkIcon, CubeIcon } from '@radix-ui/react-icons';
+import { useTranslation } from 'react-i18next';
 
 interface PluginsSidebarProps {
   activeView: string;
@@ -14,13 +15,16 @@ interface PluginsSidebarProps {
 }
 
 export const PluginsSidebar = ({ activeView, onViewChange }: PluginsSidebarProps) => {
+  const { t } = useTranslation();
   return (
     <AdminSidebarContainerTemplate>
       <AdminSidebarHeaderTemplate>
-        <h2 className="text-2xl font-semibold">Plugins</h2>
+        <h2 className="text-2xl font-semibold">{t('plugins.sidebar.title')}</h2>
       </AdminSidebarHeaderTemplate>
       <AdminSidebarBodyTemplate>
-        <AdminSidebarBodyTitleTemplate>Web Extensions</AdminSidebarBodyTitleTemplate>
+        <AdminSidebarBodyTitleTemplate>
+          {t('plugins.sidebar.webExtensions')}
+        </AdminSidebarBodyTitleTemplate>
         <AdminSidebarBodyItemTemplate
           onClick={() => onViewChange('bookmarklets')}
           variant={activeView === 'bookmarklets' ? 'secondary' : 'ghost'}
@@ -29,7 +33,7 @@ export const PluginsSidebar = ({ activeView, onViewChange }: PluginsSidebarProps
           }`}
         >
           <BookmarkIcon className="w-4 h-4" />
-          Bookmarklets
+          {t('plugins.sidebar.bookmarklets')}
         </AdminSidebarBodyItemTemplate>
         <AdminSidebarBodyItemTemplate
           onClick={() => onViewChange('browser-extension')}
@@ -39,7 +43,7 @@ export const PluginsSidebar = ({ activeView, onViewChange }: PluginsSidebarProps
           }`}
         >
           <CubeIcon className="w-4 h-4" />
-          Browser Extension
+          {t('plugins.sidebar.browserExtension')}
         </AdminSidebarBodyItemTemplate>
       </AdminSidebarBodyTemplate>
       <AdminSidebarFooter />

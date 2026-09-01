@@ -1,6 +1,7 @@
 import { getAuthToken } from '@usertour/helpers';
 import { ElementSelectorPropsData, StepScreenshot } from '@usertour/types';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentPlacementProvider } from '../../../components/content-placement';
 import { ContentPlacementManual } from '../../../components/content-placement/content-placement-manual';
 import { BuilderMode, useBuilderContext, useLauncherContext } from '../../../contexts';
@@ -16,6 +17,7 @@ export const LauncherPlacement = () => {
     setCurrentMode,
   } = useBuilderContext();
   const { setLauncherTarget, launcherTarget } = useLauncherContext();
+  const { t } = useTranslation();
 
   const handleTargetChange = (element: ElementSelectorPropsData) => {
     setLauncherTarget((prev) =>
@@ -78,10 +80,10 @@ export const LauncherPlacement = () => {
       isWebBuilder={isWebBuilder}
       onScreenChange={handleScreenChange}
       token={getAuthToken()}
-      subTitle="Show launcher on this element"
+      subTitle={t('contentBuilder.launcher.placementSubtitle')}
     >
       <div className="space-y-3">
-        <h1 className="text-sm">Placement</h1>
+        <h1 className="text-sm">{t('contentBuilder.launcher.placement')}</h1>
         {/* <ContentPlacementTabs>
           <ContentPlacementTabsContent value="manual">
             <ContentPlacementManual />

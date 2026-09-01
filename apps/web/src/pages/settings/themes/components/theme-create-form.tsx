@@ -29,6 +29,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface CreateFormProps {
@@ -58,6 +59,7 @@ export const ThemeCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { project } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -86,7 +88,7 @@ export const ThemeCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
       };
       const ret = await createMutation({ variables: data });
       if (!ret.data?.createTheme?.id) {
-        showError('Create theme failed.');
+        showError(t('settings.themes.createFailure'));
       }
       onClose();
     } catch (error) {
@@ -101,7 +103,7 @@ export const ThemeCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Theme</DialogTitle>
+              <DialogTitle>{t('settings.themes.createTitle')}</DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -111,9 +113,12 @@ export const ThemeCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Theme name</FormLabel>
+                        <FormLabel>{t('settings.themes.duplicateNameLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter theme  name" {...field} />
+                          <Input
+                            placeholder={t('settings.themes.duplicateNamePlaceholder')}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -130,7 +135,7 @@ export const ThemeCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                           <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                         <div className="leading-none">
-                          <FormLabel>Set as default theme</FormLabel>
+                          <FormLabel>{t('settings.themes.setAsDefaultLabel')}</FormLabel>
                         </div>
 
                         <FormMessage />
@@ -142,11 +147,11 @@ export const ThemeCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('settings.common.submit')}
               </Button>
             </DialogFooter>
           </form>

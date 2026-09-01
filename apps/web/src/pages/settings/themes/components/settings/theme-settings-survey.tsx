@@ -1,7 +1,9 @@
 import { ThemeSelectColor } from '@/components/molecules/theme/theme-select-color';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsSurvey = () => {
+  const { t } = useTranslation();
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
 
   // Update survey settings helper function
@@ -17,7 +19,7 @@ export const ThemeSettingsSurvey = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
         <ThemeSelectColor
-          text="Survey color"
+          text={t('themeBuilder.fields.survey.color')}
           name="survey-color"
           defaultColor={settings.survey.color}
           showAutoButton={true}

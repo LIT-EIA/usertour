@@ -14,6 +14,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback } from 'react';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 interface BizCompanyDeleteFormProps {
   bizCompanyIds: string[];
@@ -27,6 +28,7 @@ export const BizCompanyDeleteForm = (props: BizCompanyDeleteFormProps) => {
   const [mutation, { loading }] = useMutation(deleteBizCompany);
   const { environment } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = useCallback(async () => {
     if (bizCompanyIds.length === 0 || !environment?.id) {
@@ -71,7 +73,7 @@ export const BizCompanyDeleteForm = (props: BizCompanyDeleteFormProps) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('companies.actions.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} variant="destructive" loading={loading}>
             Yes, delete {bizCompanyIds.length} {companyText}
           </LoadingButton>

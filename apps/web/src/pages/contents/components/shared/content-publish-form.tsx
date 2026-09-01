@@ -13,6 +13,7 @@ import {
 } from '@usertour-packages/dialog';
 import { getContentVersion, publishedContentVersion } from '@usertour-packages/gql';
 import { getErrorMessage } from '@usertour/helpers';
+import { getContentTypeGenderContext } from '@/utils/content-type';
 import { ContentVersion } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
@@ -20,6 +21,7 @@ import { useCallback } from 'react';
 import { Checkbox } from '@usertour-packages/checkbox';
 import { Label } from '@usertour-packages/label';
 import { useContentDetailContext } from '@/contexts/content-detail-context';
+import { useTranslation } from 'react-i18next';
 
 interface ContentPublishFormProps {
   versionId: string;
@@ -37,6 +39,9 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
   const [selectedEnvironments, setSelectedEnvironments] = React.useState<string[]>([]);
   const [version, setVersion] = React.useState<ContentVersion>();
   const { content, refetch } = useContentDetailContext();
+  const { t } = useTranslation();
+  const typeContext = getContentTypeGenderContext(content?.type);
+  const translatedType = content?.type ? t(`contents.types.${content.type}`) : '';
 
   const contentVersion = useQuery(getContentVersion, {
     variables: { versionId },
@@ -81,7 +86,9 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
 
   const showToast = (isSuccess: boolean, message?: string) => {
     const variant = isSuccess ? 'success' : 'destructive';
-    const title = isSuccess ? 'The flow published successfully.' : 'The flow published failed.';
+    const title = isSuccess
+      ? t('contents.shared.publish.successToast', { type: translatedType, context: typeContext })
+      : t('contents.shared.publish.failureToast', { type: translatedType, context: typeContext });
     toast({ variant, title: message || title });
   };
 
@@ -93,11 +100,11 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
 
   const getPublishButtonText = () => {
     if (selectedEnvironments.length === 0) {
-      return 'Publish';
+      return t('contents.shared.publish.button');
     }
 
     if (selectedEnvironments.length === environmentList?.length) {
-      return 'Publish to all environments';
+      return t('contents.shared.publish.buttonAll');
     }
 
     const selectedEnvNames = selectedEnvironments
@@ -105,7 +112,7 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
       .filter(Boolean)
       .join(', ');
 
-    return `Publish to ${selectedEnvNames}`;
+    return t('contents.shared.publish.buttonToEnvironment', { name: selectedEnvNames });
   };
 
   const allEnvironmentsUpToDate = React.useMemo(() => {
@@ -120,7 +127,7 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
     if (!environmentList) {
       toast({
         variant: 'destructive',
-        title: 'No environments available.',
+        title: t('contents.shared.publish.noEnvironments'),
       });
       return;
     }
@@ -128,7 +135,7 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
     if (selectedEnvironments.length === 0) {
       toast({
         variant: 'destructive',
-        title: 'Please select at least one environment to publish to.',
+        title: t('contents.shared.publish.selectEnvironment'),
       });
       return;
     }
@@ -152,8 +159,12 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
       showToast(
         allSuccess,
         allSuccess
-          ? `The ${content?.type} published successfully to ${envNames}.`
-          : 'Some environments failed to publish.',
+          ? t('contents.shared.publish.successToastEnvironments', {
+              type: translatedType,
+              envNames,
+              context: typeContext,
+            })
+          : t('contents.shared.publish.partialFailure'),
       );
 
       await refetch();
@@ -169,11 +180,13 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
     <Dialog defaultOpen={true} open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Publish {content?.type}</DialogTitle>
+          <DialogTitle>
+            {t('contents.shared.publish.title', { type: translatedType, context: typeContext })}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Environments to publish to :</Label>
+            <Label>{t('contents.shared.publish.environmentsLabel')}</Label>
             {environmentList?.map((env) => {
               const publishedVersion = getPublishedVersionInfo(env.id);
               const isAlreadyPublished = publishedVersion?.id === version?.id;
@@ -191,14 +204,19 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
                     <Label htmlFor={`env-${env.id}`}>{env.name}</Label>
                     {isAlreadyPublished ? (
                       <span className="text-sm text-gray-500">
-                        ({env.name} is already on v{version?.sequence})
+                        {t('contents.shared.publish.alreadyOnVersion', {
+                          name: env.name,
+                          version: version?.sequence,
+                        })}
                       </span>
                     ) : publishedVersion ? (
                       <span className="text-sm text-gray-500">
                         (v{publishedVersion.sequence} → v{version?.sequence})
                       </span>
                     ) : (
-                      <span className="text-sm text-gray-500">Unpublished</span>
+                      <span className="text-sm text-gray-500">
+                        {t('contents.shared.publish.unpublished')}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -209,7 +227,7 @@ export const ContentPublishForm = (props: ContentPublishFormProps) => {
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" type="button">
-              Cancel
+              {t('contents.shared.common.cancel')}
             </Button>
           </DialogClose>
           <Button

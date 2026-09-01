@@ -6,7 +6,7 @@ import { useContentVersionContext } from '@/contexts/content-version-context';
 import { useEventListContext } from '@/contexts/event-list-context';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { BizSession, ContentDataType } from '@usertour/types';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/utils/common';
 import { DataTableColumnHeader } from './data-table-column-header';
 import {
   ChecklistProgressColumn,
@@ -15,6 +15,7 @@ import {
 } from '@/components/molecules/session';
 import { UserAvatar } from '@/components/molecules/user-avatar';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const ProgressColumn = (props: Row<BizSession>) => {
   const { content } = useContentDetailContext();
@@ -49,7 +50,7 @@ const CreateAtColumn = ({ original }: Row<BizSession>) => {
   if (!bizEvent?.length) {
     return (
       <div className="flex space-x-2">
-        {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+        {formatRelativeTime(new Date(createdAt), { addSuffix: true })}
       </div>
     );
   }
@@ -59,7 +60,7 @@ const CreateAtColumn = ({ original }: Row<BizSession>) => {
 
   return (
     <div className="flex space-x-2">
-      {formatDistanceToNow(new Date(lastEventTime), { addSuffix: true })}
+      {formatRelativeTime(new Date(lastEventTime), { addSuffix: true })}
     </div>
   );
 };
@@ -67,7 +68,12 @@ const CreateAtColumn = ({ original }: Row<BizSession>) => {
 export const columns: ColumnDef<BizSession>[] = [
   {
     accessorKey: 'bizUserId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="User" />,
+    header: ({ column }) => {
+      const { t } = useTranslation();
+      return (
+        <DataTableColumnHeader column={column} title={t('contents.analytics.sessionsTable.user')} />
+      );
+    },
     cell: ({ row }) => {
       const { environment } = useAppContext();
 
@@ -90,7 +96,15 @@ export const columns: ColumnDef<BizSession>[] = [
   },
   {
     accessorKey: 'progress',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Progress" />,
+    header: ({ column }) => {
+      const { t } = useTranslation();
+      return (
+        <DataTableColumnHeader
+          column={column}
+          title={t('contents.analytics.sessionsTable.progress')}
+        />
+      );
+    },
     cell: ({ row }) => {
       const { environment } = useAppContext();
 
@@ -104,7 +118,15 @@ export const columns: ColumnDef<BizSession>[] = [
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Last activity" />,
+    header: ({ column }) => {
+      const { t } = useTranslation();
+      return (
+        <DataTableColumnHeader
+          column={column}
+          title={t('contents.analytics.sessionsTable.lastActivity')}
+        />
+      );
+    },
     cell: ({ row }) => <CreateAtColumn {...row} />,
     enableSorting: false,
   },

@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverProps, PopoverTrigger } from '@usertour
 import { ScrollArea } from '@usertour-packages/scroll-area';
 import { Separator } from '@usertour-packages/separator';
 import { cn } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 export interface ThemeSelectFontType {
   id: string;
@@ -35,6 +36,7 @@ export const ThemeSelectFont = ({
   onSelect,
   ...props
 }: ThemeSelectFontProps) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<ThemeSelectFontType>();
 
@@ -63,19 +65,19 @@ export const ThemeSelectFont = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          aria-label="Load a font family..."
+          aria-label={t('themeBuilder.fontPicker.placeholder')}
           aria-expanded={open}
           className="flex-1 justify-between"
         >
-          {selectedPreset ? selectedPreset.name : 'Load a font family...'}
+          {selectedPreset ? selectedPreset.name : t('themeBuilder.fontPicker.placeholder')}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[310px] p-0">
         <Command>
-          <CommandInput placeholder="Search font family..." />
-          <CommandEmpty>No items found.</CommandEmpty>
-          <CommandGroup heading="Font family">
+          <CommandInput placeholder={t('themeBuilder.fontPicker.searchPlaceholder')} />
+          <CommandEmpty>{t('themeBuilder.fontPicker.noItemsFound')}</CommandEmpty>
+          <CommandGroup heading={t('themeBuilder.fontPicker.heading')}>
             <ScrollArea className="h-72">
               {systemItems.map((item) => (
                 <CommandItem

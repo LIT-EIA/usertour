@@ -1,7 +1,9 @@
 import { Label } from '@usertour-packages/label';
 import { Switch } from '@usertour-packages/switch';
 import { LauncherTooltipSettings } from '@usertour/types';
+import { TFunction } from 'i18next';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type SettingItem = {
   id: keyof LauncherTooltipSettings;
@@ -10,33 +12,34 @@ type SettingItem = {
   onChange: (checked: boolean, update: UpdateFunction) => void;
 };
 
-const SETTING_ITEMS: readonly SettingItem[] = [
-  {
-    id: 'dismissAfterFirstActivation',
-    label: 'Dismiss after first activation',
-    checked: (data) => data.dismissAfterFirstActivation,
-    onChange: (checked, update) =>
-      update((pre) => ({ ...pre, dismissAfterFirstActivation: checked })),
-  },
-  // {
-  //   id: "keepTooltipOpenWhenHovered",
-  //   label: "Keep tooltip open when hovered over",
-  //   checked: (data: LauncherTooltipSettings) => data.keepTooltipOpenWhenHovered,
-  //   onChange: (checked: boolean, update: UpdateFunction) =>
-  //     update((pre) => ({ ...pre, keepTooltipOpenWhenHovered: checked })),
-  // },
-  // {
-  //   id: "hideLauncherWhenTooltipIsDisplayed",
-  //   label: "Hide launcher while tooltip is displayed",
-  //   checked: (data: LauncherTooltipSettings) =>
-  //     data.hideLauncherWhenTooltipIsDisplayed,
-  //   onChange: (checked: boolean, update: UpdateFunction) =>
-  //     update((pre) => ({
-  //       ...pre,
-  //       hideLauncherWhenTooltipIsDisplayed: checked,
-  //     })),
-  // },
-] as const;
+const buildSettingItems = (t: TFunction): readonly SettingItem[] =>
+  [
+    {
+      id: 'dismissAfterFirstActivation',
+      label: t('contentBuilder.launcher.dismissAfterFirstActivation'),
+      checked: (data) => data.dismissAfterFirstActivation,
+      onChange: (checked, update) =>
+        update((pre) => ({ ...pre, dismissAfterFirstActivation: checked })),
+    },
+    // {
+    //   id: "keepTooltipOpenWhenHovered",
+    //   label: "Keep tooltip open when hovered over",
+    //   checked: (data: LauncherTooltipSettings) => data.keepTooltipOpenWhenHovered,
+    //   onChange: (checked: boolean, update: UpdateFunction) =>
+    //     update((pre) => ({ ...pre, keepTooltipOpenWhenHovered: checked })),
+    // },
+    // {
+    //   id: "hideLauncherWhenTooltipIsDisplayed",
+    //   label: "Hide launcher while tooltip is displayed",
+    //   checked: (data: LauncherTooltipSettings) =>
+    //     data.hideLauncherWhenTooltipIsDisplayed,
+    //   onChange: (checked: boolean, update: UpdateFunction) =>
+    //     update((pre) => ({
+    //       ...pre,
+    //       hideLauncherWhenTooltipIsDisplayed: checked,
+    //     })),
+    // },
+  ] as const;
 
 type UpdateFunction = (fn: (pre: LauncherTooltipSettings) => LauncherTooltipSettings) => void;
 
@@ -54,9 +57,11 @@ export interface LauncherSettingsProps {
  */
 export const LauncherSettings = ({ data: initialValue, onChange }: LauncherSettingsProps) => {
   const [data, setData] = useState<LauncherTooltipSettings>(initialValue);
+  const { t } = useTranslation();
+  const settingItems = buildSettingItems(t);
 
   if (!initialValue) {
-    return <div role="alert">Invalid settings data provided</div>;
+    return <div role="alert">{t('contentBuilder.launcher.invalidSettingsData')}</div>;
   }
 
   const update = useCallback<UpdateFunction>(
@@ -75,10 +80,10 @@ export const LauncherSettings = ({ data: initialValue, onChange }: LauncherSetti
   );
 
   return (
-    <div className="space-y-3" aria-label="Launcher settings">
-      <h1 className="text-sm">Settings</h1>
+    <div className="space-y-3" aria-label={t('contentBuilder.launcher.settingsAriaLabel')}>
+      <h1 className="text-sm">{t('contentBuilder.launcher.settings')}</h1>
       <div className="flex flex-col bg-background-700 p-3.5 rounded-lg space-y-2">
-        {SETTING_ITEMS.map((item) => {
+        {settingItems.map((item) => {
           return (
             <div key={item.id} className="flex items-center justify-between space-x-2">
               <Label htmlFor={item.id} className="font-normal">

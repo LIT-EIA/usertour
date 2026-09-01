@@ -12,6 +12,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { Theme } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeDeleteForm = (props: {
   data: Theme;
@@ -22,6 +23,7 @@ export const ThemeDeleteForm = (props: {
   const { data, open, onOpenChange, onSubmit } = props;
   const { invoke: deleteTheme, loading } = useDeleteThemeMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = async () => {
     if (!data) {
@@ -32,7 +34,7 @@ export const ThemeDeleteForm = (props: {
       if (success) {
         toast({
           variant: 'success',
-          title: 'The theme has been successfully deleted',
+          title: t('settings.themes.deleteSuccess'),
         });
         onSubmit(true);
         return;
@@ -50,16 +52,17 @@ export const ThemeDeleteForm = (props: {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the theme and all its
-            variations.
-          </AlertDialogDescription>
+          <AlertDialogTitle>
+            {t('settings.common.deleteConfirm.title', {
+              resource: t('settings.themes.deleteResource'),
+            })}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{t('settings.themes.deleteDescription')}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t('settings.common.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} loading={loading} variant="destructive">
-            Delete
+            {t('settings.common.delete')}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

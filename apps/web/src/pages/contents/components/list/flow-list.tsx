@@ -8,10 +8,12 @@ import { ContentCreateForm } from '../shared/content-create-form';
 import { EmptyPlaceholder } from '../shared/empty-placeholder';
 import { DataTable } from './data-table';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 export const FlowListContent = () => {
   const [open, setOpen] = useState(false);
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const openCreateFormHandler = async () => {
     setOpen(true);
@@ -28,18 +30,19 @@ export const FlowListContent = () => {
       <div className="flex justify-between">
         <>
           <div className="flex flex-col space-y-1 ">
-            <h3 className="text-2xl font-semibold tracking-tight">Flows</h3>
+            <h3 className="text-2xl font-semibold tracking-tight">
+              {t('contents.list.flows.title')}
+            </h3>
             <div className="flex flex-row space-x-1">
               <p className="text-sm text-muted-foreground">
-                Step-by-step flows with tooltips and pop-up modals. Perfect for: product tours, user
-                guides, and announcements. <br />
+                {t('contents.list.flows.text')} <br />
                 <a
                   href="https://docs.usertour.io/building-experiences/creating-your-first-flow/"
                   className="text-primary "
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <span>Read more in our Creating your first flow guide</span>
+                  <span>{t('contents.list.flows.link')}</span>
                   <OpenInNewWindowIcon className="size-3.5 inline ml-0.5 mb-0.5" />
                 </a>
               </p>
@@ -52,17 +55,20 @@ export const FlowListContent = () => {
             disabled={isViewOnly}
           >
             <PlusCircledIcon className="mr-2 h-4 w-4" />
-            Create Flow
+            {t('contents.list.newButton', { type: t('contents.types.flow') })}
           </Button>
         </>
       </div>
       <Separator className="my-6" />
       {isLoading && <ContentListSkeleton count={9} />}
       {!isLoading && contents && contents.length === 0 && (
-        <EmptyPlaceholder>
+        <EmptyPlaceholder
+          name={t('contents.list.flows.emptyTitle')}
+          description={t('contents.list.flows.emptyDescription')}
+        >
           <Button onClick={openCreateFormHandler} disabled={isViewOnly}>
             <PlusCircledIcon className="mr-2 h-4 w-4" />
-            Create Flow
+            {t('contents.list.newButton', { type: t('contents.types.flow') })}
           </Button>
         </EmptyPlaceholder>
       )}

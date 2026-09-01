@@ -7,10 +7,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
+import { useTranslation } from 'react-i18next';
 
 import { useBuilderContext } from '../../contexts';
 
 export const SidebarFooter = () => {
+  const { t } = useTranslation();
   const { saveContent, isLoading, onSaved } = useBuilderContext();
   const handleSaveStep = async () => {
     await saveContent();
@@ -30,7 +32,7 @@ export const SidebarFooter = () => {
                 <CheckedIcon className="text-green-500" width={20} height={20} />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Saved</p>
+                <p>{t('contentBuilder.common.saved')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -38,7 +40,7 @@ export const SidebarFooter = () => {
       </div>
       <Button className="grow w-full h-10" onClick={handleSaveStep} disabled={isLoading}>
         <ExitIcon className="mr-2" />
-        Save preferences
+        {t('contentBuilder.common.savePreferences')}
       </Button>
     </>
   );

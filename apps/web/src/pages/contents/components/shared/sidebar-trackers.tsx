@@ -4,26 +4,28 @@ import { EventIcon2 } from '@usertour-packages/icons';
 import { ContentTypeName } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const sidebarNavItems = [
-  {
-    title: 'Trackers',
-    items: [
-      {
-        title: 'Trackers event',
-        icon: <EventIcon2 className="mr-2 h-4 w-4" />,
-        contentType: ContentTypeName.TRACKERS,
-      },
-    ],
-  },
-];
 
 export const TrackersSidebar = ({ className }: SidebarProps) => {
   const { contentType } = useParams();
   const navigate = useNavigate();
   const { environment } = useAppContext();
+  const { t } = useTranslation();
+
+  const sidebarNavItems = [
+    {
+      title: t('contents.trackersSidebar.title'),
+      items: [
+        {
+          title: t('contents.trackersSidebar.trackersEvent'),
+          icon: <EventIcon2 className="mr-2 h-4 w-4" />,
+          contentType: ContentTypeName.TRACKERS,
+        },
+      ],
+    },
+  ];
 
   return (
     <div className={cn('pb-12', className)}>

@@ -6,39 +6,41 @@ import {
   ThemeDetailSelectorType,
 } from '@usertour/types';
 
-export const themeDetailSelectorTypes: ThemeDetailSelectorType[] = [
+export const getThemeDetailSelectorTypes = (
+  t: (key: string) => string,
+): ThemeDetailSelectorType[] => [
   {
-    name: 'Tooltip',
+    name: t('themeBuilder.previewTypes.tooltip'),
     type: ThemeDetailPreviewType.TOOLTIP,
   },
   {
-    name: 'Modal',
+    name: t('themeBuilder.previewTypes.modal'),
     type: ThemeDetailPreviewType.MODAL,
   },
   {
-    name: 'Launcher Icon',
+    name: t('themeBuilder.previewTypes.launcherIcon'),
     type: ThemeDetailPreviewType.LAUNCHER_ICON,
   },
   {
-    name: 'Launcher Beacon',
+    name: t('themeBuilder.previewTypes.launcherBeacon'),
     type: ThemeDetailPreviewType.LAUNCHER_BEACON,
   },
   {
-    name: 'Checklist',
+    name: t('themeBuilder.previewTypes.checklist'),
     type: ThemeDetailPreviewType.CHECKLIST,
   },
   {
-    name: 'Checklist Launcher',
+    name: t('themeBuilder.previewTypes.checklistLauncher'),
     type: ThemeDetailPreviewType.CHECKLIST_LAUNCHER,
   },
   {
-    name: 'NPS question',
+    name: t('themeBuilder.previewTypes.nps'),
     type: ThemeDetailPreviewType.NPS,
   },
 ];
 
-export const defaultChecklistData: ChecklistData = {
-  buttonText: 'Get Started',
+export const getDefaultChecklistData = (t: (key: string) => string): ChecklistData => ({
+  buttonText: t('themeBuilder.checklistPreview.buttonText'),
   initialDisplay: ChecklistInitialDisplay.EXPANDED,
   completionOrder: ChecklistCompletionOrder.ANY,
   preventDismissChecklist: false,
@@ -46,8 +48,8 @@ export const defaultChecklistData: ChecklistData = {
   items: [
     {
       id: '1',
-      name: 'First item',
-      description: 'Checklist',
+      name: t('themeBuilder.checklistPreview.item1Name'),
+      description: t('themeBuilder.sections.checklist'),
       clickedActions: [],
       completeConditions: [],
       onlyShowTask: false,
@@ -57,8 +59,8 @@ export const defaultChecklistData: ChecklistData = {
     },
     {
       id: '2',
-      name: 'Second item',
-      description: 'Checklist',
+      name: t('themeBuilder.checklistPreview.item2Name'),
+      description: t('themeBuilder.sections.checklist'),
       clickedActions: [],
       completeConditions: [],
       onlyShowTask: false,
@@ -68,8 +70,8 @@ export const defaultChecklistData: ChecklistData = {
     },
     {
       id: '3',
-      name: 'Third item',
-      description: 'Checklist',
+      name: t('themeBuilder.checklistPreview.item3Name'),
+      description: t('themeBuilder.sections.checklist'),
       clickedActions: [],
       completeConditions: [],
       onlyShowTask: false,
@@ -79,4 +81,4 @@ export const defaultChecklistData: ChecklistData = {
     },
   ],
   content: [],
-};
+});

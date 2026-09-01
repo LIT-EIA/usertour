@@ -17,8 +17,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@usertour-packages/button';
 import {
@@ -53,9 +56,9 @@ export interface RulesSegmentProps {
   };
 }
 
-const conditions = [
-  { value: 'is', name: 'is in' },
-  { value: 'not', name: 'is not in' },
+const buildConditions = (t: TFunction) => [
+  { value: 'is', name: t('conditions.operators.isIn') },
+  { value: 'not', name: t('conditions.operators.isNotIn') },
 ];
 
 interface RulesSegmentContextValue {
@@ -64,6 +67,7 @@ interface RulesSegmentContextValue {
   conditionValue: string;
   setConditionValue: Dispatch<SetStateAction<string>>;
   segments: Segment[] | undefined;
+  conditions: ReturnType<typeof buildConditions>;
 }
 
 const RulesSegmentContext = createContext<RulesSegmentContextValue | undefined>(undefined);
@@ -78,6 +82,7 @@ function useRulesSegmentContext(): RulesSegmentContextValue {
 
 const RulesSegmentName = () => {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   const { segmentId, setSegmentId, segments } = useRulesSegmentContext();
   const selectedSegment = segments?.find((segment) => segment.id === segmentId);
   const handleOnSelected = (item: Segment) => {
@@ -110,9 +115,9 @@ const RulesSegmentName = () => {
         <Popover.PopoverContent className="w-[350px] p-0">
           <Command filter={handleFilter}>
             <CommandInput placeholder="" />
-            <CommandEmpty>No items found.</CommandEmpty>
+            <CommandEmpty>{t('common.selectPopover.noItems')}</CommandEmpty>
             <ScrollArea className="h-72">
-              <CommandGroup heading="User segment">
+              <CommandGroup heading={t('conditions.types.segment.userHeading')}>
                 {segments
                   ?.filter((item) => item.bizType === 'USER')
                   .map((item) => (
@@ -134,7 +139,7 @@ const RulesSegmentName = () => {
                     </CommandItem>
                   ))}
               </CommandGroup>
-              <CommandGroup heading="Company segment">
+              <CommandGroup heading={t('conditions.types.segment.companyHeading')}>
                 {segments
                   ?.filter((item) => item.bizType === 'COMPANY')
                   .map((item) => (
@@ -165,7 +170,7 @@ const RulesSegmentName = () => {
 };
 
 const RulesSegmentCondition = () => {
-  const { conditionValue, setConditionValue } = useRulesSegmentContext();
+  const { conditionValue, setConditionValue, conditions } = useRulesSegmentContext();
   return (
     <>
       <Select defaultValue={conditionValue} onValueChange={setConditionValue}>
@@ -196,6 +201,8 @@ const RulesSegmentCondition = () => {
 
 export const RulesSegment = (props: RulesSegmentProps) => {
   const { index, data } = props;
+  const { t } = useTranslation();
+  const conditions = useMemo(() => buildConditions(t), [t]);
   const { segments, disabled } = useRulesContext();
   const [segmentId, setSegmentId] = useState<string>(data?.segmentId ?? '');
   const [conditionValue, setConditionValue] = useState(data?.logic ?? 'is');
@@ -215,6 +222,7 @@ export const RulesSegment = (props: RulesSegmentProps) => {
     conditionValue,
     setConditionValue,
     segments,
+    conditions,
   };
 
   useEffect(() => {
@@ -264,9 +272,9 @@ export const RulesSegment = (props: RulesSegmentProps) => {
               </RulesConditionIcon>
               <RulesPopover onOpenChange={handleOnOpenChange} open={open} defaultOpen={false}>
                 <RulesPopoverTrigger>
-                  {selectedPreset === undefined && 'User'}
-                  {selectedPreset?.bizType === 'USER' && 'User'}
-                  {selectedPreset?.bizType === 'COMPANY' && 'Company'}{' '}
+                  {selectedPreset === undefined && t('conditions.types.segment.user')}
+                  {selectedPreset?.bizType === 'USER' && t('conditions.types.segment.user')}
+                  {selectedPreset?.bizType === 'COMPANY' && t('conditions.types.segment.company')}{' '}
                   {conditions.find((c) => c.value === conditionValue)?.name}{' '}
                   <span className="font-bold">{selectedPreset?.name} </span>
                 </RulesPopoverTrigger>
@@ -274,9 +282,10 @@ export const RulesSegment = (props: RulesSegmentProps) => {
                   <div className=" flex flex-col space-y-2">
                     <div className=" flex flex-col space-y-1">
                       <div>
-                        {selectedPreset === undefined && 'User'}
-                        {selectedPreset?.bizType === 'USER' && 'User'}
-                        {selectedPreset?.bizType === 'COMPANY' && 'Company'}
+                        {selectedPreset === undefined && t('conditions.types.segment.user')}
+                        {selectedPreset?.bizType === 'USER' && t('conditions.types.segment.user')}
+                        {selectedPreset?.bizType === 'COMPANY' &&
+                          t('conditions.types.segment.company')}
                       </div>
                       <RulesSegmentCondition />
                       <RulesSegmentName />

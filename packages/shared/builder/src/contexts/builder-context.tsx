@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useToast } from '@usertour-packages/use-toast';
 import { debug } from '../utils/logger';
@@ -124,6 +125,7 @@ export interface BuilderProviderProps {
 }
 
 export const BuilderProvider = (props: BuilderProviderProps) => {
+  const { t } = useTranslation();
   const { children, webHost = '', usertourjsUrl = '', isWebBuilder = false, onSaved } = props;
   const [currentStep, setCurrentStep] = useState<Step | null>(null);
   const [environmentId, setEnvironmentId] = useState<string>('');
@@ -289,7 +291,7 @@ export const BuilderProvider = (props: BuilderProviderProps) => {
       : {
           ...defaultStep,
           type: finalStepType,
-          name: 'Untitled',
+          name: t('contentBuilder.flow.untitledStep'),
           data: getDefaultDataForType(finalStepType),
           sequence,
           setting: {

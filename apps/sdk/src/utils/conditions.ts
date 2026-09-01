@@ -112,7 +112,6 @@ const isElementInHiddenSection = (element: Element): boolean => {
 
   try {
     let currentElement: Element | null = element;
-    let depth = 0;
 
     while (currentElement) {
       const styles = window.getComputedStyle(currentElement);
@@ -142,11 +141,10 @@ const isElementInHiddenSection = (element: Element): boolean => {
       }
 
       currentElement = currentElement.parentElement;
-      depth++;
     }
 
     return false;
-  } catch (error) {
+  } catch {
     // On error, assume visible to avoid breaking functionality
     return false;
   }
@@ -402,7 +400,7 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
       return el && isDisabled;
     case ElementConditionLogic.UNDISABLED:
       return el && !isDisabled;
-    case ElementConditionLogic.CLICKED:
+    case ElementConditionLogic.CLICKED: {
       // For click conditions, pass elementData to enable selector-based caching
       // This allows the condition to remain true even if element is temporarily removed from DOM
       if (el) {
@@ -425,6 +423,7 @@ const isActiveRulesByElement = async (rules: RulesCondition) => {
         return cache.get(selectorKey)!;
       }
       return false;
+    }
     case ElementConditionLogic.UNCLICKED:
       return el && !isClicked(el, data.elementData);
     case 'visible':
@@ -443,14 +442,14 @@ const isActiveRulesByTextInput = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  
+
   // Parse selector to handle <<< pattern (conditional selector)
   const parsed = parseSelectorWithCondition(elementData);
   const mainSelector = parsed.mainSelector;
-  
+
   // First try to find element in main document
   let el = finderV2(mainSelector, document) as HTMLInputElement;
-  
+
   // If not found in main document, search in iframes
   if (!el) {
     const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
@@ -458,7 +457,7 @@ const isActiveRulesByTextInput = async (rules: RulesCondition) => {
       el = iframeElementInfo.element as HTMLInputElement;
     }
   }
-  
+
   if (!el) {
     return false;
   }
@@ -534,14 +533,14 @@ const isActiveRulesByTextFill = async (rules: RulesCondition) => {
   if (!document) {
     return false;
   }
-  
+
   // Parse selector to handle <<< pattern (conditional selector)
   const parsed = parseSelectorWithCondition(elementData);
   const mainSelector = parsed.mainSelector;
-  
+
   // First try to find element in main document
   let el = finderV2(mainSelector, document) as HTMLInputElement;
-  
+
   // If not found in main document, search in iframes
   if (!el) {
     const iframeElementInfo = await iframeUtils.searchElementInIframes(mainSelector);
@@ -549,7 +548,7 @@ const isActiveRulesByTextFill = async (rules: RulesCondition) => {
       el = iframeElementInfo.element as HTMLInputElement;
     }
   }
-  
+
   if (!el) {
     return false;
   }

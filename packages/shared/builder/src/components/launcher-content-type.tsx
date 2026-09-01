@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@usertour-packages/select';
 import { LauncherDataType } from '@usertour/types';
+import { useTranslation } from 'react-i18next';
 
 interface LauncherTypeProps {
   type: LauncherDataType;
@@ -16,6 +17,23 @@ interface LauncherTypeProps {
 }
 
 export const LauncherContentType = ({ zIndex, type, onChange }: LauncherTypeProps) => {
+  const { t } = useTranslation();
+
+  const getLabel = (dataType: LauncherDataType) => {
+    switch (dataType) {
+      case LauncherDataType.BEACON:
+        return t('contentBuilder.launcher.type.beacon');
+      case LauncherDataType.ICON:
+        return t('contentBuilder.launcher.type.icon');
+      case LauncherDataType.BUTTON:
+        return t('contentBuilder.launcher.type.button');
+      case LauncherDataType.HIDDEN:
+        return t('contentBuilder.launcher.type.hidden');
+      default:
+        return dataType;
+    }
+  };
+
   const getIcon = (dataType: LauncherDataType) => {
     const iconProps = { width: 16, height: 16 };
     switch (dataType) {
@@ -33,13 +51,13 @@ export const LauncherContentType = ({ zIndex, type, onChange }: LauncherTypeProp
   const getDescription = (dataType: LauncherDataType) => {
     switch (dataType) {
       case LauncherDataType.BEACON:
-        return 'Shows a pulsing beacon. Great for drawing attention to new features.';
+        return t('contentBuilder.launcher.type.beaconDescription');
       case LauncherDataType.ICON:
-        return 'Shows a simple icon. Great for explanation tooltips.';
+        return t('contentBuilder.launcher.type.iconDescription');
       case LauncherDataType.BUTTON:
-        return 'Shows a button with custom text. Great for call-to-action prompts.';
+        return t('contentBuilder.launcher.type.buttonDescription');
       case LauncherDataType.HIDDEN:
-        return 'Hides the launcher. Only shows when triggered.';
+        return t('contentBuilder.launcher.type.hiddenDescription');
       default:
         return '';
     }
@@ -51,7 +69,7 @@ export const LauncherContentType = ({ zIndex, type, onChange }: LauncherTypeProp
         {getIcon(type)}
         <div className="grow text-left ml-2">
           <SelectValue placeholder="" asChild>
-            <div className="capitalize">{type}</div>
+            <div className="capitalize">{getLabel(type)}</div>
           </SelectValue>
         </div>
       </SelectTrigger>
@@ -62,7 +80,7 @@ export const LauncherContentType = ({ zIndex, type, onChange }: LauncherTypeProp
             <div className="flex flex-col">
               <div className="flex flex-row space-x-1 items-center">
                 {getIcon(value)}
-                <span className="text-xs font-bold capitalize">{value}</span>
+                <span className="text-xs font-bold capitalize">{getLabel(value)}</span>
               </div>
               <div className="max-w-60 text-xs text-muted-foreground">{getDescription(value)}</div>
             </div>

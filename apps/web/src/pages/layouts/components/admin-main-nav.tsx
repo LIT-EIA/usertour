@@ -14,6 +14,7 @@ import { TooltipProvider } from '@usertour-packages/tooltip';
 import { Tooltip } from '@usertour-packages/tooltip';
 import { cn } from '@usertour/helpers';
 import { Link, useMatches, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AdminEnvSwitcher } from './admin-env-switcher';
 import { AdminUserNav } from './admin-user-nav';
 
@@ -26,40 +27,40 @@ const commonIconStyles = '!h-[18px] !w-[18px] text-primary-modified dark:text-fo
 
 const navigations = [
   {
-    name: 'Flows',
+    name: 'contents.list.flows.title',
     href: '/flows',
     contentType: 'flows',
     routeIds: ['content'],
     icon: FlowIcon,
   },
   {
-    name: 'Launchers',
+    name: 'contents.list.launchers.title',
     href: '/launchers',
     contentType: 'launchers',
     routeIds: ['launchers'],
     icon: LauncherIcon,
   },
   {
-    name: 'Checklists',
+    name: 'contents.list.checklists.title',
     href: '/checklists',
     contentType: 'checklists',
     routeIds: ['checklists'],
     icon: ChecklistIcon,
   },
   {
-    name: 'Users',
+    name: 'users.detail.breadcrumb',
     href: '/users',
     routeIds: ['users'],
     icon: GroupIcon2,
   },
   {
-    name: 'Companies',
+    name: 'companies.detail.breadcrumb',
     href: '/companies',
     routeIds: ['companies'],
     icon: CompanyIcon,
   },
   {
-    name: 'Settings',
+    name: 'settings.nav.heading',
     href: '/settings/themes',
     routeIds: [
       'settings',
@@ -85,21 +86,24 @@ const NavButton = ({
   isActive: boolean;
   icon: React.ComponentType<{ className?: string }>;
   name: string;
-} & React.HTMLAttributes<HTMLButtonElement>) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          className={cn(commonButtonStyles, isActive ? 'bg-background shadow border-input' : '')}
-          {...props}
-        >
-          <Icon className={cn(commonIconStyles, isActive ? 'text-primary' : '')} />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right">{name}</TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
+} & React.HTMLAttributes<HTMLButtonElement>) => {
+  const { t } = useTranslation();
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            className={cn(commonButtonStyles, isActive ? 'bg-background shadow border-input' : '')}
+            {...props}
+          >
+            <Icon className={cn(commonIconStyles, isActive ? 'text-primary' : '')} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{t(name)}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => {
   const matches = useMatches();
@@ -112,7 +116,7 @@ export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HT
       : matches && nav.routeIds.includes(matches[0].id);
 
   const getNavPath = (nav: (typeof navigations)[0]) =>
-    nav.name === 'Settings'
+    nav.href.startsWith('/settings')
       ? `/project/${project?.id}${nav.href}`
       : `/env/${environment?.id}${nav.href}`;
 
@@ -123,7 +127,7 @@ export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HT
       <div className="flex flex-col justify-between gap-3 h-full">
         <div className="flex flex-col gap-3 mt-6">
           {navigations
-            .filter((nav) => nav.name !== 'Settings')
+            .filter((nav) => !nav.href.startsWith('/settings'))
             .map((nav, index) => (
               <Link to={getNavPath(nav)} key={index}>
                 <NavButton name={nav.name} isActive={isNavActive(nav)} icon={nav.icon} {...props} />
@@ -132,7 +136,7 @@ export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HT
         </div>
         <div className="flex flex-col gap-3">
           {navigations
-            .filter((nav) => nav.name === 'Settings')
+            .filter((nav) => nav.href.startsWith('/settings'))
             .map((nav, index) => (
               <Link to={getNavPath(nav)} key={index}>
                 <NavButton name={nav.name} isActive={isNavActive(nav)} icon={nav.icon} {...props} />

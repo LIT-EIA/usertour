@@ -7,7 +7,7 @@ import { AttributeBizTypes, BizUser } from '@usertour/types';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserSessions } from './user-sessions';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/utils/common';
 import { IdCardIcon, EnvelopeClosedIcon, CalendarIcon, PersonIcon } from '@radix-ui/react-icons';
 import {
   Tooltip,
@@ -26,6 +26,7 @@ import {
 import { BizUserDeleteForm } from './bizuser-delete-form';
 import { ContentLoading } from '@/components/molecules/content-loading';
 import { TruncatedText } from '@/components/molecules/truncated-text';
+import { useTranslation } from 'react-i18next';
 
 interface UserDetailContentProps {
   environmentId: string;
@@ -76,6 +77,7 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
   const [bizUserAttributes, setBizUserAttributes] = useState<any[]>([]);
   const { attributeList } = useAttributeListContext();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!contents) {
@@ -113,8 +115,12 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
   if (!bizUser) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
-        <img src="/images/rocket.png" alt="User not found" className="w-16 h-16 mb-4 opacity-50" />
-        <p className="text-muted-foreground text-center">User not found.</p>
+        <img
+          src="/images/rocket.png"
+          alt={t('users.detail.notFound')}
+          className="w-16 h-16 mb-4 opacity-50"
+        />
+        <p className="text-muted-foreground text-center">{t('users.detail.notFound')}</p>
       </div>
     );
   }
@@ -129,12 +135,12 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
               navigator(`/env/${environmentId}/users`);
             }}
           />
-          <span>User Detail</span>
+          <span>{t('users.detail.title')}</span>
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t('users.detail.actionsLabel')}</span>
                   <DotsHorizontalIcon className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -144,7 +150,7 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
                   className="text-destructive focus:text-destructive"
                 >
                   <Delete2Icon className="mr-2 h-4 w-4" />
-                  Delete User
+                  {t('users.actions.deleteUser')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -158,27 +164,36 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UserIcon width={18} height={18} className="mr-2" />
-                User details
+                {t('users.detail.userDetails')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2 gap-x-12 ">
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={IdCardIcon} tooltip="User ID" />
+                  <TooltipIcon icon={IdCardIcon} tooltip={t('users.detail.tooltips.userId')} />
                   <TruncatedText text={bizUser?.externalId || ''} maxLength={15} />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={EnvelopeClosedIcon} tooltip="Email" />
+                  <TooltipIcon
+                    icon={EnvelopeClosedIcon}
+                    tooltip={t('users.detail.tooltips.email')}
+                  />
                   <TruncatedText text={bizUser?.data?.email || ''} maxLength={15} />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={PersonIcon} tooltip="Name" />
-                  <TruncatedText text={bizUser?.data?.name || 'Unnamed user'} maxLength={15} />
+                  <TooltipIcon icon={PersonIcon} tooltip={t('users.detail.tooltips.name')} />
+                  <TruncatedText
+                    text={bizUser?.data?.name || t('users.detail.unnamedUser')}
+                    maxLength={15}
+                  />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <TooltipIcon icon={CalendarIcon} tooltip="Created" />
+                  <TooltipIcon icon={CalendarIcon} tooltip={t('users.detail.tooltips.created')} />
                   <span>
-                    {bizUser?.createdAt && formatDistanceToNow(new Date(bizUser?.createdAt))} ago
+                    {bizUser?.createdAt &&
+                      t('users.detail.createdAgo', {
+                        time: formatRelativeTime(new Date(bizUser.createdAt)),
+                      })}
                   </span>
                 </div>
               </div>
@@ -188,13 +203,13 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UserProfile width={18} height={18} className="mr-2" />
-                User attributes
+                {t('users.detail.userAttributes')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-row border-b py-2 text-sm opacity-80">
-                <div className="w-1/2 ">Name</div>
-                <div className="w-1/2 ">Value</div>
+                <div className="w-1/2 ">{t('users.detail.attributeColumns.name')}</div>
+                <div className="w-1/2 ">{t('users.detail.attributeColumns.value')}</div>
               </div>
               {bizUserAttributes.map(({ name, value }, key) => (
                 <div className="flex flex-row py-2 text-sm" key={key}>

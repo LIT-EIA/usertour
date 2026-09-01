@@ -9,11 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from '@usertour-packages/table';
-import { format } from 'date-fns';
+import { formatDate as format } from '@/utils/common';
+import { useTranslation } from 'react-i18next';
 import { EventListAction } from './event-list-action';
 
 export const EventListContent = () => {
   const { eventList, loading, isRefetching } = useEventListContext();
+  const { t } = useTranslation();
 
   if (loading || isRefetching) {
     return <ListSkeleton />;
@@ -25,9 +27,9 @@ export const EventListContent = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Display name</TableHead>
-              <TableHead>Code name</TableHead>
-              <TableHead>CreatedAt</TableHead>
+              <TableHead>{t('settings.events.columns.displayName')}</TableHead>
+              <TableHead>{t('settings.events.columns.codeName')}</TableHead>
+              <TableHead>{t('settings.events.columns.createdAt')}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -50,7 +52,7 @@ export const EventListContent = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center">No results.</TableCell>
+                <TableCell className="h-24 text-center">{t('dataTable.noResults')}</TableCell>
               </TableRow>
             )}
           </TableBody>

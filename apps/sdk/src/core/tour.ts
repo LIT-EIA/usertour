@@ -19,7 +19,12 @@ import {
 } from '@usertour/types';
 import { evalCode } from '@usertour/helpers';
 import { TourStore } from '../types/store';
-import { activedRulesConditions, clearClickCache, flowIsDismissed, isActive } from '../utils/conditions';
+import {
+  activedRulesConditions,
+  clearClickCache,
+  flowIsDismissed,
+  isActive,
+} from '../utils/conditions';
 import { AppEvents } from '../utils/event';
 import { document } from '../utils/globals';
 import { BaseContent } from './base-content';
@@ -298,10 +303,10 @@ export class Tour extends BaseContent<TourStore> {
           iframeUtils.sendCleanupMessageToIframe(currentIframeInfo.iframe, currentStepId);
         }
       }
-      
+
       // Clean up position update listeners
       this.cleanupIframePositionUpdate();
-      
+
       this.watcher.destroy();
       this.watcher = null;
     }
@@ -373,14 +378,14 @@ export class Tour extends BaseContent<TourStore> {
         }
         return;
       }
-      
+
       // For iframe elements, we need to create a virtual element that represents
       // the target element's position for positioning purposes
       triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
-      
+
       // Set up iframe communication for step progression
       this.setupIframeCommunication(step, iframeElementInfo);
-      
+
       // IMPORTANT: Don't set up position updates yet - wait until after scrolling completes
       // This prevents conflicts when navigating between different iframes
     } else {
@@ -397,41 +402,37 @@ export class Tour extends BaseContent<TourStore> {
         const iframeRect = iframeElementInfo.iframe.getBoundingClientRect();
         const viewport = {
           width: window.innerWidth,
-          height: window.innerHeight
+          height: window.innerHeight,
         };
-        
+
         // Check if iframe is fully visible in viewport
-        const isFullyVisible = (
+        const isFullyVisible =
           iframeRect.top >= 0 &&
           iframeRect.left >= 0 &&
           iframeRect.bottom <= viewport.height &&
-          iframeRect.right <= viewport.width
-        );
-        
+          iframeRect.right <= viewport.width;
+
         // Calculate element position relative to iframe
         const elementRect = iframeElementInfo.element.getBoundingClientRect();
         const elementTopRelativeToIframe = elementRect.top - iframeRect.top;
         const iframeMiddle = iframeRect.height / 2;
         const isElementAboveIframeMiddle = elementTopRelativeToIframe < iframeMiddle;
-        
+
         // Calculate element's absolute position in the main document
         const elementAbsoluteTop = iframeRect.top + elementTopRelativeToIframe;
-        const elementAbsoluteLeft = iframeRect.left + (elementRect.left - iframeRect.left);
-        
+
         if (isElementAboveIframeMiddle) {
           // If element is above iframe middle, scroll directly to the element's position
           // Calculate scroll target: element position - half viewport height (to center element in viewport)
-          const targetScrollY = window.scrollY + elementAbsoluteTop - (viewport.height / 2);
+          const targetScrollY = window.scrollY + elementAbsoluteTop - viewport.height / 2;
 
-          const scrollStartTime = Date.now();
-          
           // Scroll to the calculated position
           window.scrollTo({
             top: targetScrollY,
             left: window.scrollX,
-            behavior: 'smooth'
+            behavior: 'smooth',
           });
-          
+
           // Wait for smooth scroll to complete
           await new Promise<void>((resolve) => {
             let lastScrollY = window.scrollY;
@@ -451,90 +452,51 @@ export class Tour extends BaseContent<TourStore> {
               requestAnimationFrame(checkScroll);
             };
             requestAnimationFrame(checkScroll);
-            
+
             // Timeout after 1 second
             setTimeout(() => resolve(), 1000);
           });
-          
+
           // Wait a moment for scroll to settle
-          await new Promise(resolve => requestAnimationFrame(resolve));
+          await new Promise((resolve) => requestAnimationFrame(resolve));
         } else if (!isFullyVisible) {
           // If iframe is not fully visible and element is not above middle, scroll iframe to center
           await smoothScroll(iframeElementInfo.iframe, { block: 'center' });
 
           // Wait a moment for the iframe scroll to settle
-          await new Promise(resolve => requestAnimationFrame(resolve));
+          await new Promise((resolve) => requestAnimationFrame(resolve));
         }
-        
+
         // IMPORTANT: Recalculate iframeRect after scrolling, as the iframe's position has changed
         // This ensures the virtual element uses the correct iframe position
-        const oldIframeRect = { ...iframeElementInfo.iframeRect };
         iframeElementInfo.iframeRect = iframeElementInfo.iframe.getBoundingClientRect();
-        
+
         // Recreate the virtual element with the updated iframe position
         // The previous triggerRef was created with old iframe position, so recreate it
         const oldVirtualElement = triggerRef;
-        const oldVirtualRect = oldVirtualElement instanceof HTMLElement ? {
-          left: oldVirtualElement.style.left,
-          top: oldVirtualElement.style.top,
-          width: oldVirtualElement.style.width,
-          height: oldVirtualElement.style.height
-        } : null;
         triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
 
         // Clean up old virtual element if it exists
         if (oldVirtualElement && (oldVirtualElement as any).__usertour_virtual_iframe) {
           try {
             oldVirtualElement.remove();
-          } catch (error) {
+          } catch {
             // ignore
           }
         }
-        
+
         // Then scroll the element inside the iframe into view and wait for it to complete
         try {
           const targetElement = iframeElementInfo.element;
-          if (targetElement && targetElement.isConnected) {
-            // Get element position before scrolling inside iframe
-            const beforeScrollElementRect = targetElement.getBoundingClientRect();
-            let iframeScrollTop: number | null = null;
-            let iframeScrollLeft: number | null = null;
-            
-            try {
-              const iframeWindow = iframeElementInfo.iframe.contentWindow;
-              const iframeDoc = iframeElementInfo.iframe.contentDocument;
-              if (iframeWindow && iframeDoc) {
-                iframeScrollTop = iframeWindow.pageYOffset || iframeDoc.documentElement.scrollTop || iframeDoc.body.scrollTop || 0;
-                iframeScrollLeft = iframeWindow.pageXOffset || iframeDoc.documentElement.scrollLeft || iframeDoc.body.scrollLeft || 0;
-              }
-            } catch (error) {
-              // Cannot access iframe scroll position (cross-origin)
-            }
-            
+          if (targetElement?.isConnected) {
             await this.waitForIframeElementScroll(targetElement, iframeElementInfo, {
               behavior: 'smooth',
               block: 'center',
-              inline: 'nearest'
+              inline: 'nearest',
             });
-            
-            // Get element position after scrolling
-            const afterScrollElementRect = targetElement.getBoundingClientRect();
-            let iframeScrollTopAfter: number | null = null;
-            let iframeScrollLeftAfter: number | null = null;
-            
-            try {
-              const iframeWindow = iframeElementInfo.iframe.contentWindow;
-              const iframeDoc = iframeElementInfo.iframe.contentDocument;
-              if (iframeWindow && iframeDoc) {
-                iframeScrollTopAfter = iframeWindow.pageYOffset || iframeDoc.documentElement.scrollTop || iframeDoc.body.scrollTop || 0;
-                iframeScrollLeftAfter = iframeWindow.pageXOffset || iframeDoc.documentElement.scrollLeft || iframeDoc.body.scrollLeft || 0;
-              }
-            } catch (error) {
-              // Ignore cross-origin errors
-            }
-            
+
             // Wait for scroll to fully settle before updating position
-            await new Promise(resolve => {
+            await new Promise((resolve) => {
               requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)));
             });
 
@@ -545,7 +507,7 @@ export class Tour extends BaseContent<TourStore> {
             // Do this AFTER scrolling completes to prevent conflicts
             this.setupIframePositionUpdate(iframeElementInfo);
           }
-        } catch (error) {
+        } catch {
           // Element might be in cross-origin iframe, which is fine - we already scrolled the iframe
           // Still set up position updates even if scrolling failed
           this.setupIframePositionUpdate(iframeElementInfo);
@@ -572,20 +534,21 @@ export class Tour extends BaseContent<TourStore> {
     });
     this.isUpdatingStore = false;
 
-
     // Check if this is the last step and if it has triggers
     // If it has triggers, we should wait for them to complete before reporting flow completion
     // Only report completion here (after element is found) if there are no triggers
-    // IMPORTANT: When navigating via STEP_GOTO, don't report completion immediately - 
+    // IMPORTANT: When navigating via STEP_GOTO, don't report completion immediately -
     // the step might have triggers that navigate elsewhere, or might be closed/dismissed
     const wasNavigatingToStep = this.isNavigatingToStep; // Remember if we were navigating
     const { isComplete } = this.getCurrentStepInfo(step);
-    const hasTriggers = step.trigger && step.trigger.length > 0 && 
-                        step.trigger.some(t => t.conditions && t.conditions.length > 0);
+    const hasTriggers =
+      step.trigger &&
+      step.trigger.length > 0 &&
+      step.trigger.some((t) => t.conditions && t.conditions.length > 0);
     const hasStepNavigationActions = step.target?.actions?.some(
-      (action: RulesCondition) => action.type === ContentActionsItemType.STEP_GOTO
+      (action: RulesCondition) => action.type === ContentActionsItemType.STEP_GOTO,
     );
-    
+
     // Only reset navigation flag AFTER we've checked it for completion logic
     // But add a small delay to ensure the step is fully set up before allowing completion
     if (wasNavigatingToStep) {
@@ -597,7 +560,7 @@ export class Tour extends BaseContent<TourStore> {
     } else {
       this.isNavigatingToStep = false;
     }
-    
+
     if (isComplete && !hasTriggers && !hasStepNavigationActions && !wasNavigatingToStep) {
       // Only report completion immediately if:
       // 1. It's the last step
@@ -612,10 +575,10 @@ export class Tour extends BaseContent<TourStore> {
     if (!openState) {
       this.unsetActiveTour();
     }
-    
+
     // Reset the processing flag
     this.isProcessingElementFound = false;
-    
+
     // NOW activate trigger conditions after element is found and step is fully stabilized
     // This prevents premature navigation from triggers firing before the step is ready
     this.activeTriggerConditions().catch((error) => {
@@ -641,7 +604,7 @@ export class Tour extends BaseContent<TourStore> {
       // For iframe elements, we need to create a virtual element that represents
       // the target element's position for positioning purposes
       triggerRef = this.createVirtualElementForIframe(iframeElementInfo);
-      
+
       // Set up scroll/resize listeners to keep position updated
       this.setupIframePositionUpdate(iframeElementInfo);
     }
@@ -677,16 +640,16 @@ export class Tour extends BaseContent<TourStore> {
     if (!document) {
       throw new Error('Document is not available');
     }
-    
+
     // Get the target element's position within the iframe
     const targetElement = iframeElementInfo.element;
     const targetRect = targetElement.getBoundingClientRect();
-    
+
     // Calculate the target element's position relative to the main document
     const iframeRect = iframeElementInfo.iframeRect;
     const targetLeft = iframeRect.left + targetRect.left;
     const targetTop = iframeRect.top + targetRect.top;
-    
+
     // Create a virtual element that represents the target element's position
     // This is used for positioning the tour step relative to the actual target element
     // Use 'fixed' position to match floating-ui's 'fixed' strategy (viewport-relative)
@@ -698,14 +661,14 @@ export class Tour extends BaseContent<TourStore> {
     virtualElement.style.height = `${targetRect.height}px`;
     virtualElement.style.pointerEvents = 'none';
     virtualElement.style.visibility = 'hidden';
-    
+
     // Add to DOM temporarily for positioning calculations
     document.body.appendChild(virtualElement);
-    
+
     // Store reference for cleanup
     (virtualElement as any).__usertour_virtual_iframe = true;
     (virtualElement as any).__usertour_iframe_info = iframeElementInfo;
-    
+
     return virtualElement;
   }
 
@@ -716,7 +679,7 @@ export class Tour extends BaseContent<TourStore> {
   private setupIframeCommunication(step: Step, iframeElementInfo: IframeElementInfo): void {
     // Use step ID as unique handler identifier
     const handlerId = `tour-step-${step.cvid}`;
-    
+
     // Set up communication handler with unique ID
     iframeUtils.setCommunicationHandler(handlerId, {
       onStepComplete: (stepId: string, data?: any) => {
@@ -750,7 +713,7 @@ export class Tour extends BaseContent<TourStore> {
       // Using original retry count (8) but with early cancellation when iframe SDK confirms
       let consecutiveErrors = 0;
       const MAX_CONSECUTIVE_ERRORS = 3;
-      
+
       const sendFindElementMessage = (retryCount = 0, maxRetries = 8) => {
         // CRITICAL: Check if iframe SDK already confirmed element setup
         // If so, cancel all remaining retries immediately
@@ -769,17 +732,17 @@ export class Tour extends BaseContent<TourStore> {
         if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
           return;
         }
-        
+
         const message = {
           type: 'usertour-find-element' as const,
           element: step.target,
           stepId: step.cvid,
           actions: step.target?.actions,
-          triggers: step.trigger // Include triggers for iframe evaluation
+          triggers: step.trigger, // Include triggers for iframe evaluation
         };
-        
+
         iframeUtils.sendMessageToIframe(iframeElementInfo.iframe, message);
-        
+
         // Verify element exists in iframe after sending message
         // This is important for src changes where content takes time to load
         if (retryCount < maxRetries && step.target) {
@@ -789,30 +752,36 @@ export class Tour extends BaseContent<TourStore> {
             try {
               // CRITICAL: Check if iframe SDK confirmed element before retry
               if (step.cvid && this.iframeSDKConfirmedSteps.has(step.cvid)) {
-                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter(
+                  (id) => id !== timeoutId,
+                );
                 return;
               }
 
               // CRITICAL: Validate step again before retry
               const nowStepId = this.getCurrentStep()?.cvid;
               if (nowStepId !== step.cvid) {
-                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter(
+                  (id) => id !== timeoutId,
+                );
                 return;
               }
 
               // Check visibility before retry
               if (!iframeUtils.isIframeCSSVisible(iframeElementInfo.iframe)) {
-                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter(
+                  (id) => id !== timeoutId,
+                );
                 return;
               }
-              
+
               const iframeDoc = iframeElementInfo.iframe.contentDocument;
               if (iframeDoc && step.target) {
                 // CRITICAL FIX: Parse selector to handle conditional patterns (<<<)
                 // This prevents SyntaxError when selector contains invalid CSS
                 const parsed = parseSelectorWithCondition(step.target);
                 const elementInIframe = finderV2(parsed.mainSelector, iframeDoc);
-                
+
                 if (!elementInIframe) {
                   sendFindElementMessage(retryCount + 1, maxRetries);
                 } else {
@@ -824,29 +793,46 @@ export class Tour extends BaseContent<TourStore> {
                   sendFindElementMessage(retryCount + 1, maxRetries);
                 }
               }
-              
+
               // Remove from timeout tracking
               this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
             } catch (error) {
               consecutiveErrors++;
-              
+
               // Enhanced error logging
-              if (error instanceof SyntaxError && (error as any).message?.includes('not a valid selector')) {
-                console.error('[Tour] [IFRAME-RETRY] Invalid selector syntax detected:', error.message);
-                console.error('[Tour] [IFRAME-RETRY] This is likely due to unparsed conditional selector (<<<)');
+              if (
+                error instanceof SyntaxError &&
+                (error as any).message?.includes('not a valid selector')
+              ) {
+                console.error(
+                  '[Tour] [IFRAME-RETRY] Invalid selector syntax detected:',
+                  error.message,
+                );
+                console.error(
+                  '[Tour] [IFRAME-RETRY] This is likely due to unparsed conditional selector (<<<)',
+                );
                 // Don't retry on syntax errors - they won't resolve
-                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter(
+                  (id) => id !== timeoutId,
+                );
                 return;
               }
-              
+
               // Circuit breaker: stop retries only after consecutive ERRORS (not element-not-found)
               // This prevents infinite loops on actual errors while still allowing retries during page loads
               if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                console.error('[Tour] [IFRAME-RETRY] Circuit breaker triggered after', consecutiveErrors, 'consecutive errors:', error);
-                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
+                console.error(
+                  '[Tour] [IFRAME-RETRY] Circuit breaker triggered after',
+                  consecutiveErrors,
+                  'consecutive errors:',
+                  error,
+                );
+                this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter(
+                  (id) => id !== timeoutId,
+                );
                 return;
               }
-              
+
               // Retry on other errors
               if (retryCount < maxRetries) {
                 sendFindElementMessage(retryCount + 1, maxRetries);
@@ -854,20 +840,23 @@ export class Tour extends BaseContent<TourStore> {
               this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter((id) => id !== timeoutId);
             }
           }, delay);
-          
+
           // Track this timeout so we can cancel it if step changes
           this.iframeRetryTimeouts.push(timeoutId);
         }
       };
-      
-      iframeUtils.injectSDKIntoIframe(iframeElementInfo.iframe).then(() => {
-        // After SDK injection, wait a bit for SDK to initialize, then send message
-        setTimeout(() => {
-          sendFindElementMessage();
-        }, 200); // Wait 200ms for SDK to initialize
-      }).catch(() => {
-        // Error injecting SDK
-      });
+
+      iframeUtils
+        .injectSDKIntoIframe(iframeElementInfo.iframe)
+        .then(() => {
+          // After SDK injection, wait a bit for SDK to initialize, then send message
+          setTimeout(() => {
+            sendFindElementMessage();
+          }, 200); // Wait 200ms for SDK to initialize
+        })
+        .catch(() => {
+          // Error injecting SDK
+        });
     }
   }
 
@@ -878,7 +867,7 @@ export class Tour extends BaseContent<TourStore> {
   private async handleIframeStepComplete(step: Step, _data?: any): Promise<void> {
     // Report step completion
     await this.reportStepEvents(step, BizEvents.FLOW_STEP_COMPLETED);
-    
+
     // Move to next step
     await this.moveToNextStep();
   }
@@ -890,22 +879,22 @@ export class Tour extends BaseContent<TourStore> {
   private async moveToNextStep(): Promise<void> {
     const content = this.getContent();
     const currentStep = this.getCurrentStep();
-    
+
     if (!currentStep || !content.steps) {
       return;
     }
-    
+
     // Clean up iframe listeners for current step before moving to next
-    const currentIndex = content.steps.findIndex(step => step.cvid === currentStep.cvid);
+    const currentIndex = content.steps.findIndex((step) => step.cvid === currentStep.cvid);
     const nextIndex = currentIndex + 1;
-    
+
     if (nextIndex < content.steps.length) {
       // Move to next step - clean up current step before moving
       const iframeInfo = this.watcher?.getIframeElementInfo();
       if (iframeInfo && currentStep.cvid) {
         iframeUtils.sendCleanupMessageToIframe(iframeInfo.iframe, currentStep.cvid);
       }
-      
+
       const nextStep = content.steps[nextIndex];
       await this.show(nextStep.cvid);
     } else {
@@ -925,8 +914,8 @@ export class Tour extends BaseContent<TourStore> {
     } else {
       // Handle specific actions based on step configuration
       const actions = step.target?.actions || [];
-      const matchingAction = actions.find(a => (a as any).action === action);
-      
+      const matchingAction = actions.find((a) => (a as any).action === action);
+
       if (matchingAction) {
         await this.handleActions([matchingAction]);
       }
@@ -958,7 +947,11 @@ export class Tour extends BaseContent<TourStore> {
    * Similar to smoothScroll but works for elements inside iframes
    * @private
    */
-  private async waitForIframeElementScroll(element: Element, iframeElementInfo?: IframeElementInfo, options: ScrollIntoViewOptions = {}): Promise<void> {
+  private async waitForIframeElementScroll(
+    element: Element,
+    iframeElementInfo?: IframeElementInfo,
+    options: ScrollIntoViewOptions = {},
+  ): Promise<void> {
     return new Promise((resolve) => {
       if (!element || !element.isConnected) {
         resolve();
@@ -975,12 +968,12 @@ export class Tour extends BaseContent<TourStore> {
       // Get iframe's window and document for scroll position checking
       let iframeWindow: Window | null = null;
       let iframeDoc: Document | null = null;
-      
+
       if (iframeElementInfo) {
         try {
           iframeWindow = iframeElementInfo.iframe.contentWindow;
           iframeDoc = iframeElementInfo.iframe.contentDocument;
-        } catch (error) {
+        } catch {
           // Cannot access iframe window for scroll detection
         }
       }
@@ -999,15 +992,20 @@ export class Tour extends BaseContent<TourStore> {
       element.scrollIntoView(scrollOptions);
       rafId = requestAnimationFrame(check);
 
-      let checkCount = 0;
       function check() {
-        checkCount++;
-        
         // For iframe elements, check scroll position instead of element position
         // because getBoundingClientRect is relative to iframe viewport
         if (iframeWindow && iframeDoc) {
-          const scrollTop = iframeWindow.pageYOffset || iframeDoc.documentElement.scrollTop || iframeDoc.body.scrollTop || 0;
-          const scrollLeft = iframeWindow.pageXOffset || iframeDoc.documentElement.scrollLeft || iframeDoc.body.scrollLeft || 0;
+          const scrollTop =
+            iframeWindow.pageYOffset ||
+            iframeDoc.documentElement.scrollTop ||
+            iframeDoc.body.scrollTop ||
+            0;
+          const scrollLeft =
+            iframeWindow.pageXOffset ||
+            iframeDoc.documentElement.scrollLeft ||
+            iframeDoc.body.scrollLeft ||
+            0;
 
           // Check if scroll position has stabilized
           if (scrollTop === lastScrollTop && scrollLeft === lastScrollLeft) {
@@ -1025,7 +1023,7 @@ export class Tour extends BaseContent<TourStore> {
           // Fallback: check element position relative to iframe viewport
           const rect = element.getBoundingClientRect();
           const elementTop = rect.top;
-          
+
           if (elementTop === lastScrollTop) {
             if (same++ > 5) {
               clearTimeout(timeoutId);
@@ -1047,10 +1045,13 @@ export class Tour extends BaseContent<TourStore> {
    * Updates iframe element position
    * @private
    */
-  private updateIframeElementPosition(iframeElementInfo: IframeElementInfo, virtualElement?: HTMLElement): void {
+  private updateIframeElementPosition(
+    iframeElementInfo: IframeElementInfo,
+    virtualElement?: HTMLElement,
+  ): void {
     // Get virtual element from parameter or store
     let elementToUpdate: HTMLElement | null = null;
-    
+
     if (virtualElement) {
       elementToUpdate = virtualElement;
     } else {
@@ -1059,7 +1060,7 @@ export class Tour extends BaseContent<TourStore> {
         elementToUpdate = store.triggerRef as HTMLElement;
       }
     }
-    
+
     if (elementToUpdate && (elementToUpdate as any).__usertour_virtual_iframe) {
       // Get the target element's position within the iframe
       const targetElement = iframeElementInfo.element;
@@ -1096,28 +1097,28 @@ export class Tour extends BaseContent<TourStore> {
   private setupIframePositionUpdate(iframeElementInfo: IframeElementInfo): void {
     // Clean up any existing listeners first
     this.cleanupIframePositionUpdate();
-    
+
     // Use continuous animation frame updates for smooth tracking
     // This is similar to floating-ui's autoUpdate with animationFrame: true
     let rafId: number | null = null;
     let isRunning = false;
-    
+
     const updateLoop = () => {
       if (!isRunning) {
         return;
       }
-      
+
       this.updateIframeElementPosition(iframeElementInfo);
       rafId = requestAnimationFrame(updateLoop);
     };
-    
+
     const startUpdateLoop = () => {
       if (!isRunning) {
         isRunning = true;
         rafId = requestAnimationFrame(updateLoop);
       }
     };
-    
+
     const stopUpdateLoop = () => {
       isRunning = false;
       if (rafId !== null) {
@@ -1125,12 +1126,12 @@ export class Tour extends BaseContent<TourStore> {
         rafId = null;
       }
     };
-    
+
     // Track scroll state for both main window and iframe
     // Keep the loop running as long as either is scrolling
     let mainWindowScrollTimeout: ReturnType<typeof setTimeout> | null = null;
     let iframeScrollTimeout: ReturnType<typeof setTimeout> | null = null;
-    
+
     const handleMainWindowScroll = () => {
       // Synchronous update so floating-ui's RAF reads the current frame's position
       this.updateIframeElementPosition(iframeElementInfo);
@@ -1160,7 +1161,7 @@ export class Tour extends BaseContent<TourStore> {
       if (iframeScrollTimeout !== null) {
         clearTimeout(iframeScrollTimeout);
       }
-      
+
       // Stop iframe scroll tracking after scrolling stops (100ms of no scroll events)
       iframeScrollTimeout = setTimeout(() => {
         iframeScrollTimeout = null;
@@ -1170,7 +1171,7 @@ export class Tour extends BaseContent<TourStore> {
         }
       }, 100);
     };
-    
+
     const handleResize = () => {
       startUpdateLoop();
       // Resize typically happens once, so we can stop after a brief delay
@@ -1178,45 +1179,51 @@ export class Tour extends BaseContent<TourStore> {
         stopUpdateLoop();
       }, 200);
     };
-    
+
     // Set up scroll listeners on main window
     window.addEventListener('scroll', handleMainWindowScroll, { passive: true, capture: true });
     window.addEventListener('resize', handleResize, { passive: true });
-    
+
     // Set up scroll listeners on iframe's contentWindow if accessible
     let iframeScrollHandler: (() => void) | null = null;
     let iframeResizeHandler: (() => void) | null = null;
-    
+
     try {
       const iframeWindow = iframeElementInfo.iframe.contentWindow;
       const iframeDoc = iframeElementInfo.iframe.contentDocument;
-      
+
       if (iframeWindow && iframeDoc) {
         iframeScrollHandler = handleIframeScroll;
         iframeResizeHandler = handleResize;
-        
+
         // Listen to scroll events on iframe's window
-        iframeWindow.addEventListener('scroll', iframeScrollHandler, { passive: true, capture: true });
+        iframeWindow.addEventListener('scroll', iframeScrollHandler, {
+          passive: true,
+          capture: true,
+        });
         iframeWindow.addEventListener('resize', iframeResizeHandler, { passive: true });
-        
+
         // Also listen to scroll events on iframe's document body if it exists
         if (iframeDoc.body) {
           const bodyScrollHandler = handleIframeScroll;
-          iframeDoc.body.addEventListener('scroll', bodyScrollHandler, { passive: true, capture: true });
-          
+          iframeDoc.body.addEventListener('scroll', bodyScrollHandler, {
+            passive: true,
+            capture: true,
+          });
+
           // Store body scroll handler for cleanup
           (iframeElementInfo.iframe as any).__usertour_body_scroll_handler = bodyScrollHandler;
         }
       }
-    } catch (error) {
+    } catch {
       // Cross-origin iframe, cannot access contentWindow
     }
-    
+
     // Store cleanup function
     this.iframePositionUpdateCleanup = () => {
       // Stop the update loop
       stopUpdateLoop();
-      
+
       // Clear scroll timeouts
       if (mainWindowScrollTimeout !== null) {
         clearTimeout(mainWindowScrollTimeout);
@@ -1226,31 +1233,32 @@ export class Tour extends BaseContent<TourStore> {
         clearTimeout(iframeScrollTimeout);
         iframeScrollTimeout = null;
       }
-      
+
       window.removeEventListener('scroll', handleMainWindowScroll, { capture: true });
       window.removeEventListener('resize', handleResize);
-      
+
       if (iframeScrollHandler && iframeResizeHandler) {
         try {
           const iframeWindow = iframeElementInfo.iframe.contentWindow;
           const iframeDoc = iframeElementInfo.iframe.contentDocument;
-          
+
           if (iframeWindow) {
             iframeWindow.removeEventListener('scroll', iframeScrollHandler, { capture: true });
             iframeWindow.removeEventListener('resize', iframeResizeHandler);
           }
-          
+
           // Clean up body scroll handler if it exists
-          const bodyScrollHandler = (iframeElementInfo.iframe as any).__usertour_body_scroll_handler;
+          const bodyScrollHandler = (iframeElementInfo.iframe as any)
+            .__usertour_body_scroll_handler;
           if (bodyScrollHandler && iframeDoc?.body) {
             iframeDoc.body.removeEventListener('scroll', bodyScrollHandler, { capture: true });
-            delete (iframeElementInfo.iframe as any).__usertour_body_scroll_handler;
+            (iframeElementInfo.iframe as any).__usertour_body_scroll_handler = undefined;
           }
-        } catch (error) {
+        } catch {
           // Cross-origin iframe, ignore cleanup errors
         }
       }
-      
+
       this.iframePositionUpdateCleanup = null;
     };
   }
@@ -1299,9 +1307,11 @@ export class Tour extends BaseContent<TourStore> {
 
     // Check if this is the last step and if it has triggers
     // If it has triggers, we should wait for them to complete before reporting flow completion
-    const hasTriggers = currentStep.trigger && currentStep.trigger.length > 0 && 
-                        currentStep.trigger.some(t => t.conditions && t.conditions.length > 0);
-    
+    const hasTriggers =
+      currentStep.trigger &&
+      currentStep.trigger.length > 0 &&
+      currentStep.trigger.some((t) => t.conditions && t.conditions.length > 0);
+
     if (isComplete && !hasTriggers) {
       // Only report completion immediately if there are no triggers
       // If triggers exist, completion will be reported when the step is closed or triggers execute
@@ -1329,9 +1339,11 @@ export class Tour extends BaseContent<TourStore> {
 
     // Check if this is the last step and if it has triggers
     // If it has triggers, we should wait for them to complete before reporting flow completion
-    const hasTriggers = currentStep.trigger && currentStep.trigger.length > 0 && 
-                        currentStep.trigger.some(t => t.conditions && t.conditions.length > 0);
-    
+    const hasTriggers =
+      currentStep.trigger &&
+      currentStep.trigger.length > 0 &&
+      currentStep.trigger.some((t) => t.conditions && t.conditions.length > 0);
+
     if (isComplete && !hasTriggers) {
       // Only report completion immediately if there are no triggers
       // If triggers exist, completion will be reported when the step is closed or triggers execute
@@ -1370,7 +1382,7 @@ export class Tour extends BaseContent<TourStore> {
 
     // Clean up position update listeners
     this.cleanupIframePositionUpdate();
-    
+
     // If this is the last step and flow completion hasn't been reported yet, report it now
     // BUT: Don't report completion if the step was closed due to missing target
     // (step was never successfully shown, so it shouldn't count as completion)
@@ -1378,12 +1390,14 @@ export class Tour extends BaseContent<TourStore> {
     if (currentStep && reason !== contentEndReason.TOOLTIP_TARGET_MISSING) {
       const { isComplete } = this.getCurrentStepInfo(currentStep);
       // Check if this step has triggers that might navigate elsewhere
-      const hasTriggers = currentStep.trigger && currentStep.trigger.length > 0 && 
-                          currentStep.trigger.some(t => t.conditions && t.conditions.length > 0);
+      const hasTriggers =
+        currentStep.trigger &&
+        currentStep.trigger.length > 0 &&
+        currentStep.trigger.some((t) => t.conditions && t.conditions.length > 0);
       const hasStepNavigationActions = currentStep.target?.actions?.some(
-        (action: RulesCondition) => action.type === ContentActionsItemType.STEP_GOTO
+        (action: RulesCondition) => action.type === ContentActionsItemType.STEP_GOTO,
       );
-      
+
       // Only report completion if:
       // 1. It's the last step
       // 2. It hasn't been reported yet
@@ -1393,10 +1407,10 @@ export class Tour extends BaseContent<TourStore> {
         await this.reportStepEvents(currentStep, BizEvents.FLOW_COMPLETED);
       }
     }
-    
+
     // Always clear navigation flag when closing
     this.isNavigatingToStep = false;
-    
+
     // Report close event
     await this.reportCloseEvent(reason);
     // Set the tour as dismissed
@@ -1570,7 +1584,7 @@ export class Tour extends BaseContent<TourStore> {
     currentStep: Step,
     triggerRef: Element | null,
     currentOpenState: boolean,
-  ): Promise<void> {    
+  ): Promise<void> {
     // Early return if not a tooltip or missing required data
     if (
       !triggerRef ||
@@ -1631,11 +1645,11 @@ export class Tour extends BaseContent<TourStore> {
   private async processTriggers(triggers: StepTrigger[]): Promise<StepTrigger[]> {
     const remainingTriggers: StepTrigger[] = [];
     const MAX_WAIT_TIME = 300; // Maximum wait time in seconds
-    
+
     // Capture current step ID at the time triggers are being processed
     // This ensures we can validate the step hasn't changed when delayed triggers fire
     const currentStepId = this.getCurrentStep()?.cvid;
-    
+
     for (const trigger of triggers) {
       const { conditions, ...rest } = trigger;
       const activatedConditions = await activedRulesConditions(conditions);
@@ -1768,7 +1782,6 @@ export class Tour extends BaseContent<TourStore> {
     // Reset state
     this.setCurrentStep(null);
     this.setStore(undefined);
-
   }
 
   /**
@@ -1780,7 +1793,7 @@ export class Tour extends BaseContent<TourStore> {
       clearTimeout(timeoutId);
     }
     this.triggerTimeouts = [];
-    
+
     // Clear all pending iframe retry timeouts
     for (const timeoutId of this.iframeRetryTimeouts) {
       clearTimeout(timeoutId);
@@ -1791,10 +1804,13 @@ export class Tour extends BaseContent<TourStore> {
     if (this.watcher) {
       const currentIframeInfo = this.watcher.getIframeElementInfo();
       if (currentIframeInfo) {
-        iframeUtils.sendCleanupMessageToIframe(currentIframeInfo.iframe, this.getCurrentStep()?.cvid || '');
+        iframeUtils.sendCleanupMessageToIframe(
+          currentIframeInfo.iframe,
+          this.getCurrentStep()?.cvid || '',
+        );
       }
     }
-    
+
     // Clean up position update listeners
     this.cleanupIframePositionUpdate();
 

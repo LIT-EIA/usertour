@@ -14,6 +14,7 @@ import { Segment } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback } from 'react';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 interface BizCompanyRemoveFormProps {
   bizCompanyIds: string[];
@@ -27,6 +28,7 @@ export const BizCompanyRemoveForm = (props: BizCompanyRemoveFormProps) => {
   const { bizCompanyIds, open, onOpenChange, onSubmit, segment } = props;
   const [mutation, { loading }] = useMutation(deleteBizCompanyOnSegment);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = useCallback(async () => {
     if (bizCompanyIds.length === 0) {
@@ -41,7 +43,9 @@ export const BizCompanyRemoveForm = (props: BizCompanyRemoveFormProps) => {
       if (ret.data?.deleteBizCompanyOnSegment?.success) {
         toast({
           variant: 'success',
-          title: `${ret.data?.deleteBizCompanyOnSegment.count} users has been successfully removed`,
+          title: t('companies.toast.segments.companiesRemoved', {
+            count: ret.data?.deleteBizCompanyOnSegment.count,
+          }),
         });
         await onSubmit(true);
       }
@@ -58,13 +62,13 @@ export const BizCompanyRemoveForm = (props: BizCompanyRemoveFormProps) => {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm removing users from segment</AlertDialogTitle>
+          <AlertDialogTitle>{t('companies.dialogs.deleteSegment.title')}</AlertDialogTitle>
           <AlertDialogDescription>
             Confirm removing the selected users from {segment.name}?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('companies.actions.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleSubmit} loading={loading}>
             Yes, remove {bizCompanyIds.length} users
           </LoadingButton>

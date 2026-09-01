@@ -3,21 +3,32 @@ import { ThemeSettingInput } from '@/components/molecules/theme/theme-setting-in
 import { ThemeSettingSelect } from '@/components/molecules/theme/theme-setting-select';
 import { ModalPosition } from '@usertour/types';
 import { useThemeSettingsContext } from '../theme-settings-panel';
-
-const placementItems = [
-  { name: 'Top Left', value: ModalPosition.LeftTop },
-  { name: 'Top Right', value: ModalPosition.RightTop },
-  { name: 'Bottom Left', value: ModalPosition.LeftBottom },
-  { name: 'Bottom Right', value: ModalPosition.RightBottom },
-  { name: 'Center', value: ModalPosition.Center },
-];
-
-const textDecorationItems = [
-  { name: 'None (no line-through)', value: 'none' },
-  { name: 'Line-through', value: 'line-through' },
-];
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsChecklist = () => {
+  const { t } = useTranslation();
+  const placementItems = [
+    { name: t('themeBuilder.options.placementCornerCenter.topLeft'), value: ModalPosition.LeftTop },
+    {
+      name: t('themeBuilder.options.placementCornerCenter.topRight'),
+      value: ModalPosition.RightTop,
+    },
+    {
+      name: t('themeBuilder.options.placementCornerCenter.bottomLeft'),
+      value: ModalPosition.LeftBottom,
+    },
+    {
+      name: t('themeBuilder.options.placementCornerCenter.bottomRight'),
+      value: ModalPosition.RightBottom,
+    },
+    { name: t('themeBuilder.options.placementCornerCenter.center'), value: ModalPosition.Center },
+  ];
+
+  const textDecorationItems = [
+    { name: t('themeBuilder.options.textDecoration.none'), value: 'none' },
+    { name: t('themeBuilder.options.textDecoration.lineThrough'), value: 'line-through' },
+  ];
+
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
 
   // Update checklist settings
@@ -33,19 +44,19 @@ export const ThemeSettingsChecklist = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
         <ThemeSettingInput
-          text="Width"
+          text={t('themeBuilder.fields.common.width')}
           name="checklist-width"
           defaultValue={String(settings.checklist.width)}
-          tooltip="The width in pixels of the checklist"
+          tooltip={t('themeBuilder.tooltips.checklistWidth')}
           onChange={(value: string) => {
             update({ width: Number(value) });
           }}
         />
         <ThemeSettingSelect
-          text="Placement"
+          text={t('themeBuilder.fields.common.placement')}
           name="checklist-placement"
           items={placementItems}
-          tooltip="Controls which corner the checklist should be placed at."
+          tooltip={t('themeBuilder.tooltips.checklistPlacement')}
           defaultValue={settings.checklist.placement.position}
           onValueChange={(value: string) => {
             update({
@@ -57,9 +68,9 @@ export const ThemeSettingsChecklist = () => {
           }}
         />
         <ThemeSettingInput
-          text="Offset right"
+          text={t('themeBuilder.fields.common.offsetRight')}
           name="checklist-offset-x"
-          tooltip="How far in pixels from the horizontal edge of the browser window the checklist should be positioned."
+          tooltip={t('themeBuilder.tooltips.checklistOffsetX')}
           defaultValue={String(settings.checklist.placement.positionOffsetX)}
           onChange={(value: string) => {
             update({
@@ -71,10 +82,10 @@ export const ThemeSettingsChecklist = () => {
           }}
         />
         <ThemeSettingInput
-          text="Offset bottom"
+          text={t('themeBuilder.fields.common.offsetBottom')}
           name="checklist-offset-y"
           defaultValue={String(settings.checklist.placement.positionOffsetY)}
-          tooltip="How far in pixels from the vertical edge of the browser window the checklist should be positioned."
+          tooltip={t('themeBuilder.tooltips.checklistOffsetY')}
           onChange={(value: string) => {
             update({
               placement: {
@@ -85,11 +96,11 @@ export const ThemeSettingsChecklist = () => {
           }}
         />
         <ThemeSettingInput
-          text="Z-index"
+          text={t('themeBuilder.fields.common.zIndex')}
           name="checklist-z-index"
           disableUnit={true}
-          placeholder="Auto"
-          tooltip="How high on the web page's z axis the checklist should appear. Leave empty to use Usertour's default behavior."
+          placeholder={t('themeBuilder.placeholders.auto')}
+          tooltip={t('themeBuilder.tooltips.checklistZIndex')}
           defaultValue={settings.checklist.zIndex ? String(settings.checklist.zIndex) : ''}
           onChange={(value: string) => {
             const numValue = value === '' ? undefined : Number(value);
@@ -97,7 +108,7 @@ export const ThemeSettingsChecklist = () => {
           }}
         />
         <ThemeSelectColor
-          text="Checkmark color"
+          text={t('themeBuilder.fields.checklist.checkmarkColor')}
           name="checklist-checkmark-color"
           defaultColor={settings.checklist.checkmarkColor}
           showAutoButton={true}
@@ -108,10 +119,10 @@ export const ThemeSettingsChecklist = () => {
           }}
         />
         <ThemeSettingSelect
-          text="Completed task text decoration"
+          text={t('themeBuilder.fields.checklist.completedTaskTextDecoration')}
           name="checklist-completed-task-text-decoration"
           items={textDecorationItems}
-          tooltip="Controls the text decoration of the completed task."
+          tooltip={t('themeBuilder.tooltips.checklistCompletedTaskDecoration')}
           defaultValue={settings.checklist.completedTaskTextDecoration ?? 'none'}
           vertical={true}
           onValueChange={(value: string) => {

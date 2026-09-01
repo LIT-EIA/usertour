@@ -5,6 +5,7 @@ import { ModalPosition } from '@usertour/types';
 import { ContentModalPlacementData } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InputNumber } from './shared/input';
 
 const PlacementButton = (props: {
@@ -36,6 +37,7 @@ export interface ContentModalPlacementProps {
 }
 
 export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
+  const { t } = useTranslation();
   const { data: initialValue, onChange, name = 'modal' } = props;
   const [data, setData] = useState<ContentModalPlacementData>(initialValue);
 
@@ -60,19 +62,19 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
   return (
     <div className="space-y-3">
       <div className="flex justify-start items-center space-x-1	">
-        <h1 className="text-sm">Placement</h1>
-        <HelpTooltip>Controls which corner the {name} should be placed at.</HelpTooltip>
+        <h1 className="text-sm">{t('contentBuilder.shared.placement')}</h1>
+        <HelpTooltip>{t('contentBuilder.shared.placementTooltip', { name })}</HelpTooltip>
       </div>
       <div className="flex flex-col bg-background-700 p-3.5 rounded-lg space-y-6 mt-2">
         <div className="flex justify-between">
           <PlacementButton
-            text="Left Top"
+            text={t('contentBuilder.shared.position.leftTop')}
             position={ModalPosition.LeftTop}
             currentPosition={data.position}
             onPositionChange={handleCurrentPositionChange}
           />
           <PlacementButton
-            text="Right Top"
+            text={t('contentBuilder.shared.position.rightTop')}
             position={ModalPosition.RightTop}
             currentPosition={data.position}
             onPositionChange={handleCurrentPositionChange}
@@ -80,7 +82,7 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
         </div>
         <div className="flex justify-center">
           <PlacementButton
-            text="Center"
+            text={t('contentBuilder.shared.position.center')}
             position={ModalPosition.Center}
             currentPosition={data.position}
             onPositionChange={handleCurrentPositionChange}
@@ -88,13 +90,13 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
         </div>
         <div className="flex justify-between">
           <PlacementButton
-            text="Left Bottom"
+            text={t('contentBuilder.shared.position.leftBottom')}
             position={ModalPosition.LeftBottom}
             currentPosition={data.position}
             onPositionChange={handleCurrentPositionChange}
           />
           <PlacementButton
-            text="Right Bottom"
+            text={t('contentBuilder.shared.position.rightBottom')}
             position={ModalPosition.RightBottom}
             currentPosition={data.position}
             onPositionChange={handleCurrentPositionChange}
@@ -105,10 +107,13 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
         <>
           <div className="flex flex-col space-y-2">
             <div className="flex space-x-1 justify-start items-center">
-              <Label htmlFor="button-distance-element">The horizontal offset</Label>
+              <Label htmlFor="button-distance-element">
+                {t('contentBuilder.shared.horizontalOffset')}
+              </Label>
               <HelpTooltip>
-                How far in pixels from the horizontal edge of the browser window the {name} should
-                be positioned.
+                {t('contentBuilder.shared.horizontalOffsetTooltip', {
+                  name,
+                })}
               </HelpTooltip>
             </div>
             <InputNumber
@@ -118,10 +123,11 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
           </div>
           <div className="flex flex-col space-y-2">
             <div className="flex space-x-1 justify-start items-center">
-              <Label htmlFor="button-distance-element">The vertical offset</Label>
+              <Label htmlFor="button-distance-element">
+                {t('contentBuilder.shared.verticalOffset')}
+              </Label>
               <HelpTooltip>
-                How far in pixels from the vertical edge of the browser window the {name} should be
-                positioned.
+                {t('contentBuilder.shared.verticalOffsetTooltip', { name })}
               </HelpTooltip>
             </div>
             <InputNumber

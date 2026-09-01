@@ -5,11 +5,13 @@ import { useState } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { AttributeCreateForm } from '@usertour-packages/shared-editor';
 import { PlusIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const AttributeListHeader = () => {
   const [open, setOpen] = useState(false);
   const { refetch } = useAttributeListContext();
   const { isViewOnly, project } = useAppContext();
+  const { t } = useTranslation();
   const handleCreate = () => {
     setOpen(true);
   };
@@ -23,14 +25,16 @@ export const AttributeListHeader = () => {
       <div className="relative ">
         <div className="flex flex-col space-y-2">
           <div className="flex flex-row justify-between ">
-            <h3 className="text-2xl font-semibold tracking-tight">Attributes</h3>
+            <h3 className="text-2xl font-semibold tracking-tight">
+              {t('settings.attributes.title')}
+            </h3>
             <Button onClick={handleCreate} disabled={isViewOnly}>
               <PlusIcon className="w-4 h-4" />
-              New Attribute
+              {t('settings.attributes.newButton')}
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
-            <p>You can send user/company attributes via the Usertour.js</p>
+            <p>{t('settings.attributes.description')}</p>
             <p>
               <a
                 href="https://docs.usertour.io/developers/usertourjs-reference/overview/#attributes"
@@ -38,7 +42,7 @@ export const AttributeListHeader = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <span>Read the Attributes guide</span>
+                <span>{t('settings.common.readGuide', { topic: 'Attributes' })}</span>
                 <OpenInNewWindowIcon className="size-3.5 inline ml-0.5 mb-0.5" />
               </a>
             </p>

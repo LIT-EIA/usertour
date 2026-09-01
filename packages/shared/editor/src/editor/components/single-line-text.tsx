@@ -4,6 +4,7 @@ import { Input } from '@usertour-packages/input';
 import { Label } from '@usertour-packages/label';
 import { Switch } from '@usertour-packages/switch';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import { ContentEditorSingleLineTextElement } from '../../types/editor';
@@ -20,6 +21,7 @@ interface ContentEditorSingleLineTextProps {
 
 export const ContentEditorSingleLineText = (props: ContentEditorSingleLineTextProps) => {
   const { element, id } = props;
+  const { t } = useTranslation();
   const {
     updateElement,
     zIndex,
@@ -132,10 +134,10 @@ export const ContentEditorSingleLineText = (props: ContentEditorSingleLineTextPr
   // Memoize default values to prevent unnecessary re-renders
   const defaultValues = useMemo(
     () => ({
-      placeholder: localData.placeholder || 'Enter text...',
-      buttonText: localData.buttonText || 'Submit',
+      placeholder: localData.placeholder || t('contentBuilder.editor.textInput.defaultPlaceholder'),
+      buttonText: localData.buttonText || t('contentBuilder.editor.textInput.defaultButtonText'),
     }),
-    [localData.placeholder, localData.buttonText],
+    [localData.placeholder, localData.buttonText, t],
   );
 
   return (
@@ -147,7 +149,7 @@ export const ContentEditorSingleLineText = (props: ContentEditorSingleLineTextPr
               <Input
                 placeholder={defaultValues.placeholder}
                 className="grow h-auto border-sdk-question bg-sdk-background"
-                aria-label="Text input field"
+                aria-label={t('contentBuilder.editor.textInput.singleLinePreviewLabel')}
                 readOnly
               />
               <div className="flex justify-end w-full">
@@ -164,27 +166,27 @@ export const ContentEditorSingleLineText = (props: ContentEditorSingleLineTextPr
               style={{ zIndex }}
               sideOffset={10}
               side="right"
-              aria-label="Single line text configuration"
+              aria-label={t('contentBuilder.editor.textInput.singleLineConfigAriaLabel')}
             >
               <div className="flex flex-col gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="question-name">Question name</Label>
+                  <Label htmlFor="question-name">{t('contentBuilder.editor.question.name')}</Label>
                   <Input
                     id="question-name"
                     value={localData.name}
                     onChange={handleNameChange}
-                    placeholder="Enter question name"
+                    placeholder={t('contentBuilder.editor.multipleChoice.namePlaceholder')}
                     aria-describedby={isNameEmpty ? 'name-error' : undefined}
                     aria-invalid={isNameEmpty}
                   />
                   {isNameEmpty && (
                     <div id="name-error" className="text-sm text-red-500">
-                      Question name is required
+                      {t('contentBuilder.editor.question.nameRequired')}
                     </div>
                   )}
                 </div>
 
-                <Label>When answer is submitted</Label>
+                <Label>{t('contentBuilder.editor.question.whenSubmitted')}</Label>
                 <ContentActions
                   zIndex={zIndex}
                   isShowIf={false}
@@ -199,27 +201,31 @@ export const ContentEditorSingleLineText = (props: ContentEditorSingleLineTextPr
                 />
 
                 <div className="space-y-2">
-                  <Label htmlFor="placeholder">Placeholder text</Label>
+                  <Label htmlFor="placeholder">
+                    {t('contentBuilder.editor.textInput.placeholder')}
+                  </Label>
                   <Input
                     id="placeholder"
                     value={localData.placeholder}
                     onChange={handlePlaceholderChange}
-                    placeholder="Enter placeholder text"
+                    placeholder={t('contentBuilder.editor.textInput.placeholderHint')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="button-text">Submit button text</Label>
+                  <Label htmlFor="button-text">
+                    {t('contentBuilder.editor.multipleChoice.submitButton')}
+                  </Label>
                   <Input
                     id="button-text"
                     value={localData.buttonText}
                     onChange={handleButtonTextChange}
-                    placeholder="Enter button text"
+                    placeholder={t('contentBuilder.editor.textInput.buttonTextHint')}
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="required">Required</Label>
+                  <Label htmlFor="required">{t('contentBuilder.editor.textInput.required')}</Label>
                   <Switch
                     id="required"
                     className="data-[state=unchecked]:bg-muted"
@@ -243,7 +249,7 @@ export const ContentEditorSingleLineText = (props: ContentEditorSingleLineTextPr
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent side="bottom" style={{ zIndex: zIndex }}>
-        Question name is required
+        {t('contentBuilder.editor.question.nameRequired')}
       </EditorErrorContent>
     </EditorError>
   );
@@ -256,6 +262,7 @@ export const ContentEditorSingleLineTextSerialize = (props: {
   onClick?: (element: ContentEditorSingleLineTextElement, value: string) => Promise<void> | void;
 }) => {
   const { element, onClick } = props;
+  const { t } = useTranslation();
   const [value, setValue] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
@@ -267,10 +274,11 @@ export const ContentEditorSingleLineTextSerialize = (props: {
 
   const defaultValues = useMemo(
     () => ({
-      placeholder: element.data.placeholder || 'Enter text...',
-      buttonText: element.data.buttonText || 'Submit',
+      placeholder:
+        element.data.placeholder || t('contentBuilder.editor.textInput.defaultPlaceholder'),
+      buttonText: element.data.buttonText || t('contentBuilder.editor.textInput.defaultButtonText'),
     }),
-    [element.data.placeholder, element.data.buttonText],
+    [element.data.placeholder, element.data.buttonText, t],
   );
 
   const handleValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,7 +303,7 @@ export const ContentEditorSingleLineTextSerialize = (props: {
         className="grow h-auto border-sdk-question bg-sdk-background"
         value={value}
         onChange={handleValueChange}
-        aria-label="Text input field"
+        aria-label={t('contentBuilder.editor.textInput.singleLinePreviewLabel')}
       />
       <div className="flex justify-end w-full">
         <Button
@@ -303,7 +311,7 @@ export const ContentEditorSingleLineTextSerialize = (props: {
           className="flex-none"
           onClick={handleSubmit}
           disabled={isDisabled}
-          aria-label={`Submit ${defaultValues.buttonText}`}
+          aria-label={`${t('contentBuilder.editor.textInput.defaultButtonText')} ${defaultValues.buttonText}`}
         >
           {defaultValues.buttonText}
         </Button>

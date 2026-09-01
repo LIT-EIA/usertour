@@ -27,6 +27,7 @@ import {
 import { useToast } from '@usertour-packages/use-toast';
 import { ApiKeyDialog } from './api-key-dialog';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 // Type definitions
 type ApiListActionProps = {
@@ -45,31 +46,35 @@ type DeleteDialogProps = {
 /**
  * Delete confirmation dialog component
  */
-const DeleteDialog = ({ token, isOpen, onOpenChange, onDelete, isLoading }: DeleteDialogProps) => (
-  <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>
-          Delete API key <span className="font-bold text-foreground">{token.name}</span>
-        </AlertDialogTitle>
-        <AlertDialogDescription>
-          Are you sure you want to delete this API key? This action cannot be undone.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-        <LoadingButton
-          variant="destructive"
-          onClick={onDelete}
-          loading={isLoading}
-          className="min-w-[80px]"
-        >
-          Delete
-        </LoadingButton>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
+const DeleteDialog = ({ token, isOpen, onOpenChange, onDelete, isLoading }: DeleteDialogProps) => {
+  const { t } = useTranslation();
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {t('settings.api.deleteResource')}{' '}
+            <span className="font-bold text-foreground">{token.name}</span>
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('settings.common.deleteConfirm.description', { name: token.name })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isLoading}>{t('settings.common.cancel')}</AlertDialogCancel>
+          <LoadingButton
+            variant="destructive"
+            onClick={onDelete}
+            loading={isLoading}
+            className="min-w-[80px]"
+          >
+            {t('settings.common.delete')}
+          </LoadingButton>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
 
 /**
  * Component for managing API token actions (currently only delete)
@@ -80,6 +85,7 @@ export const ApiListAction = ({ token, environmentId }: ApiListActionProps) => {
   const [shouldFetchToken, setShouldFetchToken] = useState(false);
   const { refetch } = useApiContext();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
   const { invoke: deleteAccessToken, loading: isDeleting } = useDeleteAccessTokenMutation();
   const { data: fullToken, loading: isTokenLoading } = useGetAccessTokenQuery(
     environmentId,
@@ -101,20 +107,20 @@ export const ApiListAction = ({ token, environmentId }: ApiListActionProps) => {
       if (success) {
         toast({
           variant: 'success',
-          title: 'API key deleted successfully',
+          title: t('settings.api.deleteSuccess'),
         });
         setIsDeleteDialogOpen(false);
         refetch();
       } else {
         toast({
           variant: 'destructive',
-          title: 'Failed to delete API key',
+          title: t('settings.api.deleteFailure'),
         });
       }
     } catch {
       toast({
         variant: 'destructive',
-        title: 'Failed to delete API key',
+        title: t('settings.api.deleteFailure'),
       });
     }
   };
@@ -130,7 +136,7 @@ export const ApiListAction = ({ token, environmentId }: ApiListActionProps) => {
         <DropdownMenuContent align="end" className="w-[200px]">
           <DropdownMenuItem onClick={handleReveal}>
             <EyeOpenIcon className="w-4 h-4 mr-2" />
-            Reveal API key
+            {t('settings.api.revealMenuItem')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setIsDeleteDialogOpen(true)}
@@ -138,7 +144,7 @@ export const ApiListAction = ({ token, environmentId }: ApiListActionProps) => {
             className="text-destructive focus:bg-destructive/10 focus:text-destructive"
           >
             <Delete2Icon className="w-4 h-4 mr-2" />
-            Delete
+            {t('settings.api.deleteMenuItem')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -158,7 +164,7 @@ export const ApiListAction = ({ token, environmentId }: ApiListActionProps) => {
             setShouldFetchToken(false);
           }
         }}
-        description={isTokenLoading ? 'Loading...' : undefined}
+        description={isTokenLoading ? t('settings.api.keyDialogLoading') : undefined}
       />
     </>
   );

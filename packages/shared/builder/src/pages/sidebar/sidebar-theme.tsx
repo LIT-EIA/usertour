@@ -20,6 +20,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { Theme } from '@usertour/types';
 import { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useMutation } from '@apollo/client';
 import { updateContentVersion } from '@usertour-packages/gql';
@@ -29,6 +30,7 @@ import { useBuilderContext } from '../../contexts';
 import { postProxyMessageToWindow } from '../../utils/post-message';
 
 export const SidebarTheme = () => {
+  const { t } = useTranslation();
   const { themeList } = useThemeListContext();
   const [updateContentVersionMutation] = useMutation(updateContentVersion);
   const { toast } = useToast();
@@ -66,7 +68,7 @@ export const SidebarTheme = () => {
       } else {
         return toast({
           variant: 'destructive',
-          title: 'Failed to save theme!',
+          title: t('contentBuilder.shared.theme.saveFailed'),
         });
       }
       setIsLoading(false);
@@ -97,21 +99,21 @@ export const SidebarTheme = () => {
     <>
       <div className="flex justify-between items-center space-x-1	">
         <div className="flex flex-row justify-between items-center space-x-1 ">
-          <h1 className="text-sm">Theme</h1>
+          <h1 className="text-sm">{t('contentBuilder.shared.theme.label')}</h1>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <QuestionMarkCircledIcon />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                This is the flow theme that will be used by default in every step
+                {t('contentBuilder.shared.theme.flowTooltip')}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
 
         <Button variant="link" onClick={handleEditTheme} className="p-0 h-full	text-sm	">
-          Edit this theme
+          {t('contentBuilder.shared.theme.edit')}
           <OpenInNewWindowIcon className="ml-1" />
         </Button>
       </div>
@@ -124,7 +126,7 @@ export const SidebarTheme = () => {
           <SelectTrigger className="justify-start flex h-8 text-xs	">
             <CubeIcon className="flex-none mr-2" />
             <div className="grow text-left">
-              <SelectValue placeholder="Select" />
+              <SelectValue placeholder={t('contentBuilder.shared.theme.selectPlaceholder')} />
             </div>
           </SelectTrigger>
 

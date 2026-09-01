@@ -12,6 +12,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useDeleteAttributeMutation } from '@usertour-packages/shared-hooks';
 import { LoadingButton } from '@/components/molecules/loading-button';
+import { useTranslation } from 'react-i18next';
 
 export const AttributeDeleteForm = (props: {
   data: Attribute;
@@ -22,6 +23,7 @@ export const AttributeDeleteForm = (props: {
   const { data, open, onOpenChange, onSubmit } = props;
   const { invoke: deleteAttribute, loading: isDeleting } = useDeleteAttributeMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = async () => {
     if (!data) {
@@ -33,7 +35,7 @@ export const AttributeDeleteForm = (props: {
       if (success) {
         toast({
           variant: 'success',
-          title: 'The attribute has been successfully deleted',
+          title: t('settings.attributes.deleteSuccess'),
         });
         onSubmit(true);
         onOpenChange(false);
@@ -52,16 +54,24 @@ export const AttributeDeleteForm = (props: {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the attribute{' '}
-            <span className="font-bold text-foreground">{data.displayName}</span>.
-          </AlertDialogDescription>
+          <AlertDialogTitle>
+            {t('settings.common.deleteConfirm.title', {
+              resource: t('settings.attributes.deleteResource'),
+            })}
+          </AlertDialogTitle>
+          <AlertDialogDescription
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: translated string; i18next escapes interpolated values by default
+            dangerouslySetInnerHTML={{
+              __html: t('settings.common.deleteConfirm.description', { name: data.displayName }),
+            }}
+          />
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('settings.common.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} variant="destructive" loading={isDeleting}>
-            Submit
+            {t('settings.common.deleteConfirm.confirm', {
+              resource: t('settings.attributes.deleteResource'),
+            })}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

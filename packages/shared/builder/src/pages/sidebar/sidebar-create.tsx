@@ -5,15 +5,17 @@ import { EXTENSION_SIDEBAR_POPPER } from '@usertour-packages/constants';
 import { PopperPreview } from '@usertour-packages/shared-components';
 import { getDefaultDataForType } from '@usertour-packages/shared-editor';
 import { defaultStep } from '@usertour/helpers';
-import { useCallback } from 'react';
+import { TFunction } from 'i18next';
+import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext } from '../../contexts';
 
-const contentList: any[] = [
+const getContentList = (t: TFunction): any[] => [
   {
     // data: '[{"type":"paragraph","children":[{"text":"Hello, I an Lucky"}]}]',
     data: getDefaultDataForType('tooltip'),
     type: 'tooltip',
-    text: 'Tooltip',
+    text: t('contentBuilder.flow.stepType.tooltip'),
     width: '240px',
     height: '98px',
     scale: 0.7,
@@ -22,7 +24,7 @@ const contentList: any[] = [
     // data: '[{"type":"image","url":"https://assets.usertour.io/2918eea0-7daf-45c0-bc27-74a5ac2aca86/icon-theme-default-img (2).png","width":{"type":"percent","value":100},"children":[{"text":""}]},{"type":"paragraph","children":[{"text":"Track your favorites"}]}]',
     data: getDefaultDataForType('modal'),
     type: 'modal',
-    text: 'Modal',
+    text: t('contentBuilder.flow.stepType.modal'),
     width: '240px',
     height: '240px',
     scale: 0.5,
@@ -31,7 +33,7 @@ const contentList: any[] = [
     // data: '[{"type":"image","url":"https://assets.usertour.io/2918eea0-7daf-45c0-bc27-74a5ac2aca86/icon-theme-default-img (2).png","width":{"type":"percent","value":100},"children":[{"text":""}]},{"type":"paragraph","children":[{"text":"Track your favorites"}]}]',
     data: getDefaultDataForType('hidden'),
     type: 'hidden',
-    text: 'Hidden',
+    text: t('contentBuilder.flow.stepType.hidden'),
     width: '240px',
     height: '240px',
     scale: 0.5,
@@ -52,6 +54,8 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
     isWebBuilder,
   } = useBuilderContext();
   const { container } = props;
+  const { t } = useTranslation();
+  const contentList = useMemo(() => getContentList(t), [t]);
 
   const handleCreateStep = useCallback(
     (type: string, content: any) => {
@@ -66,7 +70,7 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
           width: type === 'tooltip' ? defaultStep.setting.width : 550,
         },
         type,
-        name: 'Untitled',
+        name: t('contentBuilder.flow.untitledStep'),
         data: content,
         sequence: index,
       });
@@ -89,7 +93,7 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
       <Popover.Trigger asChild>
         <Button className="w-full h-10" variant="secondary">
           <PlusCircledIcon className="mr-2" />
-          Create
+          {t('contentBuilder.flow.create')}
         </Button>
       </Popover.Trigger>
       <Popover.Anchor virtualRef={container} />
@@ -102,7 +106,7 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
           alignOffset={40}
           sideOffset={2}
         >
-          <h1 className="text-lg mb-3">Step Type</h1>
+          <h1 className="text-lg mb-3">{t('contentBuilder.flow.stepTypeTitle')}</h1>
           <div className="grid grid-cols-2 gap-4">
             {currentTheme?.settings &&
               contentList.map((content, index) => {

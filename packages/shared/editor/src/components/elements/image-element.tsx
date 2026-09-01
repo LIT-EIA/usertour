@@ -22,6 +22,7 @@ import {
 } from '@usertour-packages/tooltip';
 import Upload from 'rc-upload';
 import { CSSProperties, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 /* eslint-disable @next/next/no-img-element */
 import { Path, Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
@@ -62,6 +63,7 @@ const transformsStyle = (element: ImageElementType) => {
 };
 
 const ImageElement = (props: RenderElementProps) => {
+  const { t } = useTranslation();
   const editor = useSlateStatic();
   const element = props.element as ImageElementType;
   const path = ReactEditor.findPath(editor, element);
@@ -197,12 +199,12 @@ const ImageElement = (props: RenderElementProps) => {
               sideOffset={5}
             >
               <div className="flex flex-col gap-2.5">
-                <Label htmlFor="button-text">Button width</Label>
+                <Label htmlFor="button-text">{t('contentBuilder.editor.image.width')}</Label>
                 <div className="flex gap-x-2">
                   <Input
                     type="width"
                     value={element.width?.value}
-                    placeholder="Column width"
+                    placeholder={t('contentBuilder.editor.image.width')}
                     onChange={handleWidthValueChange}
                     className="bg-background flex-none w-[120px]"
                   />
@@ -211,13 +213,17 @@ const ImageElement = (props: RenderElementProps) => {
                     defaultValue={element.width?.type ?? 'percent'}
                   >
                     <SelectTrigger className="shrink">
-                      <SelectValue placeholder="Select a distribute" />
+                      <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                     </SelectTrigger>
                     <SelectPortal style={{ zIndex: zIndex + 2 }}>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem value="percent">%</SelectItem>
-                          <SelectItem value="pixels">pixels</SelectItem>
+                          <SelectItem value="percent">
+                            {t('contentBuilder.editor.width.percent')}
+                          </SelectItem>
+                          <SelectItem value="pixels">
+                            {t('contentBuilder.editor.width.pixels')}
+                          </SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </SelectPortal>
@@ -229,14 +235,14 @@ const ImageElement = (props: RenderElementProps) => {
                     checked={element.margin?.enabled}
                     onCheckedChange={handleMarginCheckedChange}
                   />
-                  <Label htmlFor="margin">Margin</Label>
+                  <Label htmlFor="margin">{t('contentBuilder.editor.margin.label')}</Label>
                 </div>
                 {element.margin?.enabled && (
                   <div className="flex gap-x-2">
                     <div className="flex flex-col justify-center">
                       <Input
                         value={element.margin?.left}
-                        placeholder="Left"
+                        placeholder={t('contentBuilder.editor.common.left')}
                         onChange={(e) => {
                           handleMarginValueChange(e, 'left');
                         }}
@@ -249,7 +255,7 @@ const ImageElement = (props: RenderElementProps) => {
                         onChange={(e) => {
                           handleMarginValueChange(e, 'top');
                         }}
-                        placeholder="Top"
+                        placeholder={t('contentBuilder.editor.common.top')}
                         className="bg-background flex-none w-20"
                       />
                       <Input
@@ -257,14 +263,14 @@ const ImageElement = (props: RenderElementProps) => {
                         onChange={(e) => {
                           handleMarginValueChange(e, 'bottom');
                         }}
-                        placeholder="Bottom"
+                        placeholder={t('contentBuilder.editor.common.bottom')}
                         className="bg-background flex-none w-20"
                       />
                     </div>
                     <div className="flex flex-col justify-center">
                       <Input
                         value={element.margin?.right}
-                        placeholder="Right"
+                        placeholder={t('contentBuilder.editor.common.right')}
                         onChange={(e) => {
                           handleMarginValueChange(e, 'right');
                         }}
@@ -288,7 +294,11 @@ const ImageElement = (props: RenderElementProps) => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p>Delete image</p>
+                        <p>
+                          {t('contentBuilder.editor.actionButtons.delete', {
+                            entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                          })}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -307,7 +317,7 @@ const ImageElement = (props: RenderElementProps) => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p>Replace image</p>
+                        <p>{t('contentBuilder.editor.image.replace')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -325,11 +335,19 @@ const ImageElement = (props: RenderElementProps) => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p>Insert image to the left</p>
+                        <p>
+                          {t('contentBuilder.editor.actionButtons.insertLeft', {
+                            entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                          })}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <div className="flex-none mx-1 leading-10">Insert image</div>
+                  <div className="flex-none mx-1 leading-10">
+                    {t('contentBuilder.editor.actionButtons.insert', {
+                      entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                    })}
+                  </div>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -343,7 +361,11 @@ const ImageElement = (props: RenderElementProps) => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p>Insert image to the right</p>
+                        <p>
+                          {t('contentBuilder.editor.actionButtons.insertRight', {
+                            entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                          })}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

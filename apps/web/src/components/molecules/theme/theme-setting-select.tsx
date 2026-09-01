@@ -8,22 +8,12 @@ import {
 } from '@usertour-packages/select';
 import { HelpTooltip } from '@usertour-packages/shared-components';
 import { cn } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 export type ThemeSettingSelectItemsType = {
   value: string;
   name: string;
 };
-const fontWeightItems = [
-  { value: '100', name: 'Thin 100' },
-  { value: '200', name: 'Extra light 200' },
-  { value: '300', name: 'Light 300' },
-  { value: '400', name: 'Normal 400' },
-  { value: '500', name: 'Medium 500' },
-  { value: '600', name: 'Semibold 600' },
-  { value: '700', name: 'Bold 700' },
-  { value: '800', name: 'Extra bold 800' },
-  { value: '900', name: 'Black 900' },
-];
 
 type ThemeSelectProps = {
   text: string;
@@ -37,6 +27,18 @@ type ThemeSelectProps = {
 };
 
 export const ThemeSettingSelect = (props: ThemeSelectProps) => {
+  const { t } = useTranslation();
+  const fontWeightItems: ThemeSettingSelectItemsType[] = [
+    { value: '100', name: t('themeBuilder.options.fontWeight.thin') },
+    { value: '200', name: t('themeBuilder.options.fontWeight.extraLight') },
+    { value: '300', name: t('themeBuilder.options.fontWeight.light') },
+    { value: '400', name: t('themeBuilder.options.fontWeight.normal') },
+    { value: '500', name: t('themeBuilder.options.fontWeight.medium') },
+    { value: '600', name: t('themeBuilder.options.fontWeight.semibold') },
+    { value: '700', name: t('themeBuilder.options.fontWeight.bold') },
+    { value: '800', name: t('themeBuilder.options.fontWeight.extraBold') },
+    { value: '900', name: t('themeBuilder.options.fontWeight.black') },
+  ];
   const {
     text,
     placeholder = '',

@@ -27,6 +27,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const signupFormSchema = z.object({
   email: z
@@ -47,6 +48,7 @@ export const SignUp = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [registerData, setRegisterData] = useState<SignUpSuccessProps | null>(null);
+  const { t } = useTranslation();
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupFormSchema),
@@ -83,7 +85,7 @@ export const SignUp = () => {
             <Card>
               <CardHeader className="space-y-1 text-center">
                 <CardTitle className="text-2xl  font-semibold tracking-tight">
-                  Get ready for the fun to begin!
+                  {t('auth.magicLink.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4">
@@ -93,9 +95,13 @@ export const SignUp = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Work Email</FormLabel>
+                        <FormLabel>{t('auth.magicLink.emailLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your work email" type="email" {...field} />
+                          <Input
+                            placeholder={t('auth.magicLink.emailPlaceholder')}
+                            type="email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -106,15 +112,15 @@ export const SignUp = () => {
               <CardFooter className="flex flex-col">
                 <Button className="w-full" type="submit" disabled={isLoading}>
                   {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-                  Play with Usertour
+                  {t('auth.magicLink.submitButton')}
                 </Button>
                 <div className="pt-4 text-center text-sm text-muted-foreground">
-                  Already have an account?{' '}
+                  {t('auth.magicLink.alreadyHaveAccount')}{' '}
                   <Link
                     to="/auth/signin"
                     className="underline underline-offset-4 hover:text-primary"
                   >
-                    Sign in instead
+                    {t('auth.magicLink.signInInstead')}
                   </Link>{' '}
                 </div>
               </CardFooter>

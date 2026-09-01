@@ -6,6 +6,6 @@
   "license": "ISC",
   "exports": {
     "./en-US/*": "./src/en-US/*.ts",
-    "./zh-Hans/*": "./src/zh-Hans/*.ts"
+    "./fr-CA/*": "./src/fr-CA/*.ts"
   }
 }

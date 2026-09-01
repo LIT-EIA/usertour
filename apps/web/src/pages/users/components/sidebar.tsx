@@ -26,12 +26,14 @@ import { useSearchParams } from 'react-router-dom';
 import { UserSegmentCreateForm } from './create-form';
 import { useAppContext } from '@/contexts/app-context';
 import { UserSegmentListSkeleton } from './sidebar-skeleton';
+import { useTranslation } from 'react-i18next';
 
 export const UserListSidebar = () => {
   const { segmentList, refetch, environmentId, currentSegment, loading } = useSegmentListContext();
   const [_, setSearchParams] = useSearchParams();
   const { isViewOnly } = useAppContext();
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   const handleCreate = () => {
     setOpen(true);
   };
@@ -54,7 +56,7 @@ export const UserListSidebar = () => {
     <>
       <AdminSidebarContainerTemplate>
         <AdminSidebarHeaderTemplate>
-          <h2 className="text-2xl font-semibold ">Users</h2>
+          <h2 className="text-2xl font-semibold ">{t('users.sidebar.title')}</h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -64,11 +66,11 @@ export const UserListSidebar = () => {
                   onClick={handleCreate}
                   disabled={isViewOnly}
                 >
-                  <PLUSIcon width={16} height={16} /> New
+                  <PLUSIcon width={16} height={16} /> {t('users.sidebar.new')}
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs bg-slate-700">
-                <p>Create user segment</p>
+                <p>{t('users.sidebar.createSegmentTooltip')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -79,7 +81,9 @@ export const UserListSidebar = () => {
           <UserSegmentListSkeleton />
         ) : (
           <AdminSidebarBodyTemplate>
-            <AdminSidebarBodyTitleTemplate>Segments</AdminSidebarBodyTitleTemplate>
+            <AdminSidebarBodyTitleTemplate>
+              {t('users.sidebar.segments')}
+            </AdminSidebarBodyTitleTemplate>
             {segmentList?.map((segment, index) => (
               <Fragment key={index}>
                 <AdminSidebarBodyItemTemplate
@@ -100,7 +104,7 @@ export const UserListSidebar = () => {
                   {segment.dataType === 'MANUAL' && (
                     <Archive2LineIcon width={16} height={16} className="mr-1" />
                   )}
-                  {segment.name}
+                  {segment.dataType === 'ALL' ? t('users.segments.allUsersName') : segment.name}
                 </AdminSidebarBodyItemTemplate>
               </Fragment>
             ))}

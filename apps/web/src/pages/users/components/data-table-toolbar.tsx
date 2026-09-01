@@ -17,12 +17,14 @@ import { DataTableViewOptions } from './data-table-view-options';
 import { DeleteUserFromSegment } from './delete-user';
 import { RemoveFromSegment } from './remove-from-segment';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   currentSegment: Segment;
 }
 
 export function DataTableToolbar<TData>({ table, currentSegment }: DataTableToolbarProps<TData>) {
+  const { t } = useTranslation();
   const { attributeList } = useAttributeListContext();
   const { setCurrentConditions } = useSegmentListContext();
   const { query, setQuery } = useUserListContext();
@@ -73,14 +75,14 @@ export function DataTableToolbar<TData>({ table, currentSegment }: DataTableTool
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center space-x-2">
           <Input
-            placeholder="Search..."
+            placeholder={t('common.search')}
             value={searchValue}
             onChange={handleSearchChange}
             className="h-8 w-[150px] lg:w-[250px]"
           />
           {searchValue !== '' && (
             <Button variant="ghost" onClick={handleSearchReset} className="h-8 px-2 lg:px-3">
-              Reset
+              {t('common.reset')}
               <Cross2Icon className="ml-2 h-4 w-4" />
             </Button>
           )}
@@ -97,7 +99,7 @@ export function DataTableToolbar<TData>({ table, currentSegment }: DataTableTool
           isShowIf={false}
           key={currentSegment.id}
           filterItems={['group', 'user-attr']}
-          addButtonText={'Add filter'}
+          addButtonText={t('common.addFilter')}
           attributes={
             attributeList?.filter((attr) => attr.bizType === AttributeBizTypes.User) || []
           }

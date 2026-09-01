@@ -15,7 +15,7 @@ export interface ParsedSelector {
 /**
  * Parses a selector string that may contain a conditional selector separated by "<<<"
  * Format: <mainSelector> <<< <conditionalSelector>
- * 
+ *
  * @param selector - The selector string or ElementSelectorPropsData to parse
  * @returns Parsed selector with main and conditional parts
  */
@@ -120,4 +120,3 @@ export async function checkConditionalSelectorPresent(
     return false;
   }
 }
-

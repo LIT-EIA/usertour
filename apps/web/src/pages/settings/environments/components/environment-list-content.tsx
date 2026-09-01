@@ -19,9 +19,10 @@ import {
 } from '@usertour-packages/tooltip';
 import { cn } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
-import { format } from 'date-fns';
+import { formatDate as format } from '@/utils/common';
 import { useCallback, useState } from 'react';
 import { useCopyToClipboard } from 'react-use';
+import { useTranslation } from 'react-i18next';
 import { EnvironmentListAction } from './environment-list-action';
 
 interface EnvironmentListContentTableRowProps {
@@ -32,13 +33,14 @@ const EnvironmentListContentTableRow = (props: EnvironmentListContentTableRowPro
   const [_, copyToClipboard] = useCopyToClipboard();
   const [isShowCopy, setIsShowCopy] = useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleCopy = useCallback(() => {
     copyToClipboard(environment.token);
     toast({
-      title: `"${environment.token}" copied to clipboard`,
+      title: t('settings.environments.tokenCopiedToast', { token: environment.token }),
     });
-  }, [environment.token]);
+  }, [environment.token, t]);
 
   return (
     <TableRow className="cursor-pointer">
@@ -66,6 +68,7 @@ const EnvironmentListContentTableRow = (props: EnvironmentListContentTableRowPro
 
 export const EnvironmentListContent = () => {
   const { environmentList, loading, isRefetching } = useEnvironmentListContext();
+  const { t } = useTranslation();
 
   if (loading || isRefetching) {
     return <ListSkeleton />;
@@ -76,22 +79,21 @@ export const EnvironmentListContent = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Environment name</TableHead>
+              <TableHead>{t('settings.environments.columns.name')}</TableHead>
               <TableHead>
-                Usertour.js Token
+                {t('settings.environments.columns.token')}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <QuestionMarkCircledIcon className="inline ml-1 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs bg-foreground text-background">
-                      You need this when installing Usertour.js in your web app. See
-                      https://docs.usertour.io for more details.
+                      {t('settings.environments.tokenTooltip')}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </TableHead>
-              <TableHead>CreatedAt</TableHead>
+              <TableHead>{t('settings.environments.columns.createdAt')}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -102,7 +104,7 @@ export const EnvironmentListContent = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center">No results.</TableCell>
+                <TableCell className="h-24 text-center">{t('dataTable.noResults')}</TableCell>
               </TableRow>
             )}
           </TableBody>

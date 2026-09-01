@@ -3,6 +3,7 @@ import { useContentVersionContext } from '@/contexts/content-version-context';
 import { buildConfig } from '@usertour/helpers';
 import { ContentDataType, RulesCondition } from '@usertour/types';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ContentDetailAutoStartRules,
   ContentDetailAutoStartRulesType,
@@ -11,6 +12,7 @@ import { useAppContext } from '@/contexts/app-context';
 import { useContentVersionUpdate } from '@/hooks/use-content-version-update';
 
 export const ContentDetailSettings = () => {
+  const { t } = useTranslation();
   const { version } = useContentVersionContext();
   const { content } = useContentDetailContext();
   const { isViewOnly } = useAppContext();
@@ -57,7 +59,11 @@ export const ContentDetailSettings = () => {
         defaultConditions={config.autoStartRules}
         defaultEnabled={config.enabledAutoStartRules}
         setting={config.autoStartRulesSetting}
-        name={`Auto-start ${contentType}`}
+        name={t('contents.overview.autoStart.startLabel', {
+          label: t(`contents.overview.contentTypeLabel.${contentType}`, {
+            defaultValue: contentType,
+          }),
+        })}
         onDataChange={handleAutoStartRulesDataChange}
         content={content}
         type={ContentDetailAutoStartRulesType.START_RULES}
@@ -70,7 +76,11 @@ export const ContentDetailSettings = () => {
         defaultConditions={config.hideRules}
         defaultEnabled={config.enabledHideRules}
         setting={config?.hideRulesSetting}
-        name={`Temporarily hide ${contentType} if...`}
+        name={t('contents.overview.hideRules.name', {
+          label: t(`contents.overview.contentTypeLabel.${contentType}`, {
+            defaultValue: contentType,
+          }),
+        })}
         onDataChange={handleHideRulesDataChange}
         content={content}
         type={ContentDetailAutoStartRulesType.HIDE_RULES}

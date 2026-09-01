@@ -26,10 +26,11 @@ import {
 import { useDeleteSessionMutation, useEndSessionMutation } from '@usertour-packages/shared-hooks';
 import { BizEvent, BizEvents, BizSession } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
-import { Fragment, ReactNode, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@usertour-packages/dialog';
 import { SessionResponse } from '@/components/molecules/session-detail';
+import { useTranslation } from 'react-i18next';
 
 // Create a custom hook for form handling
 const useSessionForm = (
@@ -38,6 +39,7 @@ const useSessionForm = (
   onSubmit: (success: boolean) => void,
 ) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { invoke: deleteSession, loading: deleteLoading } = useDeleteSessionMutation();
   const { invoke: endSession, loading: endLoading } = useEndSessionMutation();
 
@@ -49,7 +51,10 @@ const useSessionForm = (
       if (result) {
         toast({
           variant: 'success',
-          title: `The session has been successfully ${action}ed`,
+          title:
+            action === 'delete'
+              ? t('sessionActions.toast.deleteSuccess')
+              : t('sessionActions.toast.endSuccess'),
         });
         onSubmit(true);
         return;
@@ -58,7 +63,10 @@ const useSessionForm = (
       onSubmit(false);
       toast({
         variant: 'destructive',
-        title: `Failed to ${action} session`,
+        title:
+          action === 'delete'
+            ? t('sessionActions.toast.deleteFailed')
+            : t('sessionActions.toast.endFailed'),
       });
     }
   };
@@ -110,23 +118,26 @@ const useSessionEvents = (session?: BizSession) => {
 };
 
 // Dialog component for displaying session responses
-const ResponseDialog = ({ open, onOpenChange, answerEvents }: ResponseDialogProps) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="sm:max-w-[600px]">
-      <DialogHeader>
-        <DialogTitle>Question Response</DialogTitle>
-      </DialogHeader>
-      {answerEvents?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-          <EmptyPlaceholderIcon className="h-10 w-10 text-muted-foreground" />
-          <p>No responses yet</p>
-        </div>
-      ) : (
-        <SessionResponse answerEvents={answerEvents} />
-      )}
-    </DialogContent>
-  </Dialog>
-);
+const ResponseDialog = ({ open, onOpenChange, answerEvents }: ResponseDialogProps) => {
+  const { t } = useTranslation();
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{t('sessionActions.responseDialog.title')}</DialogTitle>
+        </DialogHeader>
+        {answerEvents?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+            <EmptyPlaceholderIcon className="h-10 w-10 text-muted-foreground" />
+            <p>{t('sessionActions.responseDialog.empty')}</p>
+          </div>
+        ) : (
+          <SessionResponse answerEvents={answerEvents} />
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 // Component containing all dropdown menu items
 // Extracts menu items logic from main component to reduce complexity
@@ -152,79 +163,80 @@ const DropdownMenuItems = ({
   showViewResponse: boolean;
   isViewOnly: boolean;
   sessionState: number;
-}) => (
-  <>
-    {showViewDetails && (
-      <DropdownMenuItem onClick={onViewDetailsClick} className="cursor-pointer">
-        <ZoomInIcon className="w-4 h-4 mr-1" />
-        View details
-      </DropdownMenuItem>
-    )}
-    <DropdownMenuSeparator />
-    {showViewResponse && (
-      <DropdownMenuItem onClick={onResponseClick} className="cursor-pointer">
-        <QuestionMarkCircledIcon className="w-4 h-4 mr-1" />
-        View Response
-      </DropdownMenuItem>
-    )}
-    {showViewDetails && showEndSession && <DropdownMenuSeparator />}
-    {showEndSession && (
-      <DropdownMenuItem
-        className="cursor-pointer"
-        disabled={isViewOnly || sessionState === 1}
-        onClick={onEndClick}
-      >
-        <CloseCircleIcon className="w-4 h-4 mr-1" />
-        End session now
-      </DropdownMenuItem>
-    )}
-    {showEndSession && showDeleteSession && <DropdownMenuSeparator />}
-    {showDeleteSession && (
-      <DropdownMenuItem
-        className="cursor-pointer text-destructive"
-        disabled={isViewOnly}
-        onClick={onDeleteClick}
-      >
-        <Delete2Icon className="w-4 h-4 mr-1" />
-        Delete session
-      </DropdownMenuItem>
-    )}
-  </>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <>
+      {showViewDetails && (
+        <DropdownMenuItem onClick={onViewDetailsClick} className="cursor-pointer">
+          <ZoomInIcon className="w-4 h-4 mr-1" />
+          {t('sessionActions.menu.viewDetails')}
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuSeparator />
+      {showViewResponse && (
+        <DropdownMenuItem onClick={onResponseClick} className="cursor-pointer">
+          <QuestionMarkCircledIcon className="w-4 h-4 mr-1" />
+          {t('sessionActions.menu.viewResponse')}
+        </DropdownMenuItem>
+      )}
+      {showViewDetails && showEndSession && <DropdownMenuSeparator />}
+      {showEndSession && (
+        <DropdownMenuItem
+          className="cursor-pointer"
+          disabled={isViewOnly || sessionState === 1}
+          onClick={onEndClick}
+        >
+          <CloseCircleIcon className="w-4 h-4 mr-1" />
+          {t('sessionActions.menu.endSession')}
+        </DropdownMenuItem>
+      )}
+      {showEndSession && showDeleteSession && <DropdownMenuSeparator />}
+      {showDeleteSession && (
+        <DropdownMenuItem
+          className="cursor-pointer text-destructive"
+          disabled={isViewOnly}
+          onClick={onDeleteClick}
+        >
+          <Delete2Icon className="w-4 h-4 mr-1" />
+          {t('sessionActions.menu.deleteSession')}
+        </DropdownMenuItem>
+      )}
+    </>
+  );
+};
 
 // Form component for session actions (delete/end)
 const SessionForm = ({ session, open, onOpenChange, onSubmit, type }: SessionFormProps) => {
   const { handleSubmit, loading } = useSessionForm(session, type, onSubmit);
+  const { t } = useTranslation();
 
-  const descriptions = {
-    delete:
-      'This will delete all traces of this session from your account. Including in analytics.\nYou should probably only do this for testing reasons.',
-    end: 'This will close the content for the user.',
-  };
+  const title =
+    type === 'delete' ? t('sessionActions.delete.title') : t('sessionActions.end.title');
+  const description =
+    type === 'delete'
+      ? t('sessionActions.delete.description')
+      : t('sessionActions.end.description');
+  const confirmButton =
+    type === 'delete'
+      ? t('sessionActions.delete.confirmButton')
+      : t('sessionActions.end.confirmButton');
 
   return (
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm</AlertDialogTitle>
-          <AlertDialogDescription>
-            {descriptions[type].split('\n').map((line, i) => (
-              <Fragment key={i}>
-                {line}
-                <br />
-              </Fragment>
-            ))}
-            Confirm {type}ing the session?
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('sessionActions.cancel')}</AlertDialogCancel>
           <LoadingButton
             variant={type === 'delete' ? 'destructive' : undefined}
             onClick={handleSubmit}
             loading={loading}
           >
-            Yes, {type} session
+            {confirmButton}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

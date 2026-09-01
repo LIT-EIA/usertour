@@ -3,6 +3,7 @@ import { Input } from '@usertour-packages/input';
 import { Label } from '@usertour-packages/label';
 import { QuestionTooltip } from '@usertour-packages/tooltip';
 import { useCallback, useEffect, useState, useMemo, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import type { ContentEditorScaleElement } from '../../types/editor';
@@ -38,17 +39,20 @@ const validateScaleRange = (lowRange: number, highRange: number): boolean => {
 
 // Memoized Scale Button Component
 const ScaleButton = memo<{ value: number; onClick?: () => void; isInteractive?: boolean }>(
-  ({ value, onClick, isInteractive = true }) => (
-    <Button
-      className={BUTTON_BASE_CLASS}
-      forSdk
-      onClick={onClick}
-      disabled={!isInteractive}
-      aria-label={`Scale option ${value}`}
-    >
-      {value}
-    </Button>
-  ),
+  ({ value, onClick, isInteractive = true }) => {
+    const { t } = useTranslation();
+    return (
+      <Button
+        className={BUTTON_BASE_CLASS}
+        forSdk
+        onClick={onClick}
+        disabled={!isInteractive}
+        aria-label={t('contentBuilder.editor.question.scaleOptionLabel', { value })}
+      >
+        {value}
+      </Button>
+    );
+  },
 );
 
 ScaleButton.displayName = 'ScaleButton';
@@ -62,6 +66,7 @@ const ScaleDisplay = memo<{
   onClick?: (element: ContentEditorScaleElement, value: number) => void;
   element?: ContentEditorScaleElement;
 }>(({ lowRange, highRange, lowLabel, highLabel, onClick, element }) => {
+  const { t } = useTranslation();
   const scaleValues = useMemo(() => {
     const length = calculateScaleLength(lowRange, highRange);
     return Array.from({ length }, (_, i) => lowRange + i);
@@ -80,7 +85,7 @@ const ScaleDisplay = memo<{
   if (scaleLength === 0) {
     return (
       <div className="w-full p-4 text-center text-gray-500 border border-dashed rounded-md">
-        Invalid scale range
+        {t('contentBuilder.editor.question.invalidScaleRange')}
       </div>
     );
   }
@@ -93,7 +98,7 @@ const ScaleDisplay = memo<{
           gridTemplateColumns: `repeat(${scaleLength}, minmax(0px, 1fr))`,
         }}
         role="radiogroup"
-        aria-label="Scale options"
+        aria-label={t('contentBuilder.editor.question.scaleOptionsLabel')}
       >
         {scaleValues.map((value) => (
           <ScaleButton
@@ -125,6 +130,7 @@ interface ContentEditorScaleProps {
 // Main Editor Component
 export const ContentEditorScale = (props: ContentEditorScaleProps) => {
   const { element, id } = props;
+  const { t } = useTranslation();
   const {
     updateElement,
     zIndex,
@@ -184,15 +190,15 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
     const errors: typeof validationErrors = {};
 
     if (isEmptyString(localData.name)) {
-      errors.name = 'Question name is required';
+      errors.name = t('contentBuilder.editor.question.nameRequired');
     }
 
     if (!isRangeValid) {
-      errors.range = 'Invalid range: low must be ≤ high, and both must be between 0-100';
+      errors.range = t('contentBuilder.editor.question.invalidRange');
     }
 
     setValidationErrors(errors);
-  }, [localData.name, isRangeValid]);
+  }, [localData.name, isRangeValid, t]);
 
   // Error display effect
   useEffect(() => {
@@ -264,12 +270,12 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
               side="right"
             >
               <div className={FORM_CONTAINER_CLASS}>
-                <Label htmlFor="scale-question">Question name</Label>
+                <Label htmlFor="scale-question">{t('contentBuilder.editor.question.name')}</Label>
                 <Input
                   id="scale-question"
                   value={localData.name}
                   onChange={(e) => handleDataChange({ name: e.target.value })}
-                  placeholder="Question name?"
+                  placeholder={t('contentBuilder.editor.question.namePlaceholder')}
                   aria-describedby={validationErrors.name ? 'name-error' : undefined}
                 />
                 {validationErrors.name && (
@@ -278,7 +284,7 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
                   </p>
                 )}
 
-                <Label>When answer is submitted</Label>
+                <Label>{t('contentBuilder.editor.question.whenSubmitted')}</Label>
                 <ContentActions
                   zIndex={zIndex}
                   isShowIf={false}
@@ -292,7 +298,9 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
                   createStep={createStep}
                 />
 
-                <Label className="flex items-center gap-1">Scale range</Label>
+                <Label className="flex items-center gap-1">
+                  {t('contentBuilder.editor.question.scaleRange')}
+                </Label>
                 <div className={RANGE_INPUT_CONTAINER_CLASS}>
                   <Input
                     type="number"
@@ -321,23 +329,22 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
                 )}
 
                 <Label className="flex items-center gap-1">
-                  Labels
+                  {t('contentBuilder.editor.question.labels')}
                   <QuestionTooltip>
-                    Below each option, provide labels to clearly convey their meaning, such as "Bad"
-                    positioned under the left option and "Good" under the right.
+                    {t('contentBuilder.editor.question.labelsTooltip')}
                   </QuestionTooltip>
                 </Label>
                 <div className={LABELS_INPUT_CONTAINER_CLASS}>
                   <Input
                     type="text"
                     value={localData.lowLabel || ''}
-                    placeholder="Low label"
+                    placeholder={t('contentBuilder.editor.question.lowLabel')}
                     onChange={(e) => handleDataChange({ lowLabel: e.target.value })}
                   />
                   <Input
                     type="text"
                     value={localData.highLabel || ''}
-                    placeholder="High label"
+                    placeholder={t('contentBuilder.editor.question.highLabel')}
                     onChange={(e) => handleDataChange({ highLabel: e.target.value })}
                   />
                 </div>
@@ -357,10 +364,10 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
       </EditorErrorAnchor>
       <EditorErrorContent side="bottom" style={{ zIndex: zIndex }}>
         {isEmptyString(localData.name)
-          ? 'Question name is required'
+          ? t('contentBuilder.editor.question.nameRequired')
           : !isRangeValid
-            ? 'Invalid scale range'
-            : 'Please fix the errors above'}
+            ? t('contentBuilder.editor.question.invalidScaleRange')
+            : t('contentBuilder.editor.question.fixErrors')}
       </EditorErrorContent>
     </EditorError>
   );

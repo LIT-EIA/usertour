@@ -1,5 +1,6 @@
 import { useThemeListContext } from '@usertour-packages/contexts';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext } from '../contexts';
 import { WebBuilderProvider, useWebBuilderProvider } from '../contexts/web-builder-provider';
 import { WebBuilderLoading } from '../components/web-builder-loading';
@@ -66,6 +67,7 @@ export interface WebBuilderProps {
 
 // Inner component that uses the provider context
 function WebBuilderContent(props: WebBuilderProps) {
+  const { t } = useTranslation();
   const { contentId, environmentId, versionId, projectId, envToken } = props;
   const { initContent } = useBuilderContext();
   const { isLoading: providerLoading } = useWebBuilderProvider();
@@ -87,7 +89,7 @@ function WebBuilderContent(props: WebBuilderProps) {
 
   // Show loading if any provider is loading or if we're still initializing
   if (providerLoading || isInitializing) {
-    return <WebBuilderLoading message="Loading builder..." />;
+    return <WebBuilderLoading message={t('contentBuilder.loadingBuilder')} />;
   }
 
   return <Container />;

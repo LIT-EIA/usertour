@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 import enUSUi from '@usertour-packages/i18n/en-US/ui';
-import zhHansUi from '@usertour-packages/i18n/zh-Hans/ui';
+import frCAUi from '@usertour-packages/i18n/fr-CA/ui';
 
 i18next
   .use(LanguageDetector)
@@ -15,11 +15,11 @@ i18next
       en: {
         ui: enUSUi,
       },
-      'zh-CN': {
-        ui: zhHansUi,
+      'fr-CA': {
+        ui: frCAUi,
       },
-      zh: {
-        ui: zhHansUi,
+      fr: {
+        ui: frCAUi,
       },
     },
     // if you see an error like: "Argument of type 'DefaultTFuncReturn' is not assignable to parameter of type xyz"

@@ -3,6 +3,7 @@ import { Input } from '@usertour-packages/input';
 import { Label } from '@usertour-packages/label';
 import { QuestionTooltip } from '@usertour-packages/tooltip';
 import { useCallback, useEffect, useState, useMemo, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import { ContentEditorNPSElement } from '../../types/editor';
@@ -14,8 +15,6 @@ import { BindAttribute } from './bind-attribute';
 
 // Constants
 const NPS_SCALE_LENGTH = 11;
-const DEFAULT_LOW_LABEL = 'Not at all likely';
-const DEFAULT_HIGH_LABEL = 'Extremely likely';
 
 const buttonBaseClass =
   'flex items-center overflow-hidden group relative border bg-sdk-question/10 text-sdk-question border-sdk-question hover:text-sdk-question hover:border-sdk-question hover:bg-sdk-question/40 rounded-md main-transition p-2 justify-center w-auto min-w-0';
@@ -58,12 +57,15 @@ const NPSScale = memo(
 NPSScale.displayName = 'NPSScale';
 
 // Memoized Labels component
-const NPSLabels = memo(({ lowLabel, highLabel }: { lowLabel?: string; highLabel?: string }) => (
-  <div className="flex mt-2.5 px-0.5 text-[13px] items-center justify-between opacity-80">
-    <p>{lowLabel || DEFAULT_LOW_LABEL}</p>
-    <p>{highLabel || DEFAULT_HIGH_LABEL}</p>
-  </div>
-));
+const NPSLabels = memo(({ lowLabel, highLabel }: { lowLabel?: string; highLabel?: string }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex mt-2.5 px-0.5 text-[13px] items-center justify-between opacity-80">
+      <p>{lowLabel || t('contentBuilder.editor.question.npsLowLabelDefault')}</p>
+      <p>{highLabel || t('contentBuilder.editor.question.npsHighLabelDefault')}</p>
+    </div>
+  );
+});
 
 NPSLabels.displayName = 'NPSLabels';
 
@@ -88,18 +90,19 @@ const NPSPopoverContent = memo(
   }) => {
     const { zIndex, currentStep, currentVersion, contentList, createStep, attributes, projectId } =
       contextProps;
+    const { t } = useTranslation();
 
     return (
       <div className="flex flex-col gap-2.5">
-        <Label htmlFor="nps-question">Question name</Label>
+        <Label htmlFor="nps-question">{t('contentBuilder.editor.question.name')}</Label>
         <Input
           id="nps-question"
           value={localData.name || ''}
           onChange={(e) => handleDataChange({ name: e.target.value })}
-          placeholder="Question name?"
+          placeholder={t('contentBuilder.editor.question.namePlaceholder')}
         />
 
-        <Label>When answer is submitted</Label>
+        <Label>{t('contentBuilder.editor.question.whenSubmitted')}</Label>
         <ContentActions
           zIndex={zIndex}
           isShowIf={false}
@@ -114,24 +117,21 @@ const NPSPopoverContent = memo(
         />
 
         <Label className="flex items-center gap-1">
-          Labels
-          <QuestionTooltip>
-            Below each option, provide labels to clearly convey their meaning, such as "Bad"
-            positioned under the left option and "Good" under the right.
-          </QuestionTooltip>
+          {t('contentBuilder.editor.question.labels')}
+          <QuestionTooltip>{t('contentBuilder.editor.question.labelsTooltip')}</QuestionTooltip>
         </Label>
 
         <div className="flex flex-row gap-2">
           <Input
             type="text"
             value={localData.lowLabel || ''}
-            placeholder="Default"
+            placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
             onChange={(e) => handleDataChange({ lowLabel: e.target.value })}
           />
           <Input
             type="text"
             value={localData.highLabel || ''}
-            placeholder="Default"
+            placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
             onChange={(e) => handleDataChange({ highLabel: e.target.value })}
           />
         </div>
@@ -153,6 +153,7 @@ NPSPopoverContent.displayName = 'NPSPopoverContent';
 
 export const ContentEditorNPS = (props: ContentEditorNPSProps) => {
   const { element, id } = props;
+  const { t } = useTranslation();
   const {
     updateElement,
     zIndex,
@@ -248,7 +249,7 @@ export const ContentEditorNPS = (props: ContentEditorNPSProps) => {
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent side="bottom" style={{ zIndex }}>
-        Question name is required
+        {t('contentBuilder.editor.question.nameRequired')}
       </EditorErrorContent>
     </EditorError>
   );

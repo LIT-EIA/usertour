@@ -64,5 +64,10 @@
   "files": {
     "ignoreUnknown": true,
     "ignore": ["**/node_modules/**", "**/dist/**", "locate.ts", "webfonts.ts"]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
   }
 }

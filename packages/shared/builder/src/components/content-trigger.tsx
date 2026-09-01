@@ -6,6 +6,7 @@ import { Rules, RulesWait } from '@usertour-packages/shared-components';
 import { defaultRulesItems } from '@usertour-packages/shared-components/src/components/rules';
 import { ContentActions } from '@usertour-packages/shared-editor';
 import { Attribute, Content, ContentVersion, RulesCondition, Step } from '@usertour/types';
+import { useTranslation } from 'react-i18next';
 import { ContentError, ContentErrorAnchor, ContentErrorContent } from './content-error';
 
 interface ContentTriggerProps {
@@ -29,6 +30,7 @@ interface ContentTriggerProps {
 }
 
 export const ContentTrigger = (props: ContentTriggerProps) => {
+  const { t } = useTranslation();
   const {
     actions,
     attributeList,
@@ -67,7 +69,7 @@ export const ContentTrigger = (props: ContentTriggerProps) => {
               onElementChange={onRulesConditionElementChange}
             />
             <RulesWait defaultValue={wait} onValueChange={onWaitChange} disabled={false} />
-            <Label>Action to perform when triggered</Label>
+            <Label>{t('contentBuilder.flow.actionWhenTriggered')}</Label>
             <ContentActions
               zIndex={zIndex + EXTENSION_SELECT}
               isShowIf={false}
@@ -86,8 +88,10 @@ export const ContentTrigger = (props: ContentTriggerProps) => {
               zIndex: EXTENSION_CONTENT_RULES,
             }}
           >
-            {conditions.length === 0 && 'please add at least 1 conditon'}
-            {conditions.length > 0 && actions.length === 0 && 'please add at least 1 action'}
+            {conditions.length === 0 && t('contentBuilder.flow.addAtLeastOneCondition')}
+            {conditions.length > 0 &&
+              actions.length === 0 &&
+              t('contentBuilder.flow.addAtLeastOneAction')}
           </ContentErrorContent>
         </ContentError>
         <Button
@@ -97,7 +101,7 @@ export const ContentTrigger = (props: ContentTriggerProps) => {
           onClick={onDelete}
         >
           <Delete2Icon className="text-destructive mr-1 size-3.5	" />
-          Delete trigger
+          {t('contentBuilder.flow.deleteTrigger')}
         </Button>
       </div>
     </>

@@ -13,6 +13,7 @@ import { deleteLocalization } from '@usertour-packages/gql';
 import { getErrorMessage } from '@usertour/helpers';
 import { Localization } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export const LocalizationDeleteForm = (props: {
   data: Localization;
@@ -23,6 +24,7 @@ export const LocalizationDeleteForm = (props: {
   const { data, open, onOpenChange, onSubmit } = props;
   const [deleteMutation] = useMutation(deleteLocalization);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = async () => {
     if (!data) {
@@ -37,7 +39,7 @@ export const LocalizationDeleteForm = (props: {
       if (ret.data?.deleteLocalization?.id) {
         toast({
           variant: 'success',
-          title: 'The localization has been successfully deleted',
+          title: t('settings.localizations.deleteSuccess'),
         });
         onSubmit(true);
         return;
@@ -55,15 +57,25 @@ export const LocalizationDeleteForm = (props: {
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the localization{' '}
-            <span className="font-bold text-foreground">{data.name}</span>.
-          </AlertDialogDescription>
+          <AlertDialogTitle>
+            {t('settings.common.deleteConfirm.title', {
+              resource: t('settings.localizations.deleteResource'),
+            })}
+          </AlertDialogTitle>
+          <AlertDialogDescription
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: translated string; i18next escapes interpolated values by default
+            dangerouslySetInnerHTML={{
+              __html: t('settings.common.deleteConfirm.description', { name: data.name }),
+            }}
+          />
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDeleteSubmit}>Submit</AlertDialogAction>
+          <AlertDialogCancel>{t('settings.common.cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDeleteSubmit}>
+            {t('settings.common.deleteConfirm.confirm', {
+              resource: t('settings.localizations.deleteResource'),
+            })}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

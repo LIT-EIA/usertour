@@ -21,13 +21,15 @@ import {
   RulesFrequencyValueAtLeast,
   RulesFrequencyValueEvery,
 } from '@usertour/types';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { HelpTooltip } from '../common/help-tooltip';
 
-const itemsMapping = [
-  { key: Frequency.ONCE, value: 'Once per user' },
-  { key: Frequency.MULTIPLE, value: 'Multiple times per user' },
-  { key: Frequency.UNLIMITED, value: 'Unlimited times per user' },
+const buildItemsMapping = (t: TFunction) => [
+  { key: Frequency.ONCE, value: t('conditions.standalone.frequency.units.once') },
+  { key: Frequency.MULTIPLE, value: t('conditions.standalone.frequency.units.multiple') },
+  { key: Frequency.UNLIMITED, value: t('conditions.standalone.frequency.units.unlimited') },
 ];
 const timesList = [
   FrequencyUnits.DAYES,
@@ -35,6 +37,8 @@ const timesList = [
   FrequencyUnits.SECONDS,
   FrequencyUnits.MINUTES,
 ];
+const getUnitLabel = (t: TFunction, unit: FrequencyUnits) =>
+  t(`conditions.standalone.frequency.unit.${unit}`);
 
 interface RulesFrequencyUnitsProps {
   frequency: Frequency;
@@ -44,6 +48,8 @@ interface RulesFrequencyUnitsProps {
 }
 const RulesFrequencyUnits = (props: RulesFrequencyUnitsProps) => {
   const { frequency: _frequency, onChange, contentType, disabled = false } = props;
+  const { t } = useTranslation();
+  const itemsMapping = useMemo(() => buildItemsMapping(t), [t]);
 
   const handleValueChange = (value: string) => {
     setFrequency(value as Frequency);
@@ -67,7 +73,7 @@ const RulesFrequencyUnits = (props: RulesFrequencyUnitsProps) => {
                 <QuestionMarkCircledIcon />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs bg-foreground text-background">
-                Whether the {contentType} can auto-start for the same user just once, or many times.
+                {t('conditions.standalone.frequency.unitsTooltip', { contentType })}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -95,6 +101,7 @@ interface RulesFrequencyEveryProps {
 }
 const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
   const { defaultValue, frequency, onChange, contentType, disabled = false } = props;
+  const { t } = useTranslation();
   const [data, setData] = useState<RulesFrequencyValueEvery>(defaultValue);
 
   const update = (params: Partial<RulesFrequencyValueEvery>) => {
@@ -123,7 +130,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
           <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer">
-            <span>{data.unit}</span>
+            <span>{getUnitLabel(t, data.unit)}</span>
             <ChevronDownIcon width={16} height={16} />
           </div>
         </DropdownMenuTrigger>
@@ -131,7 +138,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
           <DropdownMenuRadioGroup value={data.unit} onValueChange={handleUnitOnChange}>
             {timesList.map((v) => (
               <DropdownMenuRadioItem value={v} key={v}>
-                {v}
+                {getUnitLabel(t, v)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -157,7 +164,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
           className="rounded-lg text-sm w-16 h-6 "
           placeholder={''}
         />
-        <span className="text-sm">times, </span>
+        <span className="text-sm">{t('conditions.standalone.frequency.timesComma')} </span>
         <Input
           type="text"
           id={'border-width'}
@@ -169,7 +176,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
           placeholder={''}
         />
         <EveryTimes disabled={disabled} />
-        <span className="text-sm">apart </span>
+        <span className="text-sm">{t('conditions.standalone.frequency.apart')} </span>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -177,8 +184,12 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
             </TooltipTrigger>
             <TooltipContent className="max-w-xs bg-foreground text-background">
               <p>
-                The {contentType} may auto-start up to {data.times} times, with at least{' '}
-                {data.duration} {data.unit} passing in between.
+                {t('conditions.standalone.frequency.multipleTooltip', {
+                  contentType,
+                  times: data.times,
+                  duration: data.duration,
+                  unit: getUnitLabel(t, data.unit),
+                })}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -188,7 +199,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
   }
   return (
     <div className="flex flex-row items-center space-x-2">
-      <span className="text-sm">Every </span>
+      <span className="text-sm">{t('conditions.standalone.frequency.every')} </span>
       <Input
         type="text"
         id={'border-width'}
@@ -200,8 +211,11 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
       />
       <EveryTimes />
       <HelpTooltip>
-        The {contentType} may auto-start unlimited times, with at least {data.duration} {data.unit}{' '}
-        passing in between.
+        {t('conditions.standalone.frequency.unlimitedTooltip', {
+          contentType,
+          duration: data.duration,
+          unit: getUnitLabel(t, data.unit),
+        })}
       </HelpTooltip>
     </div>
   );
@@ -216,6 +230,7 @@ interface RulesFrequencyAtLeastProps {
 
 const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
   const { defaultValue, onChange, contentType, disabled = false } = props;
+  const { t } = useTranslation();
   const [data, setData] = useState<RulesFrequencyValueAtLeast>(defaultValue);
 
   const update = (params: Partial<RulesFrequencyValueAtLeast>) => {
@@ -236,7 +251,7 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
 
   return (
     <div className="flex flex-row items-center space-x-2">
-      <span className="text-sm">At least</span>
+      <span className="text-sm">{t('conditions.standalone.frequency.atLeast')}</span>
       <Input
         type="text"
         id={'border-width'}
@@ -250,7 +265,7 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
           <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer">
-            <span>{data.unit}</span>
+            <span>{getUnitLabel(t, data.unit)}</span>
             <ChevronDownIcon width={16} height={16} />
           </div>
         </DropdownMenuTrigger>
@@ -258,22 +273,22 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
           <DropdownMenuRadioGroup value={data.unit} onValueChange={handleUnitOnChange}>
             {timesList.map((v) => (
               <DropdownMenuRadioItem value={v} key={v}>
-                {v}
+                {getUnitLabel(t, v)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <span className="text-sm">after any {contentType}</span>
+      <span className="text-sm">
+        {t('conditions.standalone.frequency.afterAny', { contentType })}
+      </span>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <QuestionMarkCircledIcon />
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
-            If enabled, the {contentType} will only auto-start if no other {contentType} has shown
-            in the period you pick. This is useful to make sure you don't overwhelm users with too
-            much {contentType} at the same time.
+            {t('conditions.standalone.frequency.atLeastTooltip', { contentType })}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

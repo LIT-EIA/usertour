@@ -25,14 +25,34 @@ import {
   TableRow,
 } from '@usertour-packages/table';
 import { Skeleton } from '@usertour-packages/skeleton';
-import { BizUser, Segment } from '@usertour/types';
+import { BizUser, Segment, UserAttributes } from '@usertour/types';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { columns, columnsSystem } from '../components/columns';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
+import { getColumns, getColumnsSystem } from '../components/columns';
 import { DataTablePagination } from '../components/data-table-pagination';
 import { DataTableToolbar } from '../components/data-table-toolbar';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { formatAttributeValue } from '@/utils/common';
+
+// Built-in user attributes ship with an English displayName from the backend;
+// translate those known codeNames instead of showing the raw DB value.
+const SYSTEM_ATTRIBUTE_COLUMN_KEYS: Partial<Record<string, string>> = {
+  [UserAttributes.EMAIL]: 'users.columns.email',
+  [UserAttributes.NAME]: 'users.columns.name',
+  [UserAttributes.FIRST_SEEN_AT]: 'users.columns.firstSeen',
+  [UserAttributes.LAST_SEEN_AT]: 'users.columns.lastSeen',
+  [UserAttributes.SIGNED_UP_AT]: 'users.columns.signedUp',
+};
+
+const getAttributeDisplayName = (
+  t: TFunction,
+  attribute: { codeName: string; displayName: string },
+) => {
+  const translationKey = SYSTEM_ATTRIBUTE_COLUMN_KEYS[attribute.codeName];
+  return translationKey ? t(translationKey) : attribute.displayName || attribute.codeName;
+};
 
 interface TableProps {
   published: boolean;
@@ -40,6 +60,9 @@ interface TableProps {
 }
 
 export function DataTable({ segment }: TableProps) {
+  const { t } = useTranslation();
+  const columns = React.useMemo(() => getColumns(t), [t]);
+  const columnsSystem = React.useMemo(() => getColumnsSystem(t), [t]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -63,7 +86,7 @@ export function DataTable({ segment }: TableProps) {
         id: false,
       };
       for (const attribute of attrList) {
-        const displayName = attribute.displayName || attribute.codeName;
+        const displayName = getAttributeDisplayName(t, attribute);
         _columnVisibility[attribute.codeName] = !!segment.columns?.[attribute.codeName];
         _customColumns.push({
           accessorFn: (row) => {
@@ -76,6 +99,7 @@ export function DataTable({ segment }: TableProps) {
             const value = row.getValue(attribute.codeName);
             return <div className="px-2">{formatAttributeValue(value)}</div>;
           },
+          meta: { label: displayName },
           enableSorting: false,
           enableHiding: true,
         });
@@ -83,7 +107,7 @@ export function DataTable({ segment }: TableProps) {
       setCustomColumns([...columns, ...columnsSystem, ..._customColumns]);
       setColumnVisibility({ ..._columnVisibility });
     }
-  }, [attributeList, segment.columns]);
+  }, [attributeList, segment.columns, columns, columnsSystem, t]);
 
   const handlerOnClick = (environmentId: string, id: string) => {
     navigate(`/env/${environmentId}/user/${id}`);
@@ -172,7 +196,7 @@ export function DataTable({ segment }: TableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={customColumns.length} className="h-24 text-center">
-                  No results.
+                  {t('dataTable.noResults')}
                 </TableCell>
               </TableRow>
             )}

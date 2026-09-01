@@ -9,7 +9,7 @@ Usertour supports multiple languages through its internationalization system.
 
 ## Translation Files
 - [packages/i18n/src/en-US](mdc:packages/i18n/src/en-US) - English translations
-- [packages/i18n/src/zh-Hans](mdc:packages/i18n/src/zh-Hans) - Simplified Chinese translations
+- [packages/i18n/src/fr-CA](mdc:packages/i18n/src/fr-CA) - French (Canada) translations
 
 ## Best Practices
 

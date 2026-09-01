@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvent } from 'react-use';
 import { Editor, Element as SlateElement, Node, Path, Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
@@ -64,6 +65,7 @@ const transformsStyle = (element: ColumnElementType) => {
 };
 
 export const ColumnElement = (props: RenderElementProps & { className?: string }) => {
+  const { t } = useTranslation();
   const { zIndex, showToolbar } = usePopperEditorContext();
   const element = props.element as ColumnElementType;
   const [style, setStyle] = useState<CSSProperties | null>(null);
@@ -230,7 +232,7 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                 isActive ? '' : 'hidden',
               )}
             >
-              column
+              {t('contentBuilder.editor.actionButtons.entity.column')}
               <GearIcon className="ml-1 h-2 w-2" />
             </Button>
           </Popover.Trigger>
@@ -246,13 +248,13 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
             sideOffset={5}
           >
             <div className="flex flex-col gap-2.5">
-              <Label>Column width</Label>
+              <Label>{t('contentBuilder.editor.column.width')}</Label>
               <div className="flex gap-x-2">
                 {element.width?.type !== 'fill' && (
                   <Input
                     type="width"
                     value={element.width?.value}
-                    placeholder="Column width"
+                    placeholder={t('contentBuilder.editor.column.width')}
                     onChange={handleWidthValueChange}
                     className="bg-background flex-none w-[120px]"
                   />
@@ -262,47 +264,65 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                   defaultValue={element.width?.type ?? 'percent'}
                 >
                   <SelectTrigger className="shrink">
-                    <SelectValue placeholder="Select a distribute" />
+                    <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                   </SelectTrigger>
                   <SelectPortal style={{ zIndex: zIndex + 2 }}>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value="percent">%</SelectItem>
-                        <SelectItem value="pixels">pixels</SelectItem>
-                        <SelectItem value="fill">fill</SelectItem>
+                        <SelectItem value="percent">
+                          {t('contentBuilder.editor.width.percent')}
+                        </SelectItem>
+                        <SelectItem value="pixels">
+                          {t('contentBuilder.editor.width.pixels')}
+                        </SelectItem>
+                        <SelectItem value="fill">
+                          {t('contentBuilder.editor.width.fill')}
+                        </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </SelectPortal>
                 </Select>
               </div>
-              <Label>Distribute content</Label>
+              <Label>{t('contentBuilder.editor.column.distribute')}</Label>
               <Select
                 onValueChange={handleDistributeValueChange}
                 defaultValue={element.style.justifyContent}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a distribute" />
+                  <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                 </SelectTrigger>
                 <SelectPortal style={{ zIndex: zIndex + 2 }}>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="start">Top</SelectItem>
-                      <SelectItem value="center">Center</SelectItem>
-                      <SelectItem value="end">Bottom</SelectItem>
-                      <SelectItem value="space-between">Space Between</SelectItem>
-                      <SelectItem value="space-evenly">Space Evenly</SelectItem>
-                      <SelectItem value="space-around">Space Around</SelectItem>
+                      <SelectItem value="start">
+                        {t('contentBuilder.editor.column.alignTop')}
+                      </SelectItem>
+                      <SelectItem value="center">
+                        {t('contentBuilder.editor.column.alignCenter')}
+                      </SelectItem>
+                      <SelectItem value="end">
+                        {t('contentBuilder.editor.column.alignBottom')}
+                      </SelectItem>
+                      <SelectItem value="space-between">
+                        {t('contentBuilder.editor.column.justifyBetween')}
+                      </SelectItem>
+                      <SelectItem value="space-evenly">
+                        {t('contentBuilder.editor.column.justifyEvenly')}
+                      </SelectItem>
+                      <SelectItem value="space-around">
+                        {t('contentBuilder.editor.column.justifyAround')}
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </SelectPortal>
               </Select>
-              <Label htmlFor="spacing">Column spacing</Label>
+              <Label htmlFor="spacing">{t('contentBuilder.editor.column.spacing')}</Label>
               <Input
                 type="spacing"
                 className="bg-background"
                 id="spacing"
                 value={element.style.marginRight}
-                placeholder="Column spacing"
+                placeholder={t('contentBuilder.editor.column.spacing')}
                 onChange={handleSpaceValueChange}
               />
               <div className="flex items-center">
@@ -319,7 +339,11 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Delete column</p>
+                      <p>
+                        {t('contentBuilder.editor.actionButtons.delete', {
+                          entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                        })}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -337,11 +361,19 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Insert column to the left</p>
+                      <p>
+                        {t('contentBuilder.editor.actionButtons.insertLeft', {
+                          entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                        })}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <div className="flex-none mx-1 leading-10">Insert column</div>
+                <div className="flex-none mx-1 leading-10">
+                  {t('contentBuilder.editor.actionButtons.insert', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                  })}
+                </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -355,7 +387,11 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Insert column to the right</p>
+                      <p>
+                        {t('contentBuilder.editor.actionButtons.insertRight', {
+                          entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                        })}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

@@ -6,7 +6,6 @@
  */
 
 import { IframeElementInfo } from '../utils/iframe-utils';
-import { document as mainDocument } from '../utils/globals';
 
 export interface IframeLauncherOptions {
   content: string | HTMLElement;
@@ -68,7 +67,6 @@ export class IframeLauncherRenderer {
 
     // Watch for target size changes
     this.observeTargetResize();
-
   }
 
   /**
@@ -390,7 +388,7 @@ export function canRenderInIframe(iframe: HTMLIFrameElement): boolean {
     if (!doc) return false;
 
     // Try to create an element (tests write access)
-    const testEl = doc.createElement('div');
+    const _testEl = doc.createElement('div');
     return true;
   } catch (error) {
     // CORS or sandbox restrictions

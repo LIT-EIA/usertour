@@ -17,6 +17,7 @@ import {
 } from '@usertour-packages/command';
 import { ScrollArea } from '@usertour-packages/scroll-area';
 import { cn } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 interface BindAttributeProps {
   bindToAttribute: boolean;
@@ -39,6 +40,7 @@ export const BindAttribute = ({
   projectId,
   popoverContentClassName,
 }: BindAttributeProps) => {
+  const { t } = useTranslation();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [open, setOpen] = useState(false);
   const { attributes, refetch } = useListAttributesQuery(projectId, AttributeBizTypes.User);
@@ -75,8 +77,8 @@ export const BindAttribute = ({
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <Label className="flex items-center gap-1">
-          Bind to user attribute
-          <QuestionTooltip>Store the response in a user attribute</QuestionTooltip>
+          {t('contentBuilder.editor.bindAttribute.bind')}
+          <QuestionTooltip>{t('contentBuilder.editor.bindAttribute.bindTooltip')}</QuestionTooltip>
         </Label>
         <Switch
           className="data-[state=unchecked]:bg-muted"
@@ -91,7 +93,8 @@ export const BindAttribute = ({
             <Popover.Popover open={open} onOpenChange={setOpen}>
               <Popover.PopoverTrigger asChild>
                 <Button variant="outline" className="flex-1 justify-between">
-                  {selectedAttributeData?.displayName || 'Select user attribute'}
+                  {selectedAttributeData?.displayName ||
+                    t('contentBuilder.editor.bindAttribute.select')}
                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </Popover.PopoverTrigger>
@@ -103,10 +106,10 @@ export const BindAttribute = ({
                 style={{ zIndex }}
               >
                 <Command>
-                  <CommandInput placeholder="Search attributes..." />
-                  <CommandEmpty>No attributes found.</CommandEmpty>
+                  <CommandInput placeholder={t('contentBuilder.editor.bindAttribute.search')} />
+                  <CommandEmpty>{t('contentBuilder.editor.bindAttribute.empty')}</CommandEmpty>
                   <ScrollArea className="h-72">
-                    <CommandGroup heading="User attributes">
+                    <CommandGroup heading={t('contentBuilder.editor.bindAttribute.userAttributes')}>
                       {filteredAttributes?.map((attr) => (
                         <CommandItem
                           key={attr.id}
@@ -124,13 +127,13 @@ export const BindAttribute = ({
                         </CommandItem>
                       ))}
                     </CommandGroup>
-                    <CommandGroup heading="Actions">
+                    <CommandGroup heading={t('contentBuilder.editor.bindAttribute.actions')}>
                       <CommandItem
                         value="create-new"
                         className="cursor-pointer"
                         onSelect={() => handleAttributeChange('create-new')}
                       >
-                        + Create new attribute
+                        {t('contentBuilder.editor.bindAttribute.createNew')}
                       </CommandItem>
                     </CommandGroup>
                   </ScrollArea>

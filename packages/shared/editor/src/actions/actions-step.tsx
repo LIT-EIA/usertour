@@ -20,7 +20,9 @@ import {
 } from '@usertour-packages/dropdown-menu';
 import { getStepError } from '@usertour/helpers';
 import { Step, ContentVersion } from '@usertour/types';
+import { TFunction } from 'i18next';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useActionsGroupContext } from '../contexts/actions-group-context';
 import { useContentActionsContext } from '../contexts/content-actions-context';
 import {
@@ -63,6 +65,7 @@ const useStepErrorHandling = (
   stepCvid: string | undefined,
   open: boolean,
   currentVersion: ContentVersion | undefined,
+  t: TFunction,
 ) => {
   const [openError, setOpenError] = useState(false);
   const [errorInfo, setErrorInfo] = useState('');
@@ -79,7 +82,7 @@ const useStepErrorHandling = (
       const stepExists = currentVersion.steps.some((step: Step) => step.cvid === stepCvid);
       if (!stepExists) {
         finalShowError = true;
-        finalErrorInfo = 'Selected step no longer exists';
+        finalErrorInfo = t('actions.errors.stepGoto.stepNoLongerExists');
       }
     }
 
@@ -87,7 +90,7 @@ const useStepErrorHandling = (
       setErrorInfo(finalErrorInfo);
       setOpenError(true);
     }
-  }, [open, stepCvid, currentVersion]);
+  }, [open, stepCvid, currentVersion, t]);
 
   return { openError, setOpenError, errorInfo, setErrorInfo };
 };
@@ -184,6 +187,7 @@ const DuplicateStepItem = ({
   onSelect: () => void;
   isCurrentStep?: boolean;
 }) => {
+  const { t } = useTranslation();
   return (
     <DropdownMenuItem key={item.cvid} className="cursor-pointer" onSelect={onSelect}>
       <div className="flex items-center w-full min-w-0">
@@ -192,7 +196,7 @@ const DuplicateStepItem = ({
         <span className="truncate min-w-0">{item.name}</span>
         {isCurrentStep && (
           <Badge variant="secondary" className="ml-2 flex-shrink-0">
-            Current
+            {t('actions.types.stepGoto.currentBadge')}
           </Badge>
         )}
       </div>
@@ -224,6 +228,7 @@ const StepDisplayText = ({
 
 export const ContentActionsStep = (props: ContentActionsStepProps) => {
   const { index, data } = props;
+  const { t } = useTranslation();
   const { updateConditionData } = useActionsGroupContext();
   const { currentVersion, zIndex, currentStep, createStep } = useContentActionsContext();
 
@@ -235,6 +240,7 @@ export const ContentActionsStep = (props: ContentActionsStepProps) => {
     stepCvid,
     open,
     currentVersion,
+    t,
   );
 
   // Handle step actions
@@ -299,12 +305,12 @@ export const ContentActionsStep = (props: ContentActionsStepProps) => {
         <ContentActionsConditionIcon className="px-0 pr-2">
           <ArrowRightIcon width={16} height={16} />
         </ContentActionsConditionIcon>
-        <span className="pr-1">Go to Step</span>
+        <span className="pr-1">{t('actions.types.stepGoto.prefix')}</span>
         {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
         {!isLoading && <StepDisplayText currentVersion={currentVersion} stepCvid={stepCvid} />}
       </div>
     ),
-    [isLoading, currentVersion, stepCvid],
+    [isLoading, currentVersion, stepCvid, t],
   );
 
   // Memoize dropdown content
@@ -321,34 +327,36 @@ export const ContentActionsStep = (props: ContentActionsStepProps) => {
             />
           ))}
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer">Add new step</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger className="cursor-pointer">
+              {t('actions.types.stepGoto.addNewStep')}
+            </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onSelect={() => handleCreateStepWrapper('hidden')}
               >
                 <EyeNoneIcon className="w-4 h-4 mr-1 flex-none" />
-                Hidden
+                {t('actions.types.stepGoto.hidden')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onSelect={() => handleCreateStepWrapper('tooltip')}
               >
                 <TooltipIcon className="w-4 h-4 mr-1 mt-1 flex-none" />
-                Tooltip
+                {t('actions.types.stepGoto.tooltip')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onSelect={() => handleCreateStepWrapper('modal')}
               >
                 <ModelIcon className="w-4 h-4 mr-1 mt-0.5 flex-none" />
-                Modal
+                {t('actions.types.stepGoto.modal')}
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-              Duplicate step
+              {t('actions.types.stepGoto.duplicateStep')}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="w-[240px]">
               <ScrollArea
@@ -379,6 +387,7 @@ export const ContentActionsStep = (props: ContentActionsStepProps) => {
       currentVersion?.steps,
       currentStep?.cvid,
       handleDuplicateStepWrapper,
+      t,
     ],
   );
 

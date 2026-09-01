@@ -17,8 +17,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useRulesContext } from './rules-context';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
 import { RulesError, RulesErrorAnchor, RulesErrorContent } from './rules-error';
@@ -27,11 +30,11 @@ import { RulesPopover, RulesPopoverContent, RulesPopoverTrigger } from './rules-
 import { RulesRemove } from './rules-remove';
 import { RulesConditionIcon, RulesConditionRightContent } from './rules-template';
 
-const getPageNameError = (data: { logic: string; value: string }) => {
+const getPageNameError = (data: { logic: string; value: string }, t: TFunction) => {
   const ret = { showError: false, errorInfo: '' };
   if (data.logic !== 'any' && data.logic !== 'empty' && data.value === '') {
     ret.showError = true;
-    ret.errorInfo = 'Please enter a value';
+    ret.errorInfo = t('conditions.errors.userAttr.enterValue');
   }
   return ret;
 };
@@ -45,17 +48,17 @@ export interface RulesPageNameProps {
   };
 }
 
-const conditions = [
-  { value: 'is', name: 'is' },
-  { value: 'not', name: 'is not' },
-  { value: 'contains', name: 'contains' },
-  { value: 'notContain', name: 'does not contain' },
-  { value: 'startsWith', name: 'starts with' },
-  { value: 'endsWith', name: 'ends with' },
-  { value: 'match', name: 'matches regular expression' },
-  { value: 'unmatch', name: 'does not match regular expression' },
-  { value: 'any', name: 'has any value' },
-  { value: 'empty', name: 'is empty' },
+const buildConditions = (t: TFunction) => [
+  { value: 'is', name: t('conditions.operators.is') },
+  { value: 'not', name: t('conditions.operators.isNot') },
+  { value: 'contains', name: t('conditions.operators.contains') },
+  { value: 'notContain', name: t('conditions.operators.doesNotContain') },
+  { value: 'startsWith', name: t('conditions.operators.startsWith') },
+  { value: 'endsWith', name: t('conditions.operators.endsWith') },
+  { value: 'match', name: t('conditions.operators.matchesRegex') },
+  { value: 'unmatch', name: t('conditions.operators.doesNotMatchRegex') },
+  { value: 'any', name: t('conditions.operators.hasAnyValue') },
+  { value: 'empty', name: t('conditions.operators.isEmpty') },
 ];
 
 interface RulesPageNameContextValue {
@@ -63,6 +66,7 @@ interface RulesPageNameContextValue {
   setConditionValue: Dispatch<SetStateAction<string>>;
   inputValue: string;
   setInputValue: Dispatch<SetStateAction<string>>;
+  conditions: ReturnType<typeof buildConditions>;
 }
 
 const RulesPageNameContext = createContext<RulesPageNameContextValue | undefined>(undefined);
@@ -90,7 +94,7 @@ const RulesPageNameInput = () => {
 };
 
 const RulesPageNameCondition = () => {
-  const { conditionValue, setConditionValue } = useRulesPageNameContext();
+  const { conditionValue, setConditionValue, conditions } = useRulesPageNameContext();
   return (
     <>
       <Select defaultValue={conditionValue} onValueChange={setConditionValue}>
@@ -121,6 +125,8 @@ const RulesPageNameCondition = () => {
 
 export const RulesPageName = (props: RulesPageNameProps) => {
   const { index, data } = props;
+  const { t } = useTranslation();
+  const conditions = useMemo(() => buildConditions(t), [t]);
   const [conditionValue, setConditionValue] = useState(data.logic ?? 'is');
   const [inputValue, setInputValue] = useState(data.value ?? '');
 
@@ -135,12 +141,12 @@ export const RulesPageName = (props: RulesPageNameProps) => {
       logic: conditionValue,
       value: inputValue,
     };
-    const { showError, errorInfo } = getPageNameError(updates);
+    const { showError, errorInfo } = getPageNameError(updates, t);
     if (showError && !open) {
       setErrorInfo(errorInfo);
       setOpenError(true);
     }
-  }, [conditionValue, inputValue, open, setErrorInfo, setOpenError]);
+  }, [conditionValue, inputValue, open, setErrorInfo, setOpenError, t]);
 
   const handleOnOpenChange = useCallback(
     (open: boolean) => {
@@ -154,7 +160,7 @@ export const RulesPageName = (props: RulesPageNameProps) => {
         logic: conditionValue,
         value: inputValue,
       };
-      const { showError, errorInfo } = getPageNameError(updates);
+      const { showError, errorInfo } = getPageNameError(updates, t);
       if (showError) {
         setErrorInfo(errorInfo);
         setOpenError(true);
@@ -162,7 +168,7 @@ export const RulesPageName = (props: RulesPageNameProps) => {
       }
       updateConditionData(index, updates);
     },
-    [conditionValue, inputValue, open, setErrorInfo, setOpenError, index, updateConditionData],
+    [conditionValue, inputValue, open, setErrorInfo, setOpenError, index, updateConditionData, t],
   );
 
   const value = {
@@ -170,6 +176,7 @@ export const RulesPageName = (props: RulesPageNameProps) => {
     setConditionValue,
     inputValue,
     setInputValue,
+    conditions,
   };
 
   return (
@@ -184,7 +191,9 @@ export const RulesPageName = (props: RulesPageNameProps) => {
               </RulesConditionIcon>
               <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
                 <RulesPopoverTrigger className="space-y-1">
-                  <div className="grow pr-6 text-sm text-wrap break-all">Page name</div>
+                  <div className="grow pr-6 text-sm text-wrap break-all">
+                    {t('conditions.types.pageName.label')}
+                  </div>
                   <div>
                     {conditions.find((c) => c.value === conditionValue)?.name}{' '}
                     {conditionValue !== 'empty' && conditionValue !== 'any' && (
@@ -194,7 +203,7 @@ export const RulesPageName = (props: RulesPageNameProps) => {
                 </RulesPopoverTrigger>
                 <RulesPopoverContent side="right">
                   <div className="flex flex-col space-y-2">
-                    <div>If the page name...</div>
+                    <div>{t('conditions.types.pageName.editorTitle')}</div>
                     <RulesPageNameCondition />
                     <RulesPageNameInput />
                   </div>

@@ -23,6 +23,7 @@ import {
 } from '@usertour-packages/icons';
 import { TeamMemberRole } from '@usertour/types';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // Constants
 const ALL_ROLES = [TeamMemberRole.ADMIN, TeamMemberRole.OWNER, TeamMemberRole.VIEWER] as const;
@@ -57,18 +58,21 @@ interface NavItemProps {
   onClick: () => void;
 }
 
-const NavItem = ({ item, isActive, onClick }: NavItemProps) => (
-  <AdminSidebarBodyItemTemplate
-    onClick={onClick}
-    variant={isActive ? 'secondary' : 'ghost'}
-    className={`w-full justify-start gap-1 ${
-      isActive ? 'bg-gray-200/40 dark:bg-secondary/60' : ''
-    }`}
-  >
-    {item.icon}
-    {item.title}
-  </AdminSidebarBodyItemTemplate>
-);
+const NavItem = ({ item, isActive, onClick }: NavItemProps) => {
+  const { t } = useTranslation();
+  return (
+    <AdminSidebarBodyItemTemplate
+      onClick={onClick}
+      variant={isActive ? 'secondary' : 'ghost'}
+      className={`w-full justify-start gap-1 ${
+        isActive ? 'bg-gray-200/40 dark:bg-secondary/60' : ''
+      }`}
+    >
+      {item.icon}
+      {t(item.title)}
+    </AdminSidebarBodyItemTemplate>
+  );
+};
 
 interface NavSectionProps {
   title: string;
@@ -78,13 +82,14 @@ interface NavSectionProps {
 }
 
 const NavSection = ({ title, items, currentPath, onNavigate }: NavSectionProps) => {
+  const { t } = useTranslation();
   if (items.length === 0) {
     return null;
   }
 
   return (
     <>
-      <AdminSidebarBodyTitleTemplate>{title}</AdminSidebarBodyTitleTemplate>
+      <AdminSidebarBodyTitleTemplate>{t(title)}</AdminSidebarBodyTitleTemplate>
       {items.map((item) => (
         <NavItem
           key={item.href}
@@ -100,7 +105,7 @@ const NavSection = ({ title, items, currentPath, onNavigate }: NavSectionProps) 
 // Data
 const sidebarNavItems: readonly SidebarNavItem[] = [
   {
-    title: 'Company',
+    title: 'settings.nav.sections.general',
     href: '/settings/companies',
     role: OWNER_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -108,7 +113,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'Themes',
+    title: 'settings.nav.sections.themes',
     href: '/settings/themes',
     role: ALL_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -116,7 +121,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'Environments',
+    title: 'settings.nav.sections.environments',
     href: '/settings/environments',
     role: ALL_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -124,7 +129,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'Attributes',
+    title: 'settings.nav.sections.attributes',
     href: '/settings/attributes',
     role: ALL_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -132,7 +137,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'Events',
+    title: 'settings.nav.sections.events',
     href: '/settings/events',
     role: ALL_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -140,7 +145,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'Team',
+    title: 'settings.nav.sections.team',
     href: '/settings/team',
     role: OWNER_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -148,7 +153,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'Billing',
+    title: 'settings.nav.sections.billing',
     href: '/settings/billing',
     role: OWNER_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -156,7 +161,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD],
   },
   {
-    title: 'Subscription',
+    title: 'settings.nav.sections.subscription',
     href: '/settings/subscription',
     role: OWNER_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -164,7 +169,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.SELF_HOSTED],
   },
   {
-    title: 'Account',
+    title: 'settings.nav.sections.account',
     href: '/settings/account',
     role: ALL_ROLES,
     type: SidebarNavItemType.GENERAL,
@@ -172,7 +177,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
     mode: [Mode.CLOUD, Mode.SELF_HOSTED],
   },
   {
-    title: 'API',
+    title: 'settings.nav.sections.api',
     href: '/settings/api',
     role: OWNER_ROLES,
     type: SidebarNavItemType.DEVELOPER,
@@ -196,6 +201,7 @@ const sidebarNavItems: readonly SidebarNavItem[] = [
 ] as const;
 
 export const SettingsSidebarNav = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { project, globalConfig } = useAppContext();
@@ -226,18 +232,18 @@ export const SettingsSidebarNav = () => {
   return (
     <AdminSidebarContainerTemplate>
       <AdminSidebarHeaderTemplate>
-        <h2 className="text-lg font-semibold">Settings</h2>
+        <h2 className="text-lg font-semibold">{t('settings.nav.heading')}</h2>
       </AdminSidebarHeaderTemplate>
       <AdminSidebarBodyTemplate>
         <NavSection
-          title="General"
+          title="settings.nav.general"
           items={generalItems}
           currentPath={location.pathname}
           onNavigate={handleNavigate}
         />
         <div className="h-2" />
         <NavSection
-          title="Advanced"
+          title="settings.nav.developer"
           items={developerItems}
           currentPath={location.pathname}
           onNavigate={handleNavigate}

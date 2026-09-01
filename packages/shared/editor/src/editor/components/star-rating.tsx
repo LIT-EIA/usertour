@@ -4,6 +4,7 @@ import { Label } from '@usertour-packages/label';
 import { QuestionTooltip } from '@usertour-packages/tooltip';
 import { cn } from '@usertour/helpers';
 import { useCallback, useEffect, useState, useMemo, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
 import { ContentEditorStarRatingElement } from '../../types/editor';
@@ -82,6 +83,7 @@ const StarRatingDisplay = memo<StarRatingDisplayProps>(
     highLabel,
     isInteractive = true,
   }) => {
+    const { t } = useTranslation();
     const stars = useMemo(
       () =>
         Array.from({ length: scaleLength }, (_, i) => ({
@@ -112,7 +114,7 @@ const StarRatingDisplay = memo<StarRatingDisplayProps>(
           data-relin-paragraph="655"
           onMouseLeave={onStarLeave}
           role="radiogroup"
-          aria-label="Star rating"
+          aria-label={t('contentBuilder.editor.question.starRatingLabel')}
         >
           {stars.map(({ index, value, isHighlighted }) => (
             <StarButton
@@ -123,7 +125,7 @@ const StarRatingDisplay = memo<StarRatingDisplayProps>(
               onMouseEnter={() => onStarHover(index)}
               onClick={isInteractive ? () => onStarClick?.(value) : undefined}
               onKeyDown={(e) => handleKeyDown(e, value)}
-              aria-label={`${value} star${value !== 1 ? 's' : ''}`}
+              aria-label={t('contentBuilder.editor.question.starLabel', { count: value })}
               aria-pressed={isHighlighted}
             />
           ))}
@@ -149,6 +151,7 @@ interface ContentEditorStarRatingProps {
 
 export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props) => {
   const { element, id } = props;
+  const { t } = useTranslation();
   const {
     updateElement,
     zIndex,
@@ -242,22 +245,24 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
               side="right"
             >
               <div className="flex flex-col gap-2.5">
-                <Label htmlFor="star-rating-question">Question name</Label>
+                <Label htmlFor="star-rating-question">
+                  {t('contentBuilder.editor.question.name')}
+                </Label>
                 <Input
                   id="star-rating-question"
                   value={localData.name}
                   onChange={(e) => handleDataChange({ name: e.target.value })}
-                  placeholder="Question name?"
+                  placeholder={t('contentBuilder.editor.question.namePlaceholder')}
                   aria-invalid={hasValidationError}
                   aria-describedby={hasValidationError ? 'question-error' : undefined}
                 />
                 {hasValidationError && (
                   <div id="question-error" className="text-sm text-red-500">
-                    Question name is required
+                    {t('contentBuilder.editor.question.nameRequired')}
                   </div>
                 )}
 
-                <Label>When answer is submitted</Label>
+                <Label>{t('contentBuilder.editor.question.whenSubmitted')}</Label>
                 <ContentActions
                   zIndex={zIndex}
                   isShowIf={false}
@@ -271,12 +276,14 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
                   createStep={createStep}
                 />
 
-                <Label className="flex items-center gap-1">Scale range</Label>
+                <Label className="flex items-center gap-1">
+                  {t('contentBuilder.editor.question.scaleRange')}
+                </Label>
                 <div className="flex flex-row gap-2 items-center">
                   <Input
                     type="number"
                     value={localData.lowRange}
-                    placeholder="Default"
+                    placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                     disabled
                     onChange={(e) => handleDataChange({ lowRange: Number(e.target.value) })}
                   />
@@ -284,7 +291,7 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
                   <Input
                     type="number"
                     value={localData.highRange}
-                    placeholder="Default"
+                    placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                     onChange={(e) => handleDataChange({ highRange: Number(e.target.value) })}
                     min={localData.lowRange + 1}
                     max={10}
@@ -292,23 +299,22 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
                 </div>
 
                 <Label className="flex items-center gap-1">
-                  Labels
+                  {t('contentBuilder.editor.question.labels')}
                   <QuestionTooltip>
-                    Below each option, provide labels to clearly convey their meaning, such as "Bad"
-                    positioned under the left option and "Good" under the right.
+                    {t('contentBuilder.editor.question.labelsTooltip')}
                   </QuestionTooltip>
                 </Label>
                 <div className="flex flex-row gap-2">
                   <Input
                     type="text"
                     value={localData.lowLabel}
-                    placeholder="Default"
+                    placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                     onChange={(e) => handleDataChange({ lowLabel: e.target.value })}
                   />
                   <Input
                     type="text"
                     value={localData.highLabel}
-                    placeholder="Default"
+                    placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                     onChange={(e) => handleDataChange({ highLabel: e.target.value })}
                   />
                 </div>
@@ -327,7 +333,7 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent side="bottom" style={{ zIndex: zIndex }}>
-        Question name is required
+        {t('contentBuilder.editor.question.nameRequired')}
       </EditorErrorContent>
     </EditorError>
   );

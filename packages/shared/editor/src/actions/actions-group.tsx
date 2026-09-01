@@ -9,8 +9,10 @@ import {
 import { ArrowRightIcon, CloseCircleIcon, CloseIcon, PlusIcon } from '@usertour-packages/icons';
 import { hasActionError } from '@usertour/helpers';
 import { ContentActionsItemType, RulesCondition } from '@usertour/types';
-import { ReactNode, useCallback, useEffect } from 'react';
+import { TFunction } from 'i18next';
+import { ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionsGroupContext } from '../contexts/actions-group-context';
 import { useContentActionsContext } from '../contexts/content-actions-context';
 import { ContentActionsCode } from './actions-code';
@@ -20,46 +22,46 @@ import { ContentActionsNavigate } from './actions-navigate';
 import { ContentActionsSkip } from './actions-skip';
 import { ContentActionsStep } from './actions-step';
 
-const contentActionsItem = [
+const buildContentActionsItem = (t: TFunction) => [
   {
     type: ContentActionsItemType.STEP_GOTO,
-    text: 'Go to step',
+    text: t('actions.types.stepGoto.label'),
     IconElement: ArrowRightIcon,
     RulesElement: ContentActionsStep,
   },
   {
     type: ContentActionsItemType.SKIP,
-    text: 'Skip',
+    text: t('actions.types.skip.label'),
     IconElement: CloseIcon,
     RulesElement: ContentActionsSkip,
   },
   {
     type: ContentActionsItemType.FLOW_DISMIS,
-    text: 'Dismiss flow',
+    text: t('actions.types.flowDismiss.label'),
     IconElement: CloseCircleIcon,
     RulesElement: ContentActionsDismiss,
   },
   {
     type: ContentActionsItemType.LAUNCHER_DISMIS,
-    text: 'Dismiss launcher',
+    text: t('actions.types.launcherDismiss.label'),
     IconElement: CloseCircleIcon,
     RulesElement: ContentActionsDismiss,
   },
   {
     type: ContentActionsItemType.CHECKLIST_DISMIS,
-    text: 'Dismiss checklist',
+    text: t('actions.types.checklistDismiss.label'),
     IconElement: CloseCircleIcon,
     RulesElement: ContentActionsDismiss,
   },
   {
     type: ContentActionsItemType.FLOW_START,
-    text: 'Start new flow/checklist',
+    text: t('actions.types.flowStart.label'),
     IconElement: OpenInNewWindowIcon,
     RulesElement: ContentActionsContents,
   },
   {
     type: ContentActionsItemType.PAGE_NAVIGATE,
-    text: 'Navigate to page',
+    text: t('actions.types.pageNavigate.label'),
     IconElement: Link2Icon,
     RulesElement: ContentActionsNavigate,
   },
@@ -71,16 +73,18 @@ const contentActionsItem = [
   // },
   {
     type: ContentActionsItemType.JAVASCRIPT_EVALUATE,
-    text: 'Evaluate JavaScript',
+    text: t('actions.types.javascriptEvaluate.label'),
     IconElement: CodeIcon,
     RulesElement: ContentActionsCode,
   },
 ];
 
+type ContentActionsItemConfig = ReturnType<typeof buildContentActionsItem>[number];
+
 interface ContentActionsAddDropdownProps {
   children: ReactNode;
   onSelect: (type: string) => void;
-  items: typeof contentActionsItem;
+  items: ContentActionsItemConfig[];
   zIndex: number;
 }
 
@@ -112,6 +116,7 @@ export type ContentActionsGroupItemProps = {
 };
 
 export const ContentActionsGroup = () => {
+  const { t } = useTranslation();
   const {
     filterItems,
     addButtonText,
@@ -120,8 +125,10 @@ export const ContentActionsGroup = () => {
     zIndex = 1000,
   } = useContentActionsContext();
 
+  const contentActionsItem = useMemo(() => buildContentActionsItem(t), [t]);
+
   const [conditions, setConditions] = useState<RulesCondition[]>(defaultConditions);
-  const [rulesItems, _] = useState<typeof contentActionsItem>(
+  const [rulesItems, _] = useState<ContentActionsItemConfig[]>(
     contentActionsItem.filter((item) => {
       if (filterItems && filterItems.length > 0) {
         return filterItems.includes(item.type);
@@ -133,7 +140,7 @@ export const ContentActionsGroup = () => {
     }),
   );
 
-  const [dropdownItems, setDropdownItems] = useState<typeof contentActionsItem>(rulesItems);
+  const [dropdownItems, setDropdownItems] = useState<ContentActionsItemConfig[]>(rulesItems);
 
   useEffect(() => {
     const newItems = rulesItems

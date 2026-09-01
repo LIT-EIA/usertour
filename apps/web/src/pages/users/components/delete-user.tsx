@@ -4,6 +4,7 @@ import { Table } from '@tanstack/react-table';
 import { useCallback, useState } from 'react';
 import { BizUserDeleteForm } from './bizuser-delete-form';
 import { useUserListContext } from '@/contexts/user-list-context';
+import { useTranslation } from 'react-i18next';
 
 interface DeleteUserFromSegmentProps {
   table: Table<any>;
@@ -14,6 +15,7 @@ export const DeleteUserFromSegment = (props: DeleteUserFromSegmentProps) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [bizUserIds, setBizUserIds] = useState<string[]>([]);
   const { refetch } = useUserListContext();
+  const { t } = useTranslation();
 
   const handleOnClick = useCallback(() => {
     const rows = table.getFilteredSelectedRowModel().rows;
@@ -35,7 +37,7 @@ export const DeleteUserFromSegment = (props: DeleteUserFromSegmentProps) => {
         onClick={handleOnClick}
       >
         <Delete2Icon className="mr-1" />
-        Delete user
+        {t('users.actions.deleteUser')}
       </Button>
       <BizUserDeleteForm
         open={openDelete}

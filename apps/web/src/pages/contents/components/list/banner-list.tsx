@@ -11,11 +11,13 @@ import { EmptyPlaceholder } from '../shared/empty-placeholder';
 import { ExtensionInstallDialog } from '../shared/extension-install-dialog';
 import { DataTable } from './data-table';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 export const BannerListContent = () => {
   const [open, setOpen] = useState(false);
   const [isOpenedInstall, setIsOpenedInstall] = useState(false);
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const openCreateFormHandler = async () => {
     const isInstalled = await isInstalledExtension();
@@ -49,12 +51,11 @@ export const BannerListContent = () => {
     <div className="h-full px-4 py-6 lg:px-8 lg:border-l shadow bg-white rounded-lg grow">
       <div className="flex items-center justify-between">
         <div className="flex flex-col space-y-1 ">
-          <h3 className="text-2xl font-semibold tracking-tight">Banners</h3>
+          <h3 className="text-2xl font-semibold tracking-tight">
+            {t('contents.list.banners.title')}
+          </h3>
           <div className="flex flex-row space-x-1">
-            <p className="text-sm text-muted-foreground">
-              Launchers are great for: Hotspots drawing attention to important features, Tooltips
-              with help text, Buttons that trigger actions, such as starting a flow.{' '}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('contents.list.banners.text')}</p>
           </div>
         </div>
       </div>
@@ -63,26 +64,32 @@ export const BannerListContent = () => {
         <div className="space-between flex items-center">
           <TabsList>
             <TabsTrigger value="all" className="relative">
-              All
+              {t('contents.list.allTab')}
             </TabsTrigger>
-            <TabsTrigger value="published">Published</TabsTrigger>
+            <TabsTrigger value="published">{t('contents.list.publishedTab')}</TabsTrigger>
           </TabsList>
           <div className="ml-auto">
             <Button onClick={openCreateFormHandler} disabled={isViewOnly}>
               <PlusCircledIcon className="mr-2 h-4 w-4" />
-              Create Banner
+              {t('contents.list.newButton', {
+                type: t('contents.types.banner'),
+                context: 'feminine',
+              })}
             </Button>
           </div>
         </div>
         {isLoading && <ContentListSkeleton count={9} />}
         {!isLoading && contents && contents.length === 0 && (
           <EmptyPlaceholder
-            name="No banners added"
-            description="You have not added any banners. Add one below."
+            name={t('contents.list.banners.emptyTitle')}
+            description={t('contents.list.banners.emptyDescription')}
           >
             <Button onClick={openCreateFormHandler} disabled={isViewOnly}>
               <PlusCircledIcon className="mr-2 h-4 w-4" />
-              Create Banner
+              {t('contents.list.newButton', {
+                type: t('contents.types.banner'),
+                context: 'feminine',
+              })}
             </Button>
           </EmptyPlaceholder>
         )}

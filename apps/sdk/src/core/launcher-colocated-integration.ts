@@ -1,14 +1,4 @@
 /**
- * Integration guide for co-located launcher rendering
- *
- * This file shows how to integrate the new IframeLauncherRenderer
- * into the existing Launcher class
- */
-
-import { IframeLauncherRenderer, canRenderInIframe } from './launcher-iframe-renderer';
-import { IframeElementInfo } from '../utils/iframe-utils';
-
-/**
  * STEP 1: Add these properties to the Launcher class
  */
 // Add to class Launcher:
@@ -22,7 +12,6 @@ import { IframeElementInfo } from '../utils/iframe-utils';
  */
 export function modifiedSetupElementFoundHandler_Example() {
   // In launcher.ts, around line 159-236, replace:
-
   /*
   // OLD CODE (lines 163-189):
   if (iframeElementInfo) {
@@ -37,7 +26,6 @@ export function modifiedSetupElementFoundHandler_Example() {
     // ... scrolling logic ...
   }
   */
-
   // NEW CODE:
   /*
   if (iframeElementInfo) {

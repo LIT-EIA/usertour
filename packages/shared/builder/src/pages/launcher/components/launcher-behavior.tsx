@@ -20,7 +20,9 @@ import {
   LauncherTriggerEvent,
   RulesCondition,
 } from '@usertour/types';
+import { TFunction } from 'i18next';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBuilderContext, useLauncherContext } from '../../../contexts';
 import { BuilderMode } from '../../../contexts';
 
@@ -32,45 +34,66 @@ interface TriggerDropdownProps {
   label?: string;
 }
 
-const TriggerDropdown = ({ value, options, onChange, zIndex }: TriggerDropdownProps) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit">
-        <span>{value}</span>
-        <ChevronDownIcon width={16} height={16} />
-      </div>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="start" style={{ zIndex: zIndex + EXTENSION_SELECT }}>
-      <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
-        {options.map((option) => (
-          <DropdownMenuRadioItem key={option.value} value={option.value}>
-            {option.label}
-          </DropdownMenuRadioItem>
-        ))}
-      </DropdownMenuRadioGroup>
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
+const TriggerDropdown = ({ value, options, onChange, zIndex }: TriggerDropdownProps) => {
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? value;
 
-const TRIGGER_ELEMENT_OPTIONS = [
-  { value: LauncherTriggerElement.LAUNCHER, label: 'Launcher' },
-  { value: LauncherTriggerElement.TARGET, label: 'Target element' },
-  {
-    value: LauncherTriggerElement.TARGET_OR_LAUNCHER,
-    label: 'Launcher or Target',
-  },
-] as const;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit">
+          <span>{selectedLabel}</span>
+          <ChevronDownIcon width={16} height={16} />
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" style={{ zIndex: zIndex + EXTENSION_SELECT }}>
+        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
+          {options.map((option) => (
+            <DropdownMenuRadioItem key={option.value} value={option.value}>
+              {option.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
-const TRIGGER_EVENT_OPTIONS = [
-  { value: LauncherTriggerEvent.HOVERED, label: 'hovered' },
-  { value: LauncherTriggerEvent.CLICKED, label: 'clicked' },
-] as const;
+const buildTriggerElementOptions = (t: TFunction) =>
+  [
+    {
+      value: LauncherTriggerElement.LAUNCHER,
+      label: t('contentBuilder.launcher.behaviorEditor.triggerElement.launcher'),
+    },
+    {
+      value: LauncherTriggerElement.TARGET,
+      label: t('contentBuilder.launcher.behaviorEditor.triggerElement.targetElement'),
+    },
+    {
+      value: LauncherTriggerElement.TARGET_OR_LAUNCHER,
+      label: t('contentBuilder.launcher.behaviorEditor.triggerElement.targetOrLauncher'),
+    },
+  ] as const;
+
+const buildTriggerEventOptions = (t: TFunction) =>
+  [
+    {
+      value: LauncherTriggerEvent.HOVERED,
+      label: t('contentBuilder.launcher.behaviorEditor.triggerEvent.hovered'),
+    },
+    {
+      value: LauncherTriggerEvent.CLICKED,
+      label: t('contentBuilder.launcher.behaviorEditor.triggerEvent.clicked'),
+    },
+  ] as const;
 
 export const LauncherBehavior = () => {
   const { setCurrentMode, zIndex, currentVersion } = useBuilderContext();
   const { contents } = useContentListContext();
   const { attributeList } = useAttributeListContext();
   const { localData, updateLocalDataBehavior, setLauncherTooltip } = useLauncherContext();
+  const { t } = useTranslation();
+  const TRIGGER_ELEMENT_OPTIONS = buildTriggerElementOptions(t);
+  const TRIGGER_EVENT_OPTIONS = buildTriggerEventOptions(t);
 
   const handleStateChange = useCallback(
     (key: keyof LauncherBehaviorType) => (value: string | RulesCondition[]) => {
@@ -95,10 +118,10 @@ export const LauncherBehavior = () => {
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <h1 className="text-sm">Behavior</h1>
+        <h1 className="text-sm">{t('contentBuilder.launcher.behavior')}</h1>
       </div>
       <div className="flex flex-col bg-background-700 p-3.5 rounded-lg space-y-1">
-        <div className="text-sm">When</div>
+        <div className="text-sm">{t('contentBuilder.launcher.behaviorEditor.when')}</div>
         <div className="flex flex-row space-x-1 items-center">
           <TriggerDropdown
             value={localData.behavior.triggerElement}
@@ -106,7 +129,7 @@ export const LauncherBehavior = () => {
             onChange={handleStateChange('triggerElement')}
             zIndex={zIndex}
           />
-          <span className="text-sm">is</span>
+          <span className="text-sm">{t('contentBuilder.launcher.behaviorEditor.is')}</span>
           <TriggerDropdown
             value={localData.behavior.triggerEvent}
             options={TRIGGER_EVENT_OPTIONS}
@@ -114,7 +137,7 @@ export const LauncherBehavior = () => {
             zIndex={zIndex}
           />
         </div>
-        <div className="text-sm">Then</div>
+        <div className="text-sm">{t('contentBuilder.launcher.behaviorEditor.thenLabel')}</div>
         <Tabs
           defaultValue={localData.behavior.actionType}
           onValueChange={handleStateChange('actionType')}
@@ -124,13 +147,13 @@ export const LauncherBehavior = () => {
               value="show-tooltip"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
-              Show tooltip
+              {t('contentBuilder.launcher.behaviorEditor.showTooltip')}
             </TabsTrigger>
             <TabsTrigger
               value="perform-action"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
-              Perform action
+              {t('contentBuilder.launcher.behaviorEditor.performAction')}
             </TabsTrigger>
           </TabsList>
           <TabsContent
@@ -143,7 +166,9 @@ export const LauncherBehavior = () => {
             >
               <div className="flex flex-row space-x-1 items-center">
                 <TooltipIcon className="h-4 w-4 mt-1" />
-                <span className="text-sm">Tooltip setting</span>
+                <span className="text-sm">
+                  {t('contentBuilder.launcher.behaviorEditor.tooltipSetting')}
+                </span>
               </div>
               <GearIcon className="h-4 w-4" />
             </div>

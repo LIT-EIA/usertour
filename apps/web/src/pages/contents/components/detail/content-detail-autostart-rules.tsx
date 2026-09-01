@@ -27,6 +27,7 @@ import {
   autoStartRulesSetting,
 } from '@usertour/types';
 import { useCallback, useId, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export enum ContentDetailAutoStartRulesType {
   START_RULES = 'start-rules',
@@ -65,6 +66,7 @@ export const ContentDetailAutoStartRules = (props: ContentDetailAutoStartRulesPr
     showAtLeast = true,
     disabled = false,
   } = props;
+  const { t } = useTranslation();
 
   const [enabled, setEnabled] = useState(defaultEnabled);
   const [conditions, setConditions] = useState<RulesCondition[]>(deepClone(defaultConditions));
@@ -133,24 +135,19 @@ export const ContentDetailAutoStartRules = (props: ContentDetailAutoStartRulesPr
               <TooltipTrigger asChild>
                 <QuestionMarkCircledIcon className="ml-1 cursor-help" />
               </TooltipTrigger>
-              <TooltipContent className="max-w-sm">
-                {type === ContentDetailAutoStartRulesType.START_RULES && (
-                  <>
-                    Automatically starts the {contentType} if the user matches the given condition.
-                    Example: Automatically start an {contentType} for all new users. <br />
-                    <br />
-                    Once the {contentType} has started, the auto-start condition has no effect,
-                    meaning if the user no longer matches it, the {contentType} will stay open until
-                    otherwise dismissed.
-                  </>
-                )}
-                {type === ContentDetailAutoStartRulesType.HIDE_RULES && (
-                  <>
-                    Temporarily hides the {contentType} when this condition is true. Once the
-                    condition is no longer true, the {contentType} may be shown again. <br />
-                    Example: Hide a {contentType} on certain pages.
-                  </>
-                )}
+              <TooltipContent className="max-w-sm" style={{ whiteSpace: 'pre-line' }}>
+                {type === ContentDetailAutoStartRulesType.START_RULES &&
+                  t('contents.overview.autoStart.tooltipAutoStart', {
+                    label: t(`contents.overview.contentTypeLabel.${contentType}`, {
+                      defaultValue: contentType,
+                    }),
+                  })}
+                {type === ContentDetailAutoStartRulesType.HIDE_RULES &&
+                  t('contents.overview.hideRules.tooltip', {
+                    label: t(`contents.overview.contentTypeLabel.${contentType}`, {
+                      defaultValue: contentType,
+                    }),
+                  })}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

@@ -5,12 +5,13 @@ import { Checkbox } from '@usertour-packages/checkbox';
 import { BizUser } from '@usertour/types';
 import { CompanyIcon } from '@usertour-packages/icons';
 
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { UserAvatar } from '@/components/molecules/user-avatar';
 import { Link } from 'react-router-dom';
+import type { TFunction } from 'i18next';
 
-export const columns: ColumnDef<BizUser>[] = [
+export const getColumns = (t: TFunction): ColumnDef<BizUser>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -34,14 +35,16 @@ export const columns: ColumnDef<BizUser>[] = [
   },
   {
     accessorKey: 'id',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Id" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('users.columns.id')} />,
     cell: ({ row }) => <div className="px-2">{row.getValue('id')}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
     accessorKey: 'externalId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="User" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('users.columns.user')} />
+    ),
     cell: ({ row }) => {
       const email = row.original.data?.email || '';
       const name = row.original.data?.name || '';
@@ -62,12 +65,14 @@ export const columns: ColumnDef<BizUser>[] = [
                     onClick={(e) => e.stopPropagation()}
                   >
                     <CompanyIcon className="w-3 h-3" />
-                    <span>{membership.bizCompany?.externalId || 'Unknown'}</span>
+                    <span>
+                      {membership.bizCompany?.externalId || t('users.columns.unknownCompany')}
+                    </span>
                   </Link>
                 ))}
                 {companies.length > 3 && (
                   <span className="text-xs text-muted-foreground">
-                    +{companies.length - 3} more
+                    {t('users.detail.companiesChip.moreCount', { count: companies.length - 3 })}
                   </span>
                 )}
               </div>
@@ -110,25 +115,31 @@ export const columns: ColumnDef<BizUser>[] = [
   // },
 ];
 
-export const columnsSystem: ColumnDef<BizUser>[] = [
+export const getColumnsSystem = (t: TFunction): ColumnDef<BizUser>[] => [
   {
     accessorKey: 'environmentId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="environmentId" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('users.columns.environmentId')} />
+    ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue('environmentId')}</div>,
+    meta: { label: t('users.columns.environmentId') },
     enableSorting: false,
     enableHiding: true,
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="createdAt" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('users.columns.createdAt')} />
+    ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium">
-            {format(new Date(row.getValue('createdAt')), 'PPpp')}
+            {formatDate(new Date(row.getValue('createdAt')), 'PPpp')}
           </span>
         </div>
       );
     },
+    meta: { label: t('users.columns.createdAt') },
   },
 ];

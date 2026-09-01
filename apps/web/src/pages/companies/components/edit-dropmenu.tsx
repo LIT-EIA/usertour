@@ -8,6 +8,7 @@ import { Delete2Icon } from '@usertour-packages/icons';
 import { Segment } from '@usertour/types';
 import { ReactNode, useState } from 'react';
 import { CompanySegmentDeleteForm } from './delete-form';
+import { useTranslation } from 'react-i18next';
 
 type UserEditDropdownMenuProps = {
   segment: Segment;
@@ -18,6 +19,7 @@ type UserEditDropdownMenuProps = {
 export const UserEditDropdownMenu = (props: UserEditDropdownMenuProps) => {
   const { segment, children, onSubmit, disabled = false } = props;
   const [openDelete, setOpenDelete] = useState(false);
+  const { t } = useTranslation();
 
   const handleOnClick = () => {
     setOpenDelete(true);
@@ -32,7 +34,7 @@ export const UserEditDropdownMenu = (props: UserEditDropdownMenuProps) => {
         <DropdownMenuContent align="end" className="z-[101]">
           <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={handleOnClick}>
             <Delete2Icon className="mr-1" />
-            Delete segment
+            {t('companies.actions.deleteSegment')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

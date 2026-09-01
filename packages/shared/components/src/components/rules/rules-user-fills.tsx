@@ -1,5 +1,6 @@
 import { TextFillIcon } from '@usertour-packages/icons';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTextFillError } from '@usertour/helpers';
 import { ElementSelectorPropsData } from '@usertour/types';
 import { useRulesContext } from './rules-context';
@@ -23,6 +24,7 @@ interface RulesUserFillsProps {
 
 export const RulesUserFills = (props: RulesUserFillsProps) => {
   const { index, data, type } = props;
+  const { t } = useTranslation();
   const [elementData, setElementData] = useState<ElementSelectorPropsData>(
     data.elementData || {
       type: 'auto',
@@ -83,7 +85,7 @@ export const RulesUserFills = (props: RulesUserFillsProps) => {
             <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
               <RulesPopoverTrigger className="space-y-1">
                 <div className="grow pr-6 text-sm text-wrap break-all">
-                  User fills in this input{' '}
+                  {t('conditions.types.textFill.prefix')}{' '}
                 </div>
                 <div>
                   {elementData && elementData.type === 'auto' && elementData.screenshot && (
@@ -103,13 +105,15 @@ export const RulesUserFills = (props: RulesUserFillsProps) => {
                     elementData.type === 'manual' &&
                     elementData.content === '' &&
                     elementData.customSelector === '' && (
-                      <span className="font-bold text-destructive">No element selected yet</span>
+                      <span className="font-bold text-destructive">
+                        {t('conditions.types.element.notSelected')}
+                      </span>
                     )}
                 </div>
               </RulesPopoverTrigger>
               <RulesPopoverContent side="right">
                 <div className=" flex flex-col space-y-2">
-                  <div>If user fills in this input</div>
+                  <div>{t('conditions.types.textFill.editorTitle')}</div>
                   {/* <RulesUserFillsSelector /> */}
                   <ElementSelector
                     data={{

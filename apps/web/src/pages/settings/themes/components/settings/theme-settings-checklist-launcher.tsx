@@ -3,16 +3,27 @@ import { ThemeSettingInput } from '@/components/molecules/theme/theme-setting-in
 import { ThemeSettingSelect } from '@/components/molecules/theme/theme-setting-select';
 import { ModalPosition } from '@usertour/types';
 import { useThemeSettingsContext } from '../theme-settings-panel';
-
-const placementItems = [
-  { name: 'Top Left', value: ModalPosition.LeftTop },
-  { name: 'Top Right', value: ModalPosition.RightTop },
-  { name: 'Bottom Left', value: ModalPosition.LeftBottom },
-  { name: 'Bottom Right', value: ModalPosition.RightBottom },
-  { name: 'Center', value: ModalPosition.Center },
-];
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsChecklistLauncher = () => {
+  const { t } = useTranslation();
+  const placementItems = [
+    { name: t('themeBuilder.options.placementCornerCenter.topLeft'), value: ModalPosition.LeftTop },
+    {
+      name: t('themeBuilder.options.placementCornerCenter.topRight'),
+      value: ModalPosition.RightTop,
+    },
+    {
+      name: t('themeBuilder.options.placementCornerCenter.bottomLeft'),
+      value: ModalPosition.LeftBottom,
+    },
+    {
+      name: t('themeBuilder.options.placementCornerCenter.bottomRight'),
+      value: ModalPosition.RightBottom,
+    },
+    { name: t('themeBuilder.options.placementCornerCenter.center'), value: ModalPosition.Center },
+  ];
+
   const { settings, setSettings, finalSettings } = useThemeSettingsContext();
 
   // Update launcher settings
@@ -28,16 +39,16 @@ export const ThemeSettingsChecklistLauncher = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
         <ThemeSettingInput
-          text="Height"
+          text={t('themeBuilder.fields.common.height')}
           name="checklist-launcher-height"
           defaultValue={String(settings.checklistLauncher.height)}
-          tooltip="The height in pixels of the checklist launcher"
+          tooltip={t('themeBuilder.tooltips.checklistLauncherHeight')}
           onChange={(value: string) => {
             update({ height: Number(value) });
           }}
         />
         <ThemeSettingInput
-          text="Border radius"
+          text={t('themeBuilder.fields.common.borderRadius')}
           name="checklist-launcher-border-radius"
           defaultValue={String(settings.checklistLauncher.borderRadius)}
           onChange={(value: string) => {
@@ -47,7 +58,7 @@ export const ThemeSettingsChecklistLauncher = () => {
           }}
         />{' '}
         <ThemeSettingSelect
-          text="Font weight"
+          text={t('themeBuilder.fields.common.fontWeight')}
           name="checklist-launcher-font-weight"
           defaultValue={String(settings.checklistLauncher.fontWeight)}
           onValueChange={(value: string) => {
@@ -55,10 +66,10 @@ export const ThemeSettingsChecklistLauncher = () => {
           }}
         />
         <ThemeSettingSelect
-          text="Placement"
+          text={t('themeBuilder.fields.common.placement')}
           name="checklist-launcher-placement"
           items={placementItems}
-          tooltip="Controls which corner the checklist launcher should be placed at."
+          tooltip={t('themeBuilder.tooltips.checklistLauncherPlacement')}
           defaultValue={settings.checklistLauncher.placement.position}
           onValueChange={(value: string) => {
             update({
@@ -70,9 +81,9 @@ export const ThemeSettingsChecklistLauncher = () => {
           }}
         />
         <ThemeSettingInput
-          text="Offset right"
+          text={t('themeBuilder.fields.common.offsetRight')}
           name="checklist-launcher-offset-x"
-          tooltip="How far in pixels from the horizontal edge of the browser window the checklist launcher should be positioned."
+          tooltip={t('themeBuilder.tooltips.checklistLauncherOffsetX')}
           defaultValue={String(settings.checklistLauncher.placement.positionOffsetX)}
           onChange={(value: string) => {
             update({
@@ -84,10 +95,10 @@ export const ThemeSettingsChecklistLauncher = () => {
           }}
         />
         <ThemeSettingInput
-          text="Offset bottom"
+          text={t('themeBuilder.fields.common.offsetBottom')}
           name="checklist-launcher-offset-y"
           defaultValue={String(settings.checklistLauncher.placement.positionOffsetY)}
-          tooltip="How far in pixels from the vertical edge of the browser window the checklist launcher should be positioned."
+          tooltip={t('themeBuilder.tooltips.checklistLauncherOffsetY')}
           onChange={(value: string) => {
             update({
               placement: {
@@ -98,7 +109,7 @@ export const ThemeSettingsChecklistLauncher = () => {
           }}
         />{' '}
         <div className="space-y-1">
-          <div className="text-sm">Font color</div>
+          <div className="text-sm">{t('themeBuilder.fields.common.fontColor')}</div>
           <div className="flex">
             <ThemeColorPicker
               defaultColor={settings.checklistLauncher.color.color}
@@ -115,7 +126,7 @@ export const ThemeSettingsChecklistLauncher = () => {
         </div>
         <div className="flex flex-row w-full">
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Background</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.background')}</div>
             <ThemeColorPicker
               defaultColor={settings.checklistLauncher.color.background}
               className="rounded-r-none"
@@ -133,7 +144,7 @@ export const ThemeSettingsChecklistLauncher = () => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Hover</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.hover')}</div>
             <ThemeColorPicker
               defaultColor={settings.checklistLauncher.color.hover}
               className="rounded-none border-x-0"
@@ -151,7 +162,7 @@ export const ThemeSettingsChecklistLauncher = () => {
             />
           </div>
           <div className="flex flex-col space-y-1 basis-1/3">
-            <div className="text-sm">Active</div>
+            <div className="text-sm">{t('themeBuilder.fields.common.active')}</div>
             <ThemeColorPicker
               defaultColor={settings.checklistLauncher.color.active}
               className="rounded-l-none"
@@ -170,7 +181,9 @@ export const ThemeSettingsChecklistLauncher = () => {
           </div>
         </div>{' '}
         <div className="space-y-1">
-          <div className="text-sm">Counter font color</div>
+          <div className="text-sm">
+            {t('themeBuilder.fields.checklistLauncher.counterFontColor')}
+          </div>
           <div className="flex">
             <ThemeColorPicker
               defaultColor={settings.checklistLauncher.counter.color}
@@ -186,7 +199,9 @@ export const ThemeSettingsChecklistLauncher = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <div className="text-sm">Counter background color</div>
+          <div className="text-sm">
+            {t('themeBuilder.fields.checklistLauncher.counterBackgroundColor')}
+          </div>
           <div className="flex">
             <ThemeColorPicker
               defaultColor={settings.checklistLauncher.counter.background}

@@ -8,10 +8,12 @@ import { ChecklistCreateForm } from '../shared/checklist-create-form';
 import { EmptyPlaceholder } from '../shared/empty-placeholder';
 import { DataTable } from './data-table';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 export const ChecklistListContent = () => {
   const [open, setOpen] = useState(false);
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const openCreateFormHandler = async () => {
     setOpen(true);
@@ -28,17 +30,19 @@ export const ChecklistListContent = () => {
       <div className="flex justify-between">
         <>
           <div className="flex flex-col space-y-1 ">
-            <h3 className="text-2xl font-semibold tracking-tight">Checklists</h3>
+            <h3 className="text-2xl font-semibold tracking-tight">
+              {t('contents.list.checklists.title')}
+            </h3>
             <div className="flex flex-row space-x-1">
-              <p className="text-sm text-muted-foreground">
-                A checklist helps users feel accomplished, encourages them to engage more with your
-                product, and guides them step-by-step through clear actions.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('contents.list.checklists.text')}</p>
             </div>
           </div>
           <Button onClick={openCreateFormHandler} className="flex-none" disabled={isViewOnly}>
             <PlusCircledIcon className="mr-2 h-4 w-4" />
-            Create Checklist
+            {t('contents.list.newButton', {
+              type: t('contents.types.checklist'),
+              context: 'feminine',
+            })}
           </Button>
         </>
       </div>
@@ -47,12 +51,15 @@ export const ChecklistListContent = () => {
       {isLoading && <ContentListSkeleton count={9} />}
       {!isLoading && contents && contents.length === 0 && (
         <EmptyPlaceholder
-          name="No checklists added"
-          description="You have not added any checklists. Add one below."
+          name={t('contents.list.checklists.emptyTitle')}
+          description={t('contents.list.checklists.emptyDescription')}
         >
           <Button onClick={openCreateFormHandler} disabled={isViewOnly}>
             <PlusCircledIcon className="mr-2 h-4 w-4" />
-            Create Checklist
+            {t('contents.list.newButton', {
+              type: t('contents.types.checklist'),
+              context: 'feminine',
+            })}
           </Button>
         </EmptyPlaceholder>
       )}

@@ -8,14 +8,24 @@ import { parseSelectorWithCondition } from './selector-parser';
  * Interface for iframe communication messages
  */
 export interface IframeMessage {
-  type: 'usertour-step-complete' | 'usertour-step-action' | 'usertour-element-found' | 'usertour-element-not-found' | 'usertour-find-element' | 'usertour-cleanup-step' | 'usertour-cleanup-all-steps' | 'usertour-element-setup-complete';
+  type:
+    | 'usertour-step-complete'
+    | 'usertour-step-action'
+    | 'usertour-element-found'
+    | 'usertour-element-not-found'
+    | 'usertour-find-element'
+    | 'usertour-cleanup-step'
+    | 'usertour-cleanup-all-steps'
+    | 'usertour-element-setup-complete';
   stepId?: string;
   action?: string;
-  element?: {
-    selector: ElementSelectorPropsData;
-    iframeSrc: string;
-    iframeIndex: number;
-  } | ElementSelectorPropsData;
+  element?:
+    | {
+        selector: ElementSelectorPropsData;
+        iframeSrc: string;
+        iframeIndex: number;
+      }
+    | ElementSelectorPropsData;
   actions?: any[];
   data?: any;
 }
@@ -55,7 +65,7 @@ export class IframeUtils {
   private messageListener?: (event: MessageEvent) => void;
   // Cache for optimized element search: stores the context where last element was found
   // -1 = main document, >= 0 = iframe index
-  private lastSearchContext: number = -1;
+  private lastSearchContext = -1;
 
   /**
    * Get singleton instance
@@ -80,7 +90,7 @@ export class IframeUtils {
    */
   removeCommunicationHandler(id: string): void {
     this.communicationHandlers.delete(id);
-    
+
     // If no handlers left, remove message listener
     if (this.communicationHandlers.size === 0) {
       this.removeMessageListener();
@@ -128,7 +138,7 @@ export class IframeUtils {
 
       try {
         const message: IframeMessage = event.data;
-        
+
         if (!message.type || !message.type.startsWith('usertour-')) {
           return;
         }
@@ -137,32 +147,35 @@ export class IframeUtils {
           case 'usertour-element-setup-complete':
             if (message.stepId) {
               // Call all handlers with onElementSetupComplete callback
-              this.communicationHandlers.forEach((handler) => {
+              for (const handler of this.communicationHandlers) {
                 handler.onElementSetupComplete?.(message.stepId!);
-              });
+              }
             }
             break;
           case 'usertour-step-complete':
             if (message.stepId) {
               // Call all handlers
-              this.communicationHandlers.forEach((handler) => {
+              for (const handler of this.communicationHandlers) {
                 handler.onStepComplete(message.stepId!, message.data);
-              });
+              }
             }
             break;
           case 'usertour-step-action':
             if (message.stepId && message.action) {
               // Call all handlers
-              this.communicationHandlers.forEach((handler) => {
+              for (const handler of this.communicationHandlers) {
                 handler.onStepAction(message.stepId!, message.action!, message.data);
-              });
+              }
             }
             break;
           case 'usertour-element-found':
             if (message.element) {
               // Find the actual element in the iframe
-              const iframe = this.findIframeBySrc((message.element as any).iframeSrc, (message.element as any).iframeIndex);
-              if (iframe && iframe.contentDocument) {
+              const iframe = this.findIframeBySrc(
+                (message.element as any).iframeSrc,
+                (message.element as any).iframeIndex,
+              );
+              if (iframe?.contentDocument) {
                 const element = finderV2((message.element as any).selector, iframe.contentDocument);
                 if (element) {
                   const iframeRect = iframe.getBoundingClientRect();
@@ -173,11 +186,11 @@ export class IframeUtils {
                     iframeIndex: (message.element as any).iframeIndex,
                     iframeRect,
                   };
-                  
+
                   // Call all handlers
-                  this.communicationHandlers.forEach((handler) => {
+                  for (const handler of this.communicationHandlers) {
                     handler.onElementFound(iframeElementInfo);
-                  });
+                  }
                 }
               }
             }
@@ -185,9 +198,9 @@ export class IframeUtils {
           case 'usertour-element-not-found':
             if (message.element) {
               // Call all handlers
-              this.communicationHandlers.forEach((handler) => {
+              for (const handler of this.communicationHandlers) {
                 handler.onElementNotFound((message.element as any).selector);
-              });
+              }
             }
             break;
           case 'usertour-find-element':
@@ -230,14 +243,14 @@ export class IframeUtils {
    */
   findIframeBySrc(src: string, index: number): HTMLIFrameElement | null {
     const iframes = this.getAllIframes();
-    const matchingIframes = iframes.filter(iframe => {
+    const matchingIframes = iframes.filter((iframe) => {
       try {
         return iframe.src === src || iframe.src.includes(src);
       } catch {
         return false;
       }
     });
-    
+
     return matchingIframes[index] || null;
   }
 
@@ -246,14 +259,14 @@ export class IframeUtils {
    */
   isElementInIframe(element: Element): HTMLIFrameElement | null {
     let currentElement: Element | null = element;
-    
+
     while (currentElement) {
       if (currentElement.tagName === 'IFRAME') {
         return currentElement as HTMLIFrameElement;
       }
       currentElement = currentElement.parentElement;
     }
-    
+
     return null;
   }
 
@@ -268,13 +281,13 @@ export class IframeUtils {
     // Parse selector to handle <<< pattern
     const parsed = parseSelectorWithCondition(selector);
     const mainSelector = parsed.mainSelector;
-    
+
     // If we have a customSelector, we can find all matches and filter by visibility
     if (mainSelector.customSelector) {
       try {
         const selectorStr = mainSelector.customSelector.replace(/\\/g, '\\');
         const allMatches = iframeDoc.querySelectorAll(selectorStr);
-        
+
         // Check each match for visibility
         for (const match of Array.from(allMatches)) {
           if (!this.isElementInHiddenSectionInIframe(match, iframeDoc)) {
@@ -284,9 +297,10 @@ export class IframeUtils {
               const targetText = mainSelector.content.trim();
               // Default to 'exact' match if not specified
               const textMatchMode = (mainSelector as any).textMatchMode || 'exact';
-              const textMatch = textMatchMode === 'exact' 
-                ? matchText === targetText 
-                : matchText.includes(targetText);
+              const textMatch =
+                textMatchMode === 'exact'
+                  ? matchText === targetText
+                  : matchText.includes(targetText);
               if (!textMatch) {
                 continue;
               }
@@ -294,17 +308,17 @@ export class IframeUtils {
             return match;
           }
         }
-      } catch (error) {
+      } catch {
         // Fall through to finderV2
       }
     }
-    
+
     // If we have selectorsList, try each selector and find first visible match
     if (mainSelector.selectorsList && mainSelector.selectorsList.length > 0) {
       for (const selectorStr of mainSelector.selectorsList) {
         try {
           const allMatches = iframeDoc.querySelectorAll(selectorStr);
-          
+
           // Check each match for visibility
           for (const match of Array.from(allMatches)) {
             if (!this.isElementInHiddenSectionInIframe(match, iframeDoc)) {
@@ -314,9 +328,10 @@ export class IframeUtils {
                 const targetText = mainSelector.content.trim();
                 // Default to 'exact' match if not specified
                 const textMatchMode = (mainSelector as any).textMatchMode || 'exact';
-                const textMatch = textMatchMode === 'exact' 
-                  ? matchText === targetText 
-                  : matchText.includes(targetText);
+                const textMatch =
+                  textMatchMode === 'exact'
+                    ? matchText === targetText
+                    : matchText.includes(targetText);
                 if (!textMatch) {
                   continue;
                 }
@@ -324,19 +339,18 @@ export class IframeUtils {
               return match;
             }
           }
-        } catch (error) {
+        } catch {
           // Continue to next selector if this one fails
-          continue;
         }
       }
     }
-    
+
     // Fallback to original finderV2 method
     const el = finderV2(mainSelector, iframeDoc);
     if (el && !this.isElementInHiddenSectionInIframe(el, iframeDoc)) {
       return el;
     }
-    
+
     // If the found element is hidden, return null
     return null;
   }
@@ -352,10 +366,10 @@ export class IframeUtils {
     try {
       const iframeWindow = iframeDoc.defaultView;
       let currentElement: Element | null = element;
-      
+
       while (currentElement) {
         const styles = iframeWindow.getComputedStyle(currentElement);
-        
+
         // Check basic visibility
         if (
           styles.display === 'none' ||
@@ -364,7 +378,7 @@ export class IframeUtils {
         ) {
           return true; // Element is in a hidden section
         }
-        
+
         // Check if element has zero dimensions
         const rect = currentElement.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) {
@@ -373,15 +387,15 @@ export class IframeUtils {
             return true; // Element itself has zero dimensions
           }
         }
-        
+
         // Stop at body element
         if (currentElement === iframeDoc.body || currentElement.tagName === 'BODY') {
           break;
         }
-        
+
         currentElement = currentElement.parentElement;
       }
-      
+
       return false; // Element is not in a hidden section
     } catch (error) {
       logger.error('Error checking element visibility in iframe section:', error);
@@ -406,30 +420,32 @@ export class IframeUtils {
    * - Avoids starting from scratch (main document) for every search
    * - Maintains backward compatibility by eventually searching all contexts
    */
-  async searchElementInIframes(selector: ElementSelectorPropsData): Promise<IframeElementInfo | null> {
+  async searchElementInIframes(
+    selector: ElementSelectorPropsData,
+  ): Promise<IframeElementInfo | null> {
     const iframes = this.getAllIframes();
     const totalIframes = iframes.length;
-    
+
     // If no iframes, nothing to search
     if (totalIframes === 0) {
       return null;
     }
-    
+
     // Determine starting point based on last successful search
     // lastSearchContext: -1 = main document, >= 0 = iframe index
     let startIndex = this.lastSearchContext >= 0 ? this.lastSearchContext : 0;
-    
+
     // Ensure startIndex is within bounds (iframe might have been removed)
     if (startIndex >= totalIframes) {
       startIndex = 0;
     }
-    
+
     // Search iframes starting from the last known location
     // Loop through all iframes, wrapping around if needed
     for (let offset = 0; offset < totalIframes; offset++) {
       const i = (startIndex + offset) % totalIframes;
       const iframe = iframes[i];
-      
+
       try {
         // Check if iframe is accessible
         if (!iframe.contentDocument) {
@@ -445,10 +461,10 @@ export class IframeUtils {
         const element = this.findVisibleElementInIframe(selector, iframe.contentDocument);
         if (element) {
           const iframeRect = iframe.getBoundingClientRect();
-          
+
           // Cache this iframe index for next search
           this.lastSearchContext = i;
-          
+
           return {
             element,
             iframe,
@@ -457,11 +473,11 @@ export class IframeUtils {
             iframeRect,
           };
         }
-      } catch (error) {
+      } catch {
         // Cross-origin iframe, skip silently
       }
     }
-    
+
     // Element not found in any iframe
     // Reset search context to start from beginning next time
     this.lastSearchContext = -1;
@@ -487,22 +503,25 @@ export class IframeUtils {
   sendCleanupMessageToIframe(iframe: HTMLIFrameElement, stepId: string): void {
     try {
       if (iframe.contentWindow) {
-        iframe.contentWindow.postMessage({
-          type: 'usertour-cleanup-step',
-          stepId,
-        }, '*');
-        
+        iframe.contentWindow.postMessage(
+          {
+            type: 'usertour-cleanup-step',
+            stepId,
+          },
+          '*',
+        );
+
         // Also try direct cleanup as backup - clean up ALL steps to be safe
         setTimeout(() => {
           try {
             if (iframe.contentWindow && (iframe.contentWindow as any).usertourIframeSDK) {
               // Clean up the specific step first
               (iframe.contentWindow as any).usertourIframeSDK.cleanupStep(stepId);
-              
+
               // Also clean up ALL steps to catch any missed elements
               (iframe.contentWindow as any).usertourIframeSDK.cleanupAllSteps();
             }
-          } catch (error) {
+          } catch {
             // Silently handle cleanup errors
           }
         }, 100);
@@ -517,20 +536,23 @@ export class IframeUtils {
    */
   sendCleanupAllStepsToAllIframes(): void {
     const iframes = this.getAllIframes();
-    
-    iframes.forEach((iframe) => {
+
+    for (const iframe of iframes) {
       if (this.isIframeAccessible(iframe)) {
         try {
           if (iframe.contentWindow) {
-            iframe.contentWindow.postMessage({
-              type: 'usertour-cleanup-all-steps',
-            }, '*');
+            iframe.contentWindow.postMessage(
+              {
+                type: 'usertour-cleanup-all-steps',
+              },
+              '*',
+            );
           }
-        } catch (error) {
+        } catch {
           // Silently handle cleanup errors
         }
       }
-    });
+    }
   }
 
   /**
@@ -538,9 +560,9 @@ export class IframeUtils {
    */
   sendMessageToAllIframes(message: IframeMessage): void {
     const iframes = this.getAllIframes();
-    iframes.forEach(iframe => {
+    for (const iframe of iframes) {
       this.sendMessageToIframe(iframe, message);
-    });
+    }
   }
 
   /**
@@ -564,15 +586,12 @@ export class IframeUtils {
   /**
    * Convert element position from iframe coordinates to parent coordinates
    */
-  convertIframeToParentCoordinates(
-    elementRect: DOMRect,
-    iframeRect: DOMRect
-  ): DOMRect {
+  convertIframeToParentCoordinates(elementRect: DOMRect, iframeRect: DOMRect): DOMRect {
     return new DOMRect(
       elementRect.left + iframeRect.left,
       elementRect.top + iframeRect.top,
       elementRect.width,
-      elementRect.height
+      elementRect.height,
     );
   }
 
@@ -587,10 +606,7 @@ export class IframeUtils {
     };
 
     return (
-      rect.top < viewport.height &&
-      rect.bottom > 0 &&
-      rect.left < viewport.width &&
-      rect.right > 0
+      rect.top < viewport.height && rect.bottom > 0 && rect.left < viewport.width && rect.right > 0
     );
   }
 
@@ -605,10 +621,10 @@ export class IframeUtils {
 
     try {
       let currentElement: Element | null = iframe;
-      
+
       while (currentElement) {
         const styles = window.getComputedStyle(currentElement);
-        
+
         // Check basic visibility
         if (
           styles.display === 'none' ||
@@ -617,7 +633,7 @@ export class IframeUtils {
         ) {
           return false;
         }
-        
+
         // Check if element has zero dimensions
         const rect = currentElement.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) {
@@ -626,15 +642,15 @@ export class IframeUtils {
             return false;
           }
         }
-        
+
         // Stop at body element
         if (currentElement === document?.body || currentElement.tagName === 'BODY') {
           break;
         }
-        
+
         currentElement = currentElement.parentElement;
       }
-      
+
       return true;
     } catch (error) {
       logger.error('Error checking iframe CSS visibility:', error);
@@ -654,10 +670,10 @@ export class IframeUtils {
 
     try {
       let currentElement: Element | null = element;
-      
+
       while (currentElement) {
         const styles = window.getComputedStyle(currentElement);
-        
+
         // Check basic visibility
         if (
           styles.display === 'none' ||
@@ -666,7 +682,7 @@ export class IframeUtils {
         ) {
           return true; // Element is in a hidden section
         }
-        
+
         // Check if element has zero dimensions
         const rect = currentElement.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) {
@@ -675,15 +691,15 @@ export class IframeUtils {
             return true; // Element itself has zero dimensions
           }
         }
-        
+
         // Stop at body element
         if (currentElement === document?.body || currentElement.tagName === 'BODY') {
           break;
         }
-        
+
         currentElement = currentElement.parentElement;
       }
-      
+
       return false; // Element is not in a hidden section
     } catch (error) {
       logger.error('Error checking element visibility in section:', error);
@@ -772,7 +788,7 @@ export class IframeUtils {
         if (checkInterval) {
           return; // Already polling
         }
-        
+
         // Poll to check if iframe content is ready
         checkInterval = setInterval(() => {
           if (checkIframeReady()) {
@@ -860,7 +876,7 @@ export class IframeUtils {
       }
 
       const iframeDoc = iframe.contentDocument!;
-      
+
       // Check if SDK is already injected
       if (iframeDoc.querySelector('script[data-usertour-sdk]')) {
         return true;
@@ -888,7 +904,7 @@ export class IframeUtils {
           }
         })();
       `;
-      
+
       iframeDoc.head.appendChild(script);
       return true;
     } catch (error) {

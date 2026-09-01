@@ -49,8 +49,10 @@ import {
 import { Attribute, AttributeBizTypes, BizAttributeTypes } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface CreateFormProps {
@@ -63,36 +65,39 @@ interface CreateFormProps {
   onSuccess?: (attribute: Partial<Attribute>) => void;
 }
 
-const formSchema = z.object({
-  dataType: z.enum([
-    String(BizAttributeTypes.Number),
-    String(BizAttributeTypes.String),
-    String(BizAttributeTypes.Boolean),
-    String(BizAttributeTypes.DateTime),
-    String(BizAttributeTypes.List),
-  ]),
-  bizType: z.enum([
-    String(AttributeBizTypes.User),
-    String(AttributeBizTypes.Company),
-    String(AttributeBizTypes.Membership),
-    String(AttributeBizTypes.Event),
-  ]),
-  displayName: z
-    .string({
-      required_error: 'Please input display name.',
-    })
-    .max(20)
-    .min(2),
-  codeName: z
-    .string({
-      required_error: 'Please input code name.',
-    })
-    .max(20)
-    .min(2),
-  description: z.string({}).max(100),
-});
+const createFormSchema = (t: TFunction) =>
+  z.object({
+    dataType: z.enum([
+      String(BizAttributeTypes.Number),
+      String(BizAttributeTypes.String),
+      String(BizAttributeTypes.Boolean),
+      String(BizAttributeTypes.DateTime),
+      String(BizAttributeTypes.List),
+    ]),
+    bizType: z.enum([
+      String(AttributeBizTypes.User),
+      String(AttributeBizTypes.Company),
+      String(AttributeBizTypes.Membership),
+      String(AttributeBizTypes.Event),
+    ]),
+    displayName: z
+      .string({
+        required_error: t('contentBuilder.editor.bindAttribute.createForm.displayNameRequired'),
+      })
+      .max(20, { message: t('contentBuilder.editor.bindAttribute.createForm.nameMaxLength') })
+      .min(2, { message: t('contentBuilder.editor.bindAttribute.createForm.nameMinLength') }),
+    codeName: z
+      .string({
+        required_error: t('contentBuilder.editor.bindAttribute.createForm.codeNameRequired'),
+      })
+      .max(20, { message: t('contentBuilder.editor.bindAttribute.createForm.nameMaxLength') })
+      .min(2, { message: t('contentBuilder.editor.bindAttribute.createForm.nameMinLength') }),
+    description: z.string({}).max(100, {
+      message: t('contentBuilder.editor.bindAttribute.createForm.descriptionMaxLength'),
+    }),
+  });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 export const AttributeCreateForm = ({
   onOpenChange,
@@ -103,9 +108,11 @@ export const AttributeCreateForm = ({
   zIndex,
   onSuccess,
 }: CreateFormProps) => {
+  const { t } = useTranslation();
   const { invoke } = useCreateAttributeMutation();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const formSchema = useMemo(() => createFormSchema(t), [t]);
 
   const showError = (title: string) => {
     toast({
@@ -144,7 +151,7 @@ export const AttributeCreateForm = ({
       } as CreateAttributeMutationVariables;
       const result = await invoke(data);
       if (!result?.id) {
-        showError('Create Attribute failed.');
+        showError(t('contentBuilder.editor.bindAttribute.createForm.createFailed'));
       } else {
         onSuccess?.(result);
       }
@@ -160,7 +167,7 @@ export const AttributeCreateForm = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Attribute</DialogTitle>
+              <DialogTitle>{t('contentBuilder.editor.bindAttribute.createForm.title')}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col space-y-2 mt-4 mb-4">
               <div className="flex flex-row justify-between">
@@ -170,14 +177,18 @@ export const AttributeCreateForm = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Objet type
+                        {t('contentBuilder.editor.bindAttribute.createForm.objectType')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
-                              <p>Determines which kind of objects this attribute can be set for.</p>
+                              <p>
+                                {t(
+                                  'contentBuilder.editor.bindAttribute.createForm.objectTypeTooltip',
+                                )}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -189,32 +200,40 @@ export const AttributeCreateForm = ({
                       >
                         <FormControl>
                           <SelectTrigger className="w-72">
-                            <SelectValue placeholder="Select a object type" />
+                            <SelectValue
+                              placeholder={t(
+                                'contentBuilder.editor.bindAttribute.createForm.objectTypePlaceholder',
+                              )}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="w-72">
                           <SelectItem value={String(AttributeBizTypes.User)}>
                             <div className="flex flex-row">
                               <UserIcon width={16} height={16} className="mr-1" />
-                              User
+                              {t('contentBuilder.editor.bindAttribute.createForm.objectTypeUser')}
                             </div>
                           </SelectItem>
                           <SelectItem value={String(AttributeBizTypes.Company)}>
                             <div className="flex flex-row">
                               <CompanyIcon width={16} height={16} className="mr-1" />
-                              Company
+                              {t(
+                                'contentBuilder.editor.bindAttribute.createForm.objectTypeCompany',
+                              )}
                             </div>
                           </SelectItem>
                           <SelectItem value={String(AttributeBizTypes.Membership)}>
                             <div className="flex flex-row">
                               <UserIcon2 width={16} height={16} className="mr-1" />
-                              Company Membership
+                              {t(
+                                'contentBuilder.editor.bindAttribute.createForm.objectTypeMembership',
+                              )}
                             </div>
                           </SelectItem>
                           <SelectItem value={String(AttributeBizTypes.Event)}>
                             <div className="flex flex-row">
                               <EventIcon2 width={16} height={16} className="mr-1" />
-                              Event
+                              {t('contentBuilder.editor.bindAttribute.createForm.objectTypeEvent')}
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -229,7 +248,7 @@ export const AttributeCreateForm = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Data type
+                        {t('contentBuilder.editor.bindAttribute.createForm.dataType')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -237,7 +256,9 @@ export const AttributeCreateForm = ({
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
-                                Determines what kind of values will be stored in this attribute.
+                                {t(
+                                  'contentBuilder.editor.bindAttribute.createForm.dataTypeTooltip',
+                                )}
                               </p>
                             </TooltipContent>
                           </Tooltip>
@@ -250,17 +271,29 @@ export const AttributeCreateForm = ({
                       >
                         <FormControl>
                           <SelectTrigger className="w-72">
-                            <SelectValue placeholder="Select a data type" />
+                            <SelectValue
+                              placeholder={t(
+                                'contentBuilder.editor.bindAttribute.createForm.dataTypePlaceholder',
+                              )}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="w-72">
-                          <SelectItem value={String(BizAttributeTypes.Number)}>Number</SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.String)}>String</SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.Boolean)}>Boolean</SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.DateTime)}>
-                            DateTime
+                          <SelectItem value={String(BizAttributeTypes.Number)}>
+                            {t('contentBuilder.editor.bindAttribute.createForm.dataTypeNumber')}
                           </SelectItem>
-                          <SelectItem value={String(BizAttributeTypes.List)}>List</SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.String)}>
+                            {t('contentBuilder.editor.bindAttribute.createForm.dataTypeString')}
+                          </SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.Boolean)}>
+                            {t('contentBuilder.editor.bindAttribute.createForm.dataTypeBoolean')}
+                          </SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.DateTime)}>
+                            {t('contentBuilder.editor.bindAttribute.createForm.dataTypeDateTime')}
+                          </SelectItem>
+                          <SelectItem value={String(BizAttributeTypes.List)}>
+                            {t('contentBuilder.editor.bindAttribute.createForm.dataTypeList')}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -275,7 +308,7 @@ export const AttributeCreateForm = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Display name
+                        {t('contentBuilder.editor.bindAttribute.createForm.displayName')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -283,18 +316,26 @@ export const AttributeCreateForm = ({
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
-                                Human-friendly name shown in Usertour. we recommend using Word Case
-                                (i.e.uppercasefrst letter, spaces between words) such as"Billing
-                                Plan".
+                                {t(
+                                  'contentBuilder.editor.bindAttribute.createForm.displayNameTooltip',
+                                )}
                               </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter display name" className="w-72" {...field} />
+                        <Input
+                          placeholder={t(
+                            'contentBuilder.editor.bindAttribute.createForm.displayNamePlaceholder',
+                          )}
+                          className="w-72"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormDescription>Can be changed later</FormDescription>
+                      <FormDescription>
+                        {t('contentBuilder.editor.bindAttribute.createForm.displayNameHint')}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -305,7 +346,7 @@ export const AttributeCreateForm = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex flex-row">
-                        Code name
+                        {t('contentBuilder.editor.bindAttribute.createForm.codeName')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -313,18 +354,26 @@ export const AttributeCreateForm = ({
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
-                                Code-friendly name used in Webhooks and integrations to analytics
-                                providers. we recommend using snake_case (i.e. lowercaseletters with
-                                words separated by underscore).
+                                {t(
+                                  'contentBuilder.editor.bindAttribute.createForm.codeNameTooltip',
+                                )}
                               </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter code name" className="w-72" {...field} />
+                        <Input
+                          placeholder={t(
+                            'contentBuilder.editor.bindAttribute.createForm.codeNamePlaceholder',
+                          )}
+                          className="w-72"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormDescription>Can NOT be changed later</FormDescription>
+                      <FormDescription>
+                        {t('contentBuilder.editor.bindAttribute.createForm.codeNameHint')}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -336,20 +385,30 @@ export const AttributeCreateForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex flex-row">
-                      Description
+                      {t('contentBuilder.editor.bindAttribute.createForm.description')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <QuestionMarkCircledIcon className="ml-1 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
-                            <p>Put any additional information for your ownreference here.</p>
+                            <p>
+                              {t(
+                                'contentBuilder.editor.bindAttribute.createForm.descriptionTooltip',
+                              )}
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Optional description" className="w-full" {...field} />
+                      <Input
+                        placeholder={t(
+                          'contentBuilder.editor.bindAttribute.createForm.descriptionPlaceholder',
+                        )}
+                        className="w-full"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -358,11 +417,13 @@ export const AttributeCreateForm = ({
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline">
+                  {t('contentBuilder.editor.bindAttribute.createForm.cancel')}
+                </Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-                Create Attribute
+                {t('contentBuilder.editor.bindAttribute.createForm.createButton')}
               </Button>
             </DialogFooter>
           </form>

@@ -30,6 +30,7 @@ import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface ContentCreateFormProps {
   isOpen: boolean;
@@ -68,6 +69,7 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
   const [currentContent, setCurrentContent] = useState<Content | undefined>();
   const { project, environment } = useAppContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const onOpenedBuilder = useCallback(() => {
     if (currentContent) {
       navigate(`/env/${currentContent?.environmentId}/flows/${currentContent?.id}/detail`);
@@ -101,7 +103,7 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
       };
       const ret = await createContentMutation({ variables: data });
       if (!ret.data?.createContent?.id) {
-        showError('Create flow failed.');
+        showError(t('contents.create.failure', { type: t('contents.types.flow') }));
       }
       const content = ret.data?.createContent as Content;
       setCurrentContent(content);
@@ -112,7 +114,7 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
         return;
       }
       if (!buildUrl) {
-        showError('Please enter the URL you want to add an experience to.');
+        showError(t('contents.create.buildUrlRequired'));
         return;
       }
       const initParams = {
@@ -138,7 +140,9 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Create New Flow</DialogTitle>
+              <DialogTitle>
+                {t('contents.create.title', { type: t('contents.types.flow') })}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-2 py-4 ">
               <FormField
@@ -146,10 +150,18 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-1 space-y-0">
-                    <FormLabel className="w-32 flex-none">Flow name:</FormLabel>
+                    <FormLabel className="w-32 flex-none">
+                      {t('contents.create.nameLabel')}
+                    </FormLabel>
                     <FormControl>
                       <div className="flex flex-col space-x-1 w-full grow">
-                        <Input placeholder="Enter flow  name" {...field} id="flow-name-input" />
+                        <Input
+                          placeholder={t('contents.create.namePlaceholder', {
+                            type: t('contents.types.flow'),
+                          })}
+                          {...field}
+                          id="flow-name-input"
+                        />
                         <FormMessage />
                       </div>
                     </FormControl>
@@ -158,9 +170,8 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
               />
               <span className="text-xs text-muted-foreground">
                 {form.getValues('type') === BuilderType.EXTENSION &&
-                  'Open the builder in new tab for WYSIWYG editing experience'}
-                {form.getValues('type') === BuilderType.WEB &&
-                  'Open the builder in the current tab for convenient editing experience'}
+                  t('contents.create.extensionBuilderHint')}
+                {form.getValues('type') === BuilderType.WEB && t('contents.create.webBuilderHint')}
               </span>
               {form.getValues('type') === BuilderType.EXTENSION && (
                 <FormField
@@ -168,11 +179,13 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
                   name="buildUrl"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-1 space-y-0">
-                      <FormLabel className="w-32 flex-none">Build Url</FormLabel>
+                      <FormLabel className="w-32 flex-none">
+                        {t('contents.shared.edit.buildUrlLabel')}
+                      </FormLabel>
                       <FormControl>
                         <div className="flex flex-col space-x-1 w-full grow">
                           <Input
-                            placeholder="Enter the URL you want to add an experience to"
+                            placeholder={t('contents.shared.edit.buildUrlPlaceholder')}
                             {...field}
                           />
                           <FormMessage />
@@ -185,11 +198,11 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('contents.shared.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading} id="create-flow-submit">
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('contents.create.submit', { type: t('contents.types.flow') })}
               </Button>
             </DialogFooter>
           </form>

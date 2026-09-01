@@ -2,8 +2,10 @@ import { ThemeSettingInput } from '@/components/molecules/theme/theme-setting-in
 import { Separator } from '@usertour-packages/separator';
 import { useThemeSettingsContext } from '../theme-settings-panel';
 import { ThemeSettingsButton } from './theme-settings-button';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsButtons = () => {
+  const { t } = useTranslation();
   const { settings, setSettings } = useThemeSettingsContext();
   const update = (data: Partial<typeof settings.buttons>) => {
     const { buttons } = settings;
@@ -16,7 +18,7 @@ export const ThemeSettingsButtons = () => {
     <div className="flex flex-col space-y-4">
       <div className="py-[15px] px-5 space-y-3">
         <ThemeSettingInput
-          text="Height"
+          text={t('themeBuilder.fields.buttons.height')}
           name="button-height"
           defaultValue={String(settings.buttons.height)}
           onChange={(value: string) => {
@@ -24,7 +26,7 @@ export const ThemeSettingsButtons = () => {
           }}
         />
         <ThemeSettingInput
-          text="Min width"
+          text={t('themeBuilder.fields.buttons.minWidth')}
           name="button-min-width"
           defaultValue={String(settings.buttons.minWidth)}
           onChange={(value: string) => {
@@ -32,7 +34,7 @@ export const ThemeSettingsButtons = () => {
           }}
         />
         <ThemeSettingInput
-          text="Border radius"
+          text={t('themeBuilder.fields.buttons.borderRadius')}
           name="button-border-radius"
           defaultValue={String(settings.buttons.borderRadius)}
           onChange={(value: string) => {
@@ -40,7 +42,7 @@ export const ThemeSettingsButtons = () => {
           }}
         />
         <ThemeSettingInput
-          text="Horizontal padding"
+          text={t('themeBuilder.fields.buttons.horizontalPadding')}
           name="button-px"
           defaultValue={String(settings.buttons.px ?? 4)}
           onChange={(value: string) => {
@@ -49,9 +51,9 @@ export const ThemeSettingsButtons = () => {
         />
       </div>
       <Separator />
-      <ThemeSettingsButton text="Primary button" name="primary" />
+      <ThemeSettingsButton text={t('themeBuilder.subSections.primaryButton')} name="primary" />
       <Separator />
-      <ThemeSettingsButton text="Secondary button" name="secondary" />
+      <ThemeSettingsButton text={t('themeBuilder.subSections.secondaryButton')} name="secondary" />
     </div>
   );
 };

@@ -18,6 +18,7 @@ import { CardContent } from '@usertour-packages/card';
 import { OpenInNewWindowIcon } from '@radix-ui/react-icons';
 import { Skeleton } from '@usertour-packages/skeleton';
 import { SpinnerIcon } from '@usertour-packages/icons';
+import { useTranslation } from 'react-i18next';
 
 interface HubSpotIntegrationConfig {
   exportEvents?: boolean;
@@ -40,6 +41,7 @@ const ExportEventsForm = ({
   onUpdate,
   isLoading,
 }: IntegrationFormProps) => {
+  const { t } = useTranslation();
   const config = (integration?.config as HubSpotIntegrationConfig) || {};
 
   const hasChanges = useCallback(() => {
@@ -85,21 +87,24 @@ const ExportEventsForm = ({
             className="data-[state=unchecked]:bg-input"
             disabled={isLoading}
           />
-          <Label className="text-sm">Stream events from Usertour to HubSpot</Label>
+          <Label className="text-sm">
+            {t('settings.integrations.providerCard.headline', { provider: 'HubSpot' })}
+          </Label>
           <QuestionTooltip>
-            When enabled, Usertour-generated events will be continuously streamed into your HubSpot
-            project.
+            {t('settings.integrations.providerCard.tooltip', { provider: 'HubSpot' })}
           </QuestionTooltip>
         </CardTitle>
-        <CardDescription>Configure event streaming settings</CardDescription>
+        <CardDescription>
+          {t('settings.integrations.providerCard.configureSettings')}
+        </CardDescription>
       </CardHeader>
       {config.exportEvents && (
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <p className="text-sm">Private App Token :</p>
+            <p className="text-sm">{t('settings.integrations.providerCard.hubspotKeyLabel')}</p>
             <Input
               type="text"
-              placeholder="Type Private App Token here"
+              placeholder={t('settings.integrations.providerCard.hubspotKeyPlaceholder')}
               value={integration?.key || ''}
               onChange={handleInputChange}
               disabled={isLoading}
@@ -111,7 +116,7 @@ const ExportEventsForm = ({
             onClick={() => onSave({})}
           >
             {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-            Save
+            {t('settings.integrations.providerCard.save')}
           </Button>
         </CardContent>
       )}
@@ -146,6 +151,7 @@ const ExportEventsFormSkeleton = () => (
 export const HubSpotIntegration = () => {
   const { environment } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
   const environmentId = environment?.id || '';
@@ -180,12 +186,12 @@ export const HubSpotIntegration = () => {
           },
         });
         toast({
-          title: 'Settings saved successfully',
+          title: t('settings.integrations.providerCard.savedToast'),
         });
         refetch();
       } catch {
         toast({
-          title: 'Failed to save settings',
+          title: t('settings.integrations.providerCard.saveFailedToast'),
           variant: 'destructive',
         });
       } finally {
@@ -237,14 +243,16 @@ export const HubSpotIntegration = () => {
             <div className="flex flex-col gap-1">
               <div className="text-lg font-semibold">{integrationInfo?.name}</div>
               <div className="text-sm text-muted-foreground font-normal">
-                {integrationInfo?.description}{' '}
+                {t('settings.integrations.descriptions.hubspot')}{' '}
                 <a
                   href="https://docs.usertour.io/how-to-guides/environments/"
                   className="text-primary"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <span>Read the HubSpot guide</span>
+                  <span>
+                    {t('settings.integrations.providerHeaderReadGuide', { provider: 'HubSpot' })}
+                  </span>
                   <OpenInNewWindowIcon className="size-3.5 inline ml-0.5 mb-0.5" />
                 </a>
               </div>

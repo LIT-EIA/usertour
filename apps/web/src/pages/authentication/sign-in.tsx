@@ -7,9 +7,10 @@ import {
   SignInForm,
   SignInRoot,
 } from './components/sign-in-form';
+import { useTranslation } from 'react-i18next';
 
 // Footer component
-const SignInFooter = () => <CardFooter></CardFooter>;
+const SignInFooter = () => <CardFooter />;
 
 SignInFooter.displayName = 'SignInFooter';
 
@@ -29,10 +30,13 @@ const SignInBody = () => {
 SignInBody.displayName = 'SignInBody';
 
 const SignIn = () => {
+  const { t } = useTranslation();
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-semibold tracking-tight">Sign in to UserTour</CardTitle>
+        <CardTitle className="text-2xl font-semibold tracking-tight">
+          {t('auth.signIn.title')}
+        </CardTitle>
       </CardHeader>
       <SignInBody />
     </Card>

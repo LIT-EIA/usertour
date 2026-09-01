@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { ChangeEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RulesError, RulesErrorAnchor, RulesErrorContent } from './rules-error';
 
 export interface RulesCurrentTimeProps {
@@ -18,6 +19,7 @@ export interface RulesCurrentTimeProps {
 
 export const RulesWait = (props: RulesCurrentTimeProps) => {
   const { defaultValue, onValueChange, maxSeconds = 300, disabled = false } = props;
+  const { t } = useTranslation();
   const [openError, setOpenError] = useState(false);
   const [inputValue, setInputValue] = useState<number>(defaultValue ?? 0);
 
@@ -36,7 +38,7 @@ export const RulesWait = (props: RulesCurrentTimeProps) => {
     <RulesError open={openError}>
       <div className="flex flex-row space-x-3">
         <div className="flex flex-row items-center space-x-2 h-9 space-x-2 items-center">
-          <span className="text-sm">Wait</span>
+          <span className="text-sm">{t('conditions.standalone.wait.before')}</span>
           <RulesErrorAnchor asChild>
             <Input
               type="text"
@@ -48,21 +50,25 @@ export const RulesWait = (props: RulesCurrentTimeProps) => {
               disabled={disabled}
             />
           </RulesErrorAnchor>
-          <div className="text-muted-foreground text-sm">second before starting</div>
+          <div className="text-muted-foreground text-sm">
+            {t('conditions.standalone.wait.afterLabel')}
+          </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <QuestionMarkCircledIcon className="ml-1 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
-                Condition must stay true while waiting
+                {t('conditions.standalone.wait.tooltip')}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
         <RulesErrorContent className="w-60">
-          Wait time must not be greater than {maxSeconds} seconds ({Math.floor(maxSeconds / 60)}{' '}
-          minutes)
+          {t('conditions.standalone.wait.error', {
+            max: maxSeconds,
+            minutes: Math.floor(maxSeconds / 60),
+          })}
         </RulesErrorContent>
       </div>
     </RulesError>

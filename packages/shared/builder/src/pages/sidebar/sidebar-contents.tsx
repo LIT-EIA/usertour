@@ -44,6 +44,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { Step } from '@usertour/types';
 import { forwardRef, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { defaultStep } from '@usertour/helpers';
 import { BuilderMode, useBuilderContext } from '../../contexts';
@@ -54,6 +55,7 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
     { index, step, onClick, listeners = {}, attributes = {}, isReachable = true, ...props },
     ref,
   ) => {
+    const { t } = useTranslation();
     const handleEdit = () => {
       onClick('edit', index);
     };
@@ -90,7 +92,7 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
                     <GearIcon className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
+                <TooltipContent>{t('contentBuilder.flow.edit')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <TooltipProvider>
@@ -105,7 +107,7 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
                     <EventIcon2 className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Trigger</TooltipContent>
+                <TooltipContent>{t('contentBuilder.flow.trigger')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <AlertDialog>
@@ -122,22 +124,21 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
                     </AlertDialogTrigger>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Delete</p>
+                    <p>{t('contentBuilder.flow.delete')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('contentBuilder.flow.deleteConfirmTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    After deletion, it will not be possible to access or recover the data through
-                    any means. Please confirm.
+                    {t('contentBuilder.flow.deleteConfirmDescription')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t('contentBuilder.common.cancel')}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDelete} variant={'destructive'}>
-                    Delete
+                    {t('contentBuilder.flow.delete')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -149,10 +150,7 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
             <div className="flex-none self-start pt-1">
               <ExclamationTriangleIcon className="h-3 w-3" />
             </div>
-            <span className="text-xs grow ">
-              Step is not reachable from the start step. Add a button, trigger that links to this
-              step, or delete it.
-            </span>
+            <span className="text-xs grow ">{t('contentBuilder.flow.stepNotReachable')}</span>
           </div>
         )}
       </div>

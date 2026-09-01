@@ -19,7 +19,9 @@ import {
 } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import { ChangeEvent, Ref, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext } from '../../contexts';
+import { useSidebarWidthClass } from '../../hooks/use-sidebar-width';
 import { ContentAlignment } from '../../components/content-alignment';
 import { ContentModal } from '../../components/content-modal';
 import { ContentModalPlacement } from '../../components/content-modal-placement';
@@ -237,6 +239,7 @@ const FlowBuilderDetailFooter = () => {
   const { invoke: addContentStep } = useAddContentStepMutation();
   const { invoke: updateContentStep } = useUpdateContentStepMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSave = useCallback(async () => {
     if (!currentStep || !backupStepData) {
@@ -273,7 +276,7 @@ const FlowBuilderDetailFooter = () => {
         if (!currentVersion?.id) {
           return toast({
             variant: 'destructive',
-            title: 'Failed to create step!',
+            title: t('contentBuilder.flow.saveStepFailed'),
           });
         }
         const createdStep = await addContentStep({ ...step, versionId: currentVersion.id });
@@ -282,7 +285,7 @@ const FlowBuilderDetailFooter = () => {
         } else {
           return toast({
             variant: 'destructive',
-            title: 'Failed to create step!',
+            title: t('contentBuilder.flow.saveStepFailed'),
           });
         }
       } else {
@@ -293,7 +296,7 @@ const FlowBuilderDetailFooter = () => {
         } else {
           return toast({
             variant: 'destructive',
-            title: 'Failed to create step!',
+            title: t('contentBuilder.flow.saveStepFailed'),
           });
         }
       }
@@ -311,7 +314,7 @@ const FlowBuilderDetailFooter = () => {
     <CardFooter className="flex-none p-5">
       <Button className="w-full h-10" disabled={isLoading} onClick={handleSave}>
         {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-        Save
+        {t('contentBuilder.common.save')}
       </Button>
     </CardFooter>
   );
@@ -430,11 +433,16 @@ const FlowBuilderDetailEmbed = () => {
 export const FlowBuilderDetail = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { zIndex, position } = useBuilderContext();
+  const widthClass = useSidebarWidthClass();
 
   return (
     <>
       <div
-        className={cn('w-80 h-screen p-2 fixed top-0', position === 'left' ? 'left-0' : 'right-0')}
+        className={cn(
+          widthClass,
+          'h-screen p-2 fixed top-0',
+          position === 'left' ? 'left-0' : 'right-0',
+        )}
         style={{ zIndex: zIndex + EXTENSION_CONTENT_SIDEBAR }}
         ref={ref}
       >

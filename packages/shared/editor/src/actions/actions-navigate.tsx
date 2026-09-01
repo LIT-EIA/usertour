@@ -3,6 +3,7 @@ import { PagesIcon } from '@usertour-packages/icons';
 import { getNavitateError } from '@usertour/helpers';
 import { Tabs, TabsList, TabsTrigger } from '@usertour-packages/tabs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Descendant } from 'slate';
 import { PopperEditorMini, serializeMini } from '../components/editor';
 import { useActionsGroupContext } from '../contexts/actions-group-context';
@@ -120,6 +121,7 @@ const NavigationTabs = ({
   openType: string;
   onOpenTypeChange: (value: string) => void;
 }) => {
+  const { t } = useTranslation();
   return (
     <Tabs className="w-full" defaultValue={openType} onValueChange={onOpenTypeChange}>
       <TabsList className="h-auto w-full">
@@ -127,13 +129,13 @@ const NavigationTabs = ({
           value="same"
           className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground w-1/2"
         >
-          Same tab
+          {t('actions.types.pageNavigate.sameTab')}
         </TabsTrigger>
         <TabsTrigger
           value="new"
           className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground w-1/2"
         >
-          New tab
+          {t('actions.types.pageNavigate.newTab')}
         </TabsTrigger>
       </TabsList>
     </Tabs>
@@ -142,19 +144,21 @@ const NavigationTabs = ({
 
 // Memoized display text component
 const NavigationDisplayText = ({ value }: { value: Descendant[] }) => {
+  const { t } = useTranslation();
   const displayText = useMemo(() => {
     const serializedValue = value.map((v) => serializeMini(v)).join('');
     if (!serializedValue.trim() || serializedValue.trim() === 'https://') {
-      return 'Navigate to URL...';
+      return t('actions.types.pageNavigate.placeholder');
     }
 
     // Truncate long URL for display
     const maxLength = 50;
     const trimmedValue = serializedValue.trim();
+    const prefix = t('actions.types.pageNavigate.prefix');
     return trimmedValue.length > maxLength
-      ? `Navigate to ${trimmedValue.substring(0, maxLength)}...`
-      : `Navigate to ${trimmedValue}`;
-  }, [value]);
+      ? `${prefix} ${trimmedValue.substring(0, maxLength)}...`
+      : `${prefix} ${trimmedValue}`;
+  }, [value, t]);
 
   return (
     <span className="break-words" style={{ wordBreak: 'break-word' }}>
@@ -165,6 +169,7 @@ const NavigationDisplayText = ({ value }: { value: Descendant[] }) => {
 
 export const ContentActionsNavigate = (props: ContentActionsNavigateProps) => {
   const { data, index } = props;
+  const { t } = useTranslation();
   const { attributes, zIndex } = useContentActionsContext();
 
   // Initialize state with memoized initial values
@@ -217,7 +222,7 @@ export const ContentActionsNavigate = (props: ContentActionsNavigateProps) => {
     () => (
       <div className="flex flex-col space-y-2">
         <div className="flex flex-col space-y-1">
-          <div>URL to navigate to</div>
+          <div>{t('actions.types.pageNavigate.urlLabel')}</div>
           <NavigationEditor
             value={value}
             onValueChange={handleValueChange}
@@ -228,7 +233,7 @@ export const ContentActionsNavigate = (props: ContentActionsNavigateProps) => {
         <NavigationTabs openType={openType} onOpenTypeChange={handleOpenTypeChange} />
       </div>
     ),
-    [value, handleValueChange, zIndex, attributes, openType, handleOpenTypeChange],
+    [value, handleValueChange, zIndex, attributes, openType, handleOpenTypeChange, t],
   );
 
   return (

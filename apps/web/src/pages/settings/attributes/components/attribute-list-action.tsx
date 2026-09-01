@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AttributeDeleteForm } from './attribute-delete-form';
 import { AttributeEditForm } from './attribute-edit-form';
 import { useAppContext } from '@/contexts/app-context';
@@ -30,6 +31,7 @@ export const AttributeListAction = (props: AttributeListActionProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const { refetch } = useAttributeListContext();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
   const handleOpen = () => {
     setOpen(true);
   };
@@ -58,7 +60,11 @@ export const AttributeListAction = (props: AttributeListActionProps) => {
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-slate-700">
-            <p>Predefned attributes can't be edited.</p>
+            <p>
+              {t('settings.common.predefinedTooltip', {
+                resource: t('settings.attributes.predefinedResource'),
+              })}
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -77,7 +83,7 @@ export const AttributeListAction = (props: AttributeListActionProps) => {
           <DropdownMenuContent align="start" className="w-[200px]">
             <DropdownMenuItem onClick={handleOpen}>
               <EditIcon className="w-6" width={12} height={12} />
-              Edit attribute
+              {t('settings.attributes.editMenuItem')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -85,7 +91,7 @@ export const AttributeListAction = (props: AttributeListActionProps) => {
               className="text-destructive focus:bg-destructive/10 focus:text-destructive"
             >
               <Delete2Icon className="w-6" width={16} height={16} />
-              Delete attribute
+              {t('settings.attributes.deleteMenuItem')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

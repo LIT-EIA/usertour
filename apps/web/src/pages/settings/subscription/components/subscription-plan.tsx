@@ -1,3 +1,4 @@
+import { formatDate } from '@/utils/common';
 import { Button } from '@usertour-packages/button';
 import { Input } from '@usertour-packages/input';
 import { Textarea } from '@usertour-packages/textarea';
@@ -14,6 +15,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import { getErrorMessage } from '@usertour/helpers';
 import Upload from 'rc-upload';
 import { UploadRequestOption } from 'rc-upload/lib/interface';
+import { useTranslation } from 'react-i18next';
 
 const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
   // License hooks
@@ -27,6 +29,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
   const [licenseInput, setLicenseInput] = useState(licenseInfo?.license || '');
   const [_, copyToClipboard] = useCopyToClipboard();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const planType = licenseInfo?.payload?.plan || 'free';
 
@@ -42,7 +45,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
     copyToClipboard(projectId);
     toast({
       variant: 'success',
-      title: `Project ID ${projectId} has been copied to clipboard`,
+      title: t('settings.subscription.projectIdCopiedToast', { id: projectId }),
     });
   };
 
@@ -57,7 +60,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
       !file.name.endsWith('.license')
     ) {
       toast({
-        title: 'Please select a text file (.txt) or license file (.license)',
+        title: t('settings.subscription.invalidFileType'),
         variant: 'destructive',
       });
       option.onError?.(new Error('Invalid file type'));
@@ -67,7 +70,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
     // Validate file size (max 10KB)
     if (file.size > 10 * 1024) {
       toast({
-        title: 'Please select a file smaller than 10KB',
+        title: t('settings.subscription.fileTooLarge'),
         variant: 'destructive',
       });
       option.onError?.(new Error('File too large'));
@@ -82,7 +85,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
 
         if (!trimmedContent) {
           toast({
-            title: 'Empty file',
+            title: t('settings.subscription.emptyFileToast'),
             variant: 'destructive',
           });
           option.onError?.(new Error('Empty file'));
@@ -98,7 +101,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
         refetchLicense();
         toast({
           variant: 'success',
-          title: 'License updated',
+          title: t('settings.subscription.uploadLicenseSuccess'),
         });
 
         // Call onSuccess to complete the upload
@@ -123,10 +126,12 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
         <div className="py-8 grid grid-cols-1 sm:grid-cols-8 gap-x-12 gap-y-4">
           <div className="col-span-3 flex flex-col gap-1">
             <div className="flex flex-wrap gap-2">
-              <h1 className="text-zinc-950/90 dark:text-white/90">Subscription</h1>
+              <h1 className="text-zinc-950/90 dark:text-white/90">
+                {t('settings.subscription.heading')}
+              </h1>
             </div>
             <h2 className="text-zinc-950/50 dark:text-white/50 text-sm">
-              View and manage your subscription
+              {t('settings.subscription.description')}
             </h2>
           </div>
           <div className="flex flex-col col-span-5 space-y-2 p-4 pt-1 xl:p-4 rounded-xl bg-zinc-950/5 dark:bg-white/5">
@@ -141,14 +146,15 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
                       </div>
                     ) : (
                       <>
-                        <span>Current plan: </span>
+                        <span>{t('settings.subscription.currentPlanLabel')}</span>
                         <span className="font-normal text-zinc-950/60 dark:text-white/50 capitalize">
                           {planType}
                         </span>
                         {licenseInfo?.payload?.exp && (
                           <span className="text-red-500">
-                            Expires on{' '}
-                            {new Date(licenseInfo.payload.exp * 1000).toLocaleDateString()}
+                            {t('settings.subscription.expiresOn', {
+                              date: formatDate(new Date(licenseInfo.payload.exp * 1000), 'PP'),
+                            })}
                           </span>
                         )}
                       </>
@@ -175,16 +181,16 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
           {/* Project ID display with copy button */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-1">
-              <div className="text-sm font-medium">Project ID</div>
+              <div className="text-sm font-medium">{t('settings.subscription.projectIdLabel')}</div>
               <div className="text-zinc-950/50 dark:text-white/50 text-sm">
-                The unique , read-only project id.
+                {t('settings.subscription.projectIdDescription')}
               </div>
             </div>
             <div className="flex gap-4">
               <Input value={projectId} disabled className="flex-1" />
               <Button variant="secondary" onClick={handleCopyProjectId} className="h-9">
                 <CopyIcon className="w-4 h-4 mr-1" />
-                Copy
+                {t('settings.subscription.copy')}
               </Button>
             </div>
           </div>
@@ -192,14 +198,16 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
           {/* License input and upload button */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-1">
-              <div className="text-sm font-medium">Upload License</div>
+              <div className="text-sm font-medium">
+                {t('settings.subscription.uploadLicenseLabel')}
+              </div>
               <div className="text-zinc-950/50 dark:text-white/50 text-sm">
-                You can upload your Usertour license to unlock business/enterprise features.
+                {t('settings.subscription.uploadLicenseDescription')}
               </div>
             </div>
             <div className="flex flex-col gap-4">
               <Textarea
-                placeholder="Sensitive - write only"
+                placeholder={t('settings.subscription.uploadLicensePlaceholder')}
                 value={licenseInput}
                 onChange={(e) => setLicenseInput(e.target.value)}
                 className="flex-1"
@@ -217,7 +225,7 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
                     className="text-sm gap-0.5 inline-flex items-center justify-center rounded-[10px] disabled:pointer-events-none select-none border border-transparent bg-zinc-950/90 hover:bg-zinc-950/80 ring-zinc-950/10 dark:bg-white dark:hover:bg-white/90 text-white/90 px-2 min-w-[36px] h-9 dark:text-zinc-950 flex-none"
                   >
                     <UploadIcon className="w-4 h-4 mr-1" />
-                    Upload License
+                    {t('settings.subscription.uploadLicenseButton')}
                   </Button>
                 </Upload>
               </div>

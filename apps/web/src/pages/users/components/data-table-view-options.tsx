@@ -20,12 +20,14 @@ import { cn, getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCallback } from 'react';
 import { ScrollArea } from '@usertour-packages/scroll-area';
+import { useTranslation } from 'react-i18next';
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
 }
 
 export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps<TData>) {
+  const { t } = useTranslation();
   const { refetch, currentSegment } = useSegmentListContext();
   const { isViewOnly } = useAppContext();
 
@@ -69,14 +71,15 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
           disabled={isViewOnly}
         >
           <MixerHorizontalIcon className="mr-2 h-4 w-4" />
-          View
+          {t('contents.listView.viewOptions.view')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('contents.listView.viewOptions.toggleColumns')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className={cn(columns.length > 10 ? 'h-80' : 'h-auto')}>
           {columns.map((column) => {
+            const label = (column.columnDef.meta as { label?: string } | undefined)?.label;
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
@@ -87,7 +90,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
                   await updateSegmentColumn(column.id, !!value);
                 }}
               >
-                {column.id}
+                {label || column.id}
               </DropdownMenuCheckboxItem>
             );
           })}

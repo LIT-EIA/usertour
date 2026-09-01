@@ -7,6 +7,7 @@ import { forwardRef, useEffect, useState } from 'react';
 
 import { PlusIcon } from '@usertour-packages/icons';
 import { useEvent } from 'react-use';
+import { useTranslation } from 'react-i18next';
 import { postMessageToWindow } from '../utils/post-message';
 
 const centerClasses =
@@ -24,6 +25,7 @@ interface ExtensionElementListenerProps extends BaseListenerProps {
 
 export const ExtensionElementListener = forwardRef<HTMLDivElement, ExtensionElementListenerProps>(
   (props, ref) => {
+    const { t } = useTranslation();
     const { onMounted, selectorTarget } = props;
     const [targetData, setTargetData] = useState<TargetData | null>(null);
 
@@ -62,8 +64,7 @@ export const ExtensionElementListener = forwardRef<HTMLDivElement, ExtensionElem
 
     return (
       <div style={style} className={cn('fixed', targetData?.failed ? centerClasses : '')} ref={ref}>
-        {targetData?.failed &&
-          'The page element was not found on the current page, but you can continue editing the content'}
+        {targetData?.failed && t('contentBuilder.shared.elementNotFound')}
       </div>
     );
   },

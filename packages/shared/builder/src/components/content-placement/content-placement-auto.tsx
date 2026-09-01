@@ -5,6 +5,7 @@ import { Label } from '@usertour-packages/label';
 import { SelectorDialog } from '@usertour-packages/shared-components';
 import { HelpTooltip } from '@usertour-packages/shared-components';
 import { Switch } from '@usertour-packages/switch';
+import { useTranslation } from 'react-i18next';
 import { ContentError, ContentErrorAnchor, ContentErrorContent } from '../content-error';
 import { useContentPlacement } from './content-placement-context';
 import { PrecisionSelect } from './precision-select';
@@ -23,6 +24,7 @@ export const ContentPlacementAuto = () => {
     isShowError,
     subTitle,
   } = useContentPlacement();
+  const { t } = useTranslation();
 
   const handleElementSelectSuccess = (output: any) => {
     onTargetChange({
@@ -51,7 +53,7 @@ export const ContentPlacementAuto = () => {
             <ContentErrorAnchor>
               <Button className="w-full rounded-none">
                 <Crosshair2Icon className="mr-2" />
-                Select another element
+                {t('contentBuilder.shared.selectAnotherElement')}
               </Button>
             </ContentErrorAnchor>
           </div>
@@ -69,7 +71,9 @@ export const ContentPlacementAuto = () => {
               <ContentErrorAnchor>
                 <Button className="w-full rounded-none">
                   <Crosshair2Icon className="mr-2" />
-                  {!target ? 'Select element' : 'Select another element'}
+                  {!target
+                    ? t('contentBuilder.shared.selectElementButton')
+                    : t('contentBuilder.shared.selectAnotherElement')}
                 </Button>
               </ContentErrorAnchor>
             </div>
@@ -84,11 +88,8 @@ export const ContentPlacementAuto = () => {
 
         <div className="flex items-center justify-between space-x-2">
           <div className="flex space-x-2 grow">
-            <Label htmlFor="dynamic-content">Dynamic text</Label>
-            <HelpTooltip>
-              If the element's text is dynamic and may change, enabled this switch to make Usertour
-              find it without considering its current text.
-            </HelpTooltip>
+            <Label htmlFor="dynamic-content">{t('contentBuilder.shared.dynamicText')}</Label>
+            <HelpTooltip>{t('contentBuilder.shared.dynamicTextTooltip')}</HelpTooltip>
           </div>
           <Switch
             id="dynamic-content"
@@ -98,7 +99,7 @@ export const ContentPlacementAuto = () => {
         </div>
       </div>
       <ContentErrorContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
-        Please select an element
+        {t('contentBuilder.shared.selectElementError')}
       </ContentErrorContent>
     </ContentError>
   );

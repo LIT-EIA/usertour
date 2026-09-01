@@ -14,6 +14,7 @@ import { useCallback } from 'react';
 import { Segment } from '@usertour/types';
 import { useSegmentListContext } from '@/contexts/segment-list-context';
 import { getErrorMessage } from '@usertour/helpers';
+import { useTranslation } from 'react-i18next';
 
 interface AddUserManualSegmentProps {
   table: Table<any>;
@@ -24,6 +25,7 @@ export const AddUserManualSegment = (props: AddUserManualSegmentProps) => {
   const [mutation] = useMutation(createBizUserOnSegment);
   const { segmentList } = useSegmentListContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleAddManualSegment = useCallback(
     async (segment: Segment) => {
@@ -47,7 +49,10 @@ export const AddUserManualSegment = (props: AddUserManualSegmentProps) => {
         if (ret.data?.createBizUserOnSegment?.success) {
           toast({
             variant: 'success',
-            title: `${ret.data?.createBizUserOnSegment.count} users added to ${segment.name}`,
+            title: t('users.toast.segments.usersAdded', {
+              count: ret.data?.createBizUserOnSegment.count,
+              segmentName: segment.name,
+            }),
           });
           return;
         }
@@ -66,7 +71,7 @@ export const AddUserManualSegment = (props: AddUserManualSegmentProps) => {
       <DropdownMenuTrigger asChild>
         <Button variant={'ghost'} className="h-8 text-primary hover:text-primary px-1 ">
           <UserIcon3 width={16} height={16} className="mr-1" />
-          Add to manual segment
+          {t('users.actions.addToManualSegment')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">

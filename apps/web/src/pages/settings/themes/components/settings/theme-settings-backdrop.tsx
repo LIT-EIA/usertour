@@ -3,8 +3,10 @@ import { ThemeSettingInput } from '@/components/molecules/theme/theme-setting-in
 import { ThemeSettingSelect } from '@/components/molecules/theme/theme-setting-select';
 import { ThemeSettingSlider } from '@/components/molecules/theme/theme-setting-slider';
 import { useThemeSettingsContext } from '../theme-settings-panel';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSettingsBackdrop = () => {
+  const { t } = useTranslation();
   const { settings, setSettings } = useThemeSettingsContext();
 
   const updateBackdrop = (data: Partial<typeof settings.backdrop>) => {
@@ -30,10 +32,10 @@ export const ThemeSettingsBackdrop = () => {
             onChange={(value: string) => {
               updateBackdrop({ color: value });
             }}
-            text="Backdrop color"
+            text={t('themeBuilder.fields.backdrop.backdropColor')}
           />
           <ThemeSettingSlider
-            text="Backdrop opacity"
+            text={t('themeBuilder.fields.backdrop.backdropOpacity')}
             name="backdrop-opacity"
             defaultValue={[settings.backdrop.opacity]}
             onValueChange={(value: number[]) => {
@@ -41,20 +43,20 @@ export const ThemeSettingsBackdrop = () => {
             }}
           />
           <ThemeSettingSelect
-            text="Highlight type"
+            text={t('themeBuilder.fields.backdrop.highlightType')}
             defaultValue={settings.backdrop.highlight.type}
             name="backdrop-highlight-type"
             onValueChange={(value: string) => {
               updateBackdropHighlight({ type: value });
             }}
             items={[
-              { name: 'OutSide', value: 'outside' },
-              { name: 'InSide', value: 'inside' },
+              { name: t('themeBuilder.options.highlightType.outside'), value: 'outside' },
+              { name: t('themeBuilder.options.highlightType.inside'), value: 'inside' },
             ]}
           />
 
           <ThemeSettingInput
-            text="Highlight radius"
+            text={t('themeBuilder.fields.backdrop.highlightRadius')}
             defaultValue={String(settings.backdrop.highlight.radius)}
             onChange={(value: string) => {
               updateBackdropHighlight({ radius: Number(value) });
@@ -63,7 +65,7 @@ export const ThemeSettingsBackdrop = () => {
           />
 
           <ThemeSettingInput
-            text="Highlight spread"
+            text={t('themeBuilder.fields.backdrop.highlightSpread')}
             name="backdrop-highlight-spread"
             defaultValue={String(settings.backdrop.highlight.spread)}
             onChange={(value: string) => {
@@ -71,7 +73,7 @@ export const ThemeSettingsBackdrop = () => {
             }}
           />
           <ThemeSelectColor
-            text="Highlight color"
+            text={t('themeBuilder.fields.backdrop.highlightColor')}
             defaultColor={settings.backdrop.highlight.color}
             onChange={(value: string) => {
               updateBackdropHighlight({ color: value });
@@ -79,7 +81,7 @@ export const ThemeSettingsBackdrop = () => {
             name="backdrop-highlight-color"
           />
           <ThemeSettingSlider
-            text="Highlight opacity"
+            text={t('themeBuilder.fields.backdrop.highlightOpacity')}
             name="backdrop-highlight-opacity"
             defaultValue={[settings.backdrop.highlight.opacity]}
             onValueChange={(value: number[]) => {

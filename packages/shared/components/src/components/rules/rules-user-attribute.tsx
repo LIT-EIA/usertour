@@ -19,8 +19,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@usertour-packages/button';
 import { Calendar } from '@usertour-packages/calendar';
@@ -101,6 +104,66 @@ export const conditionsTypeMapping = {
   ],
 };
 
+const OPERATOR_LABEL_KEYS: Record<string, string> = {
+  is: 'is',
+  not: 'isNot',
+  isLessThan: 'isLessThan',
+  isLessThanOrEqualTo: 'isLessThanOrEqualTo',
+  isGreaterThan: 'isGreaterThan',
+  isGreaterThanOrEqualTo: 'isGreaterThanOrEqualTo',
+  between: 'isBetween',
+  contains: 'contains',
+  notContain: 'doesNotContain',
+  startsWith: 'startsWith',
+  endsWith: 'endsWith',
+  true: 'isTrue',
+  false: 'isFalse',
+  includesAtLeastOne: 'includesAtLeastOne',
+  includesAll: 'includesAll',
+  notIncludesAtLeastOne: 'notIncludesAtLeastOne',
+  notIncludesAll: 'notIncludesAll',
+  any: 'hasAnyValue',
+  empty: 'isEmpty',
+};
+
+const DATE_OPERATOR_DISPLAY_KEYS: Record<string, string> = {
+  lessThan: 'daysAgoLessThan',
+  exactly: 'daysAgoExactly',
+  moreThan: 'daysAgoMoreThan',
+  before: 'beforeDate',
+  on: 'onDate',
+  after: 'afterDate',
+};
+
+const buildTranslatedConditionsTypeMapping = (t: TFunction) => {
+  const translateOperator = <T extends { value: string; name: string; display?: string }>(
+    item: T,
+  ): T => {
+    const dateKey = DATE_OPERATOR_DISPLAY_KEYS[item.value];
+    if (dateKey) {
+      return {
+        ...item,
+        name: t(`conditions.types.userAttr.dateTimeShort.${item.value}`),
+        display: t(`conditions.operators.${dateKey}`),
+      };
+    }
+    const labelKey = OPERATOR_LABEL_KEYS[item.value];
+    return { ...item, name: labelKey ? t(`conditions.operators.${labelKey}`) : item.name };
+  };
+
+  return {
+    [AttributeDataType.Number]:
+      conditionsTypeMapping[AttributeDataType.Number].map(translateOperator),
+    [AttributeDataType.String]:
+      conditionsTypeMapping[AttributeDataType.String].map(translateOperator),
+    [AttributeDataType.Boolean]:
+      conditionsTypeMapping[AttributeDataType.Boolean].map(translateOperator),
+    [AttributeDataType.List]: conditionsTypeMapping[AttributeDataType.List].map(translateOperator),
+    [AttributeDataType.DateTime]:
+      conditionsTypeMapping[AttributeDataType.DateTime].map(translateOperator),
+  };
+};
+
 interface RulesUserAttributeContextValue {
   type: string;
   selectedPreset: Attribute | null;
@@ -132,6 +195,7 @@ const RulesAttributeDatePicker = (props: {
   setDate: Dispatch<SetStateAction<Date | undefined>>;
 }) => {
   const { date, setDate } = props;
+  const { t } = useTranslation();
 
   return (
     <Popover>
@@ -144,7 +208,7 @@ const RulesAttributeDatePicker = (props: {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, 'yyyy-MM-dd') : <span>Pick a date</span>}
+          {date ? format(date, 'yyyy-MM-dd') : <span>{t('common.datePicker.pickDate')}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -169,6 +233,7 @@ const RulesAttributeDatePicker = (props: {
 
 const RulesUserAttributeName = () => {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   const { selectedPreset, setSelectedPreset, updateLocalData } = useRulesUserAttributeContext();
   const { attributes } = useRulesContext();
   const handleOnSelected = (item: Attribute) => {
@@ -214,11 +279,14 @@ const RulesUserAttributeName = () => {
           withoutPortal
         >
           <Command filter={handleFilter}>
-            <CommandInput placeholder="Search attribute..." />
-            <CommandEmpty>No items found.</CommandEmpty>
+            <CommandInput placeholder={t('conditions.types.userAttr.searchPlaceholder')} />
+            <CommandEmpty>{t('common.selectPopover.noItems')}</CommandEmpty>
             <ScrollArea className="h-72">
               {userAttributes.length > 0 && (
-                <CommandGroup heading="User attribute" style={{ zIndex: EXTENSION_CONTENT_RULES }}>
+                <CommandGroup
+                  heading={t('conditions.types.userAttr.groups.user')}
+                  style={{ zIndex: EXTENSION_CONTENT_RULES }}
+                >
                   {userAttributes.map((item) => (
                     <CommandItem
                       key={item.id}
@@ -242,7 +310,7 @@ const RulesUserAttributeName = () => {
 
               {companyAttributes.length > 0 && (
                 <CommandGroup
-                  heading="Company attribute"
+                  heading={t('conditions.types.userAttr.groups.company')}
                   style={{ zIndex: EXTENSION_CONTENT_RULES }}
                 >
                   {companyAttributes.map((item) => (
@@ -268,7 +336,7 @@ const RulesUserAttributeName = () => {
 
               {membershipAttributes.length > 0 && (
                 <CommandGroup
-                  heading="Membership attribute"
+                  heading={t('conditions.types.userAttr.groups.membership')}
                   style={{ zIndex: EXTENSION_CONTENT_RULES }}
                 >
                   {membershipAttributes.map((item) => (
@@ -331,6 +399,7 @@ const RulesUserAttributeCondition = () => {
 };
 
 const RulesUserAttributeInput = () => {
+  const { t } = useTranslation();
   const { localData, updateLocalData, selectedPreset } = useRulesUserAttributeContext();
   const isDateTime =
     selectedPreset?.dataType === AttributeDataType.DateTime &&
@@ -443,7 +512,7 @@ const RulesUserAttributeInput = () => {
               onFocus={() => setFocusedIndex(index)}
               onBlur={() => setFocusedIndex(-1)}
               autoFocus={index === focusedIndex}
-              placeholder="Enter new value"
+              placeholder={t('conditions.types.userAttr.valuePlaceholder')}
               className="pr-8"
             />
             {/* Show remove button when input has value or it's not the last empty input */}
@@ -482,7 +551,7 @@ const RulesUserAttributeInput = () => {
           )}
         {localData?.logic === 'between' && (
           <>
-            <span>and</span>
+            <span>{t('conditions.operators.and')}</span>
             <Input
               type={inputType}
               value={localData?.value2 || ''}
@@ -500,6 +569,11 @@ const RulesUserAttributeInput = () => {
 
 export const RulesUserAttribute = (props: RulesUserAttributeProps) => {
   const { index, data, type } = props;
+  const { t } = useTranslation();
+  const translatedConditionsTypeMapping = useMemo(
+    () => buildTranslatedConditionsTypeMapping(t),
+    [t],
+  );
   const { attributes } = useRulesContext();
   const [selectedPreset, setSelectedPreset] = useState<Attribute | null>(null);
   const { updateConditionData } = useRulesGroupContext();
@@ -507,7 +581,7 @@ export const RulesUserAttribute = (props: RulesUserAttributeProps) => {
   const [open, setOpen] = useState(false);
   const [activeConditionMapping, setActiveConditionMapping] = useState<
     (typeof conditionsTypeMapping)[AttributeDataType.Number]
-  >(conditionsTypeMapping[AttributeDataType.Number]);
+  >(translatedConditionsTypeMapping[AttributeDataType.Number]);
   const [localData, setLocalData] = useState<RulesUserAttributeData | undefined>(data);
   const [errorInfo, setErrorInfo] = useState('');
 
@@ -536,10 +610,10 @@ export const RulesUserAttribute = (props: RulesUserAttributeProps) => {
 
   useEffect(() => {
     if (selectedPreset?.dataType) {
-      const t = selectedPreset.dataType as keyof typeof conditionsTypeMapping;
-      setActiveConditionMapping(conditionsTypeMapping[t]);
+      const dataType = selectedPreset.dataType as keyof typeof conditionsTypeMapping;
+      setActiveConditionMapping(translatedConditionsTypeMapping[dataType]);
     }
-  }, [selectedPreset]);
+  }, [selectedPreset, translatedConditionsTypeMapping]);
 
   useEffect(() => {
     if (activeConditionMapping && activeConditionMapping.length > 0) {
@@ -630,7 +704,7 @@ export const RulesUserAttribute = (props: RulesUserAttributeProps) => {
                   {displayCondition} <span className="font-bold ">{displayValue}</span>
                   {localData?.logic === 'between' && (
                     <>
-                      <span className="mx-1">and</span>
+                      <span className="mx-1">{t('conditions.operators.and')}</span>
                       <span className="font-bold ">{localData?.value2}</span>
                     </>
                   )}
@@ -639,11 +713,12 @@ export const RulesUserAttribute = (props: RulesUserAttributeProps) => {
                   <div className=" flex flex-col space-y-2">
                     <div className=" flex flex-col space-y-1">
                       <div>
-                        {selectedPreset?.bizType === AttributeBizTypes.User && 'User attribute'}
+                        {selectedPreset?.bizType === AttributeBizTypes.User &&
+                          t('conditions.types.userAttr.groups.user')}
                         {selectedPreset?.bizType === AttributeBizTypes.Company &&
-                          'Company attribute'}
+                          t('conditions.types.userAttr.groups.company')}
                         {selectedPreset?.bizType === AttributeBizTypes.Membership &&
-                          'Membership attribute'}
+                          t('conditions.types.userAttr.groups.membership')}
                       </div>
                       <RulesUserAttributeName />
                       <RulesUserAttributeCondition />

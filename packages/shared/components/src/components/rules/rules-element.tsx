@@ -8,8 +8,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { getElementError } from '@usertour/helpers';
 import { ElementSelectorPropsData } from '@usertour/types';
 import { useRulesContext } from './rules-context';
@@ -30,15 +33,15 @@ interface RulesElementProps {
   };
 }
 
-const conditions = [
-  { value: 'present', name: 'is present' },
-  { value: 'unpresent', name: 'is not present' },
-  { value: 'disabled', name: 'is disabled' },
-  { value: 'undisabled', name: 'is not disabled' },
-  { value: 'clicked', name: 'is clicked' },
-  { value: 'unclicked', name: 'is not clicked' },
-  { value: 'visible', name: 'is visible' },
-  { value: 'unvisible', name: 'is not visible' },
+const buildConditions = (t: TFunction) => [
+  { value: 'present', name: t('conditions.types.element.operators.present') },
+  { value: 'unpresent', name: t('conditions.types.element.operators.unpresent') },
+  { value: 'disabled', name: t('conditions.types.element.operators.disabled') },
+  { value: 'undisabled', name: t('conditions.types.element.operators.undisabled') },
+  { value: 'clicked', name: t('conditions.types.element.operators.clicked') },
+  { value: 'unclicked', name: t('conditions.types.element.operators.unclicked') },
+  { value: 'visible', name: t('conditions.types.element.operators.visible') },
+  { value: 'unvisible', name: t('conditions.types.element.operators.unvisible') },
 ];
 
 interface RulesElementContextValue {
@@ -46,6 +49,7 @@ interface RulesElementContextValue {
   setConditionValue: Dispatch<SetStateAction<string>>;
   elementData: ElementSelectorPropsData;
   setElementData: Dispatch<SetStateAction<ElementSelectorPropsData>>;
+  conditions: ReturnType<typeof buildConditions>;
 }
 
 const RulesElementContext = createContext<RulesElementContextValue | undefined>(undefined);
@@ -59,7 +63,7 @@ function useRulesElementContext(): RulesElementContextValue {
 }
 
 const RulesElementRadios = () => {
-  const { conditionValue = 'present', setConditionValue } = useRulesElementContext();
+  const { conditionValue = 'present', setConditionValue, conditions } = useRulesElementContext();
   return (
     <RadioGroup defaultValue={conditionValue} onValueChange={setConditionValue}>
       {conditions.map((condition, index) => (
@@ -86,6 +90,8 @@ const defaultData = {
 
 export const RulesElement = (props: RulesElementProps) => {
   const { index, data, type } = props;
+  const { t } = useTranslation();
+  const conditions = useMemo(() => buildConditions(t), [t]);
   const [conditionValue, setConditionValue] = useState(data.logic || defaultData.logic);
   const [elementData, setElementData] = useState<ElementSelectorPropsData>(
     data.elementData || defaultData.elementData,
@@ -101,6 +107,7 @@ export const RulesElement = (props: RulesElementProps) => {
     setConditionValue,
     elementData,
     setElementData,
+    conditions,
   };
 
   useEffect(() => {
@@ -151,7 +158,7 @@ export const RulesElement = (props: RulesElementProps) => {
               <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
                 <RulesPopoverTrigger className="space-y-1">
                   <div className="grow pr-6 text-sm text-wrap break-all space-y-1">
-                    If this element{' '}
+                    {t('conditions.types.element.editorTitle')}{' '}
                   </div>
                   <div>
                     {elementData && elementData.type === 'auto' && elementData.screenshot && (
@@ -171,14 +178,16 @@ export const RulesElement = (props: RulesElementProps) => {
                       elementData.type === 'manual' &&
                       elementData.content === '' &&
                       elementData.customSelector === '' && (
-                        <span className="font-bold text-destructive">No element selected yet</span>
+                        <span className="font-bold text-destructive">
+                          {t('conditions.types.element.notSelected')}
+                        </span>
                       )}
                   </div>
                   <div>{conditions.find((c) => c.value === conditionValue)?.name} </div>
                 </RulesPopoverTrigger>
                 <RulesPopoverContent side="right">
                   <div className=" flex flex-col space-y-2">
-                    <div>If this element...</div>
+                    <div>{t('conditions.types.element.editorTitle')}</div>
                     {/* <RulesElementSelector /> */}
                     <ElementSelector
                       data={{ ...elementData }}

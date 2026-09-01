@@ -25,12 +25,14 @@ import {
 import { duplicateContent } from '@usertour-packages/gql';
 import { Input } from '@usertour-packages/input';
 import { getErrorMessage } from '@usertour/helpers';
+import { getContentTypeGenderContext } from '@/utils/content-type';
 import { Content, ContentDataType } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 interface ContentDuplicateFormProps {
   content: Content;
@@ -59,6 +61,9 @@ export const ContentDuplicateForm = (props: ContentDuplicateFormProps) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const typeContext = getContentTypeGenderContext(name);
+  const translatedType = t(`contents.types.${name}`);
   const showError = (title: string) => {
     toast({
       variant: 'destructive',
@@ -87,7 +92,10 @@ export const ContentDuplicateForm = (props: ContentDuplicateFormProps) => {
       if (ret.data.duplicateContent.id) {
         toast({
           variant: 'success',
-          title: `The ${name} has been successfully created`,
+          title: t('contents.shared.duplicate.successToast', {
+            type: translatedType,
+            context: typeContext,
+          }),
         });
       }
       onSuccess();
@@ -103,12 +111,19 @@ export const ContentDuplicateForm = (props: ContentDuplicateFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Duplicate {name}</DialogTitle>
+              <DialogTitle>
+                {t('contents.shared.duplicate.title', { type: translatedType })}
+              </DialogTitle>
               <DialogDescription>
-                {name === ContentDataType.FLOW &&
-                  `This will create a new ${name} with a copy of the original ${name}'s steps.`}
-                {name !== ContentDataType.FLOW &&
-                  `This will create a new ${name} with a copy of the original ${name}.`}
+                {name === ContentDataType.FLOW
+                  ? t('contents.shared.duplicate.descriptionFlow', {
+                      type: translatedType,
+                      context: typeContext,
+                    })
+                  : t('contents.shared.duplicate.description', {
+                      type: translatedType,
+                      context: typeContext,
+                    })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2 pb-4 pt-4">
@@ -118,9 +133,15 @@ export const ContentDuplicateForm = (props: ContentDuplicateFormProps) => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t('contents.shared.duplicate.nameLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder={`Enter ${name} name`} {...field} />
+                        <Input
+                          placeholder={t('contents.shared.duplicate.namePlaceholder', {
+                            type: translatedType,
+                            context: typeContext,
+                          })}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -131,12 +152,12 @@ export const ContentDuplicateForm = (props: ContentDuplicateFormProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" type="button">
-                  Cancel
+                  {t('contents.shared.common.cancel')}
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Create
+                {t('contents.shared.common.create')}
               </Button>
             </DialogFooter>
           </form>

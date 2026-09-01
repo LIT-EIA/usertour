@@ -19,8 +19,8 @@ import {
 import { getContentVersion } from '@usertour-packages/gql';
 import { CircleIcon } from '@usertour-packages/icons';
 import { Content, ContentDataType, ContentVersion, Step, Theme } from '@usertour/types';
-import { formatDistanceToNow } from 'date-fns';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { formatRelativeTime } from '@/utils/common';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentEditDropdownMenu } from '../shared/content-edit-dropmenu';
 import {
@@ -30,13 +30,15 @@ import {
   LauncherPreview,
   ScaledPreviewContainer,
 } from '../shared/content-preview';
-import { columns } from './columns';
+import { getColumns } from './columns';
 import { DataTablePagination } from './data-table-pagination';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 const ContentPreviewFooter = ({ content }: { content: Content }) => {
   const { refetch } = useContentListContext();
   const { isViewOnly, environment } = useAppContext();
+  const { t } = useTranslation();
 
   const isPublished =
     content?.contentOnEnvironments?.find(
@@ -62,25 +64,28 @@ const ContentPreviewFooter = ({ content }: { content: Content }) => {
         </ContentEditDropdownMenu>
       </div>
       <div className="grow flex flex-row text-sm items-center space-x-1 text-xs">
-        <span>Status:</span>
+        <span>{t('contents.listView.card.statusLabel')}</span>
         <div className="flex flex-row space-x-1 items-center ">
           {isPublished && (
             <>
               <CircleIcon className="w-3 h-3 text-success" />
-              <span>Published</span>
+              <span>{t('contents.listView.card.published')}</span>
             </>
           )}
           {!isPublished && (
             <>
               <CircleIcon className="w-3 h-3 text-slate-300" />
-              <span>Unpublished</span>
+              <span>{t('contents.listView.card.unpublished')}</span>
             </>
           )}
         </div>
       </div>
       <div className="flex-none flex flex-row justify-end items-center">
         <span className="text-xs text-muted-foreground">
-          Created at {content?.createdAt && formatDistanceToNow(new Date(content?.createdAt))} ago
+          {content?.createdAt &&
+            t('contents.listView.card.createdAtRelative', {
+              time: formatRelativeTime(new Date(content.createdAt)),
+            })}
         </span>
       </div>
     </div>
@@ -216,6 +221,8 @@ const ContentTableItem = ({
 };
 
 export function DataTable() {
+  const { t } = useTranslation();
+  const columns = useMemo(() => getColumns(t), [t]);
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

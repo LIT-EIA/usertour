@@ -1,4 +1,5 @@
 import { OpenInNewWindowIcon } from '@radix-ui/react-icons';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@usertour-packages/button';
 import { useAttributeListContext, useContentListContext } from '@usertour-packages/contexts';
 import { getAuthToken } from '@usertour/helpers';
@@ -26,6 +27,7 @@ export const FlowPlacement = () => {
 
   const { contents } = useContentListContext();
   const { attributeList } = useAttributeListContext();
+  const { t } = useTranslation();
 
   const handleTargetChange = (target: ElementSelectorPropsData) => {
     updateCurrentStep((pre) => ({
@@ -67,13 +69,13 @@ export const FlowPlacement = () => {
       isWebBuilder={isWebBuilder}
       onScreenChange={handleScreenChange}
       token={getAuthToken()}
-      subTitle="Show tooltip on this element"
+      subTitle={t('contentBuilder.flow.showTooltipOnElement')}
     >
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h1 className="text-sm">Placement </h1>
+          <h1 className="text-sm">{t('contentBuilder.flow.placement')} </h1>
           <Button variant="link" onClick={handleAboutPlacement} className="p-0 h-full">
-            About placement
+            {t('contentBuilder.flow.aboutPlacement')}
             <OpenInNewWindowIcon className="ml-1" />
           </Button>
         </div>

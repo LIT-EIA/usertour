@@ -2,6 +2,7 @@ import { Button } from '@usertour-packages/button';
 import { CopyIcon } from '@radix-ui/react-icons';
 import { useToast } from '@usertour-packages/use-toast';
 import { useCopyToClipboard } from 'react-use';
+import { useTranslation } from 'react-i18next';
 
 interface ApiCopyButtonProps {
   token: string;
@@ -10,11 +11,12 @@ interface ApiCopyButtonProps {
 export const ApiCopyButton = ({ token }: ApiCopyButtonProps) => {
   const [_, copyToClipboard] = useCopyToClipboard();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleCopy = () => {
     copyToClipboard(token);
     toast({
-      title: 'Token copied to clipboard',
+      title: t('settings.api.tokenCopiedToast'),
     });
   };
 

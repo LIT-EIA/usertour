@@ -31,6 +31,7 @@ import { ObjectMappingObjectSelect } from './object-mapping-select';
 import { Label } from '@usertour-packages/label';
 import { Switch } from '@usertour-packages/switch';
 import { InfoIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const SalesforceMappingIcon = ({ className }: { className?: string }) => (
   <SalesforceIcon className={cn('w-4 h-4', className)} />
@@ -40,17 +41,42 @@ const UsertourMappingIcon = ({ className }: { className?: string }) => (
   <UsertourIcon2 className={cn('w-4 h-4 text-primary', className)} />
 );
 
-const salesforceObjects = [
-  { name: 'Contact', label: 'Contacts', type: 'standard' as const },
-  { name: 'Account', label: 'Accounts', type: 'standard' as const },
-  { name: 'Lead', label: 'Leads', type: 'standard' as const },
-  { name: 'Opportunity', label: 'Opportunities', type: 'standard' as const },
-];
+const useSalesforceObjects = () => {
+  const { t } = useTranslation();
+  return [
+    {
+      name: 'Contact',
+      label: t('settings.integrations.objectMapping.objectLabels.salesforce.Contact'),
+      type: 'standard' as const,
+    },
+    {
+      name: 'Account',
+      label: t('settings.integrations.objectMapping.objectLabels.salesforce.Account'),
+      type: 'standard' as const,
+    },
+    {
+      name: 'Lead',
+      label: t('settings.integrations.objectMapping.objectLabels.salesforce.Lead'),
+      type: 'standard' as const,
+    },
+    {
+      name: 'Opportunity',
+      label: t('settings.integrations.objectMapping.objectLabels.salesforce.Opportunity'),
+      type: 'standard' as const,
+    },
+  ];
+};
 
-const usertourObjects = [
-  { name: 'User', label: 'User' },
-  { name: 'Company', label: 'Company' },
-];
+const useUsertourObjects = () => {
+  const { t } = useTranslation();
+  return [
+    { name: 'User', label: t('settings.integrations.objectMapping.objectLabels.usertour.User') },
+    {
+      name: 'Company',
+      label: t('settings.integrations.objectMapping.objectLabels.usertour.Company'),
+    },
+  ];
+};
 
 interface ObjectSelectionPanelProps {
   salesforceObject: string;
@@ -72,16 +98,19 @@ const ObjectSelectionPanel = (props: ObjectSelectionPanelProps) => {
     onCancel,
     isLoading,
   } = props;
+  const { t } = useTranslation();
+  const salesforceObjects = useSalesforceObjects();
+  const usertourObjects = useUsertourObjects();
   return (
     <>
       <div className="space-y-1 py-4">
         <div className="flex items-center gap-4 justify-between">
           <Label htmlFor="salesforce-object" className="w-72">
-            Salesforce Object
+            {t('settings.integrations.objectMapping.dialog.salesforceObjectLabel')}
           </Label>
           <div className="w-6" />
           <Label htmlFor="usertour-object" className="w-72">
-            Usertour Object
+            {t('settings.integrations.objectMapping.dialog.usertourObjectLabel')}
           </Label>
         </div>
 
@@ -90,7 +119,9 @@ const ObjectSelectionPanel = (props: ObjectSelectionPanelProps) => {
             items={salesforceObjects}
             value={salesforceObject}
             onValueChange={onSalesforceObjectChange}
-            placeholder="Select Salesforce object"
+            placeholder={t(
+              'settings.integrations.objectMapping.dialog.salesforceObjectPlaceholder',
+            )}
           />
 
           <div className="flex items-center justify-center">
@@ -101,17 +132,17 @@ const ObjectSelectionPanel = (props: ObjectSelectionPanelProps) => {
             items={usertourObjects}
             value={usertourObject}
             onValueChange={onUsertourObjectChange}
-            placeholder="Select Usertour object"
+            placeholder={t('settings.integrations.objectMapping.dialog.usertourObjectPlaceholder')}
           />
         </div>
       </div>
 
       <DialogFooter>
         <Button variant="outline" onClick={onCancel} disabled={isLoading}>
-          Cancel
+          {t('settings.integrations.objectMapping.dialog.cancelButton')}
         </Button>
         <Button onClick={onContinue} disabled={!salesforceObject || !usertourObject}>
-          Continue
+          {t('settings.integrations.objectMapping.dialog.continueButton')}
         </Button>
       </DialogFooter>
     </>
@@ -139,6 +170,7 @@ export function ObjectMappingDialog({
 }: ObjectMappingDialogProps) {
   const { project } = useAppContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [step, setStep] = useState<'objects' | 'fields'>(mode === 'edit' ? 'fields' : 'objects');
   const [salesforceObject, setSalesforceObject] = useState<string>(
     initialMapping?.sourceObjectType || '',
@@ -182,8 +214,8 @@ export function ObjectMappingDialog({
   const handleContinue = () => {
     if (!salesforceObject || !usertourObject) {
       toast({
-        title: 'Error',
-        description: 'Please select both Salesforce and Usertour objects',
+        title: t('common.error'),
+        description: t('settings.integrations.objectMapping.dialog.bothObjectsRequiredToast'),
         variant: 'destructive',
       });
       return;
@@ -202,8 +234,8 @@ export function ObjectMappingDialog({
   const handleSaveMapping = useCallback(async () => {
     if (!integrationId || !mappingData) {
       toast({
-        title: 'Error',
-        description: 'Missing integration or mapping data',
+        title: t('common.error'),
+        description: t('settings.integrations.objectMapping.dialog.missingDataToast'),
         variant: 'destructive',
       });
       return;
@@ -223,8 +255,11 @@ export function ObjectMappingDialog({
 
       if (result) {
         toast({
-          title: 'Success',
-          description: `Object mapping ${mode === 'edit' ? 'updated' : 'created'} successfully`,
+          title: t('common.success'),
+          description:
+            mode === 'edit'
+              ? t('settings.integrations.objectMapping.dialog.saveSuccessToastUpdate')
+              : t('settings.integrations.objectMapping.dialog.saveSuccessToastCreate'),
         });
         onSuccess?.();
         handleClose();
@@ -232,8 +267,11 @@ export function ObjectMappingDialog({
     } catch (error) {
       console.error('Failed to save mapping:', error);
       toast({
-        title: 'Error',
-        description: `Failed to ${mode === 'edit' ? 'update' : 'create'} object mapping`,
+        title: t('common.error'),
+        description:
+          mode === 'edit'
+            ? t('settings.integrations.objectMapping.dialog.saveFailureToastUpdate')
+            : t('settings.integrations.objectMapping.dialog.saveFailureToastCreate'),
         variant: 'destructive',
       });
     }
@@ -247,6 +285,7 @@ export function ObjectMappingDialog({
     toast,
     onSuccess,
     mode,
+    t,
   ]);
 
   const handleClose = () => {
@@ -264,7 +303,10 @@ export function ObjectMappingDialog({
       <DialogContent className={cn('max-w-2xl', step === 'objects' ? 'max-w-2xl' : 'max-w-4xl')}>
         <DialogHeader>
           <DialogTitle>
-            {step === 'objects' && (mode === 'edit' ? 'Edit Object Mapping' : 'Select Objects')}
+            {step === 'objects' &&
+              (mode === 'edit'
+                ? t('settings.integrations.objectMapping.dialog.titleEditMapping')
+                : t('settings.integrations.objectMapping.dialog.titleSelectObjects'))}
 
             {step !== 'objects' && (
               <div className="flex items-center gap-4">
@@ -281,9 +323,11 @@ export function ObjectMappingDialog({
           <DialogDescription>
             {step === 'objects' &&
               (mode === 'edit'
-                ? 'Modify the mapping between Salesforce and Usertour objects.'
-                : 'Choose which Salesforce object to map to which Usertour object.')}
-            {step !== 'objects' && mode === 'edit' && 'Modify the field mappings and settings.'}
+                ? t('settings.integrations.objectMapping.dialog.descriptionEditMapping')
+                : t('settings.integrations.objectMapping.dialog.descriptionSelectObjects'))}
+            {step !== 'objects' &&
+              mode === 'edit' &&
+              t('settings.integrations.objectMapping.dialog.descriptionEditFields')}
           </DialogDescription>
         </DialogHeader>
 
@@ -316,23 +360,30 @@ export function ObjectMappingDialog({
                 checked={isSyncStream}
                 onCheckedChange={setIsSyncStream}
               />
-              <span>
-                Stream <span className="font-semibold text-primary">User events</span>
-                <span className="mx-1">→</span>
-                <span className="font-semibold text-blue-500">Contact activity</span>
-              </span>
+              <span
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: translated string; i18next escapes interpolated values by default
+                dangerouslySetInnerHTML={{
+                  __html: t('settings.integrations.objectMapping.streamSwitch')
+                    .replace(/<user>/, '<span class="font-semibold text-primary">')
+                    .replace(/<\/user>/, '</span>')
+                    .replace(/<contact>/, '<span class="font-semibold text-blue-500">')
+                    .replace(/<\/contact>/, '</span>'),
+                }}
+              />
               <InfoIcon className="w-4 h-4 text-muted-foreground" />
             </div>
 
             <DialogFooter>
               {mode === 'create' && (
                 <Button variant="outline" onClick={handleBack} disabled={isSaving}>
-                  Back
+                  {t('settings.integrations.objectMapping.dialog.backButton')}
                 </Button>
               )}
               <Button onClick={handleSaveMapping} disabled={isSaving || !mappingData}>
                 {isSaving && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update mapping' : 'Save mapping'}
+                {mode === 'edit'
+                  ? t('settings.integrations.objectMapping.dialog.updateMappingButton')
+                  : t('settings.integrations.objectMapping.dialog.saveMappingButton')}
               </Button>
             </DialogFooter>
           </>

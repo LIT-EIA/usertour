@@ -15,18 +15,19 @@ import {
 } from '@usertour-packages/dialog';
 import { unpublishedContentVersion } from '@usertour-packages/gql';
 import { getErrorMessage } from '@usertour/helpers';
+import { getContentTypeGenderContext } from '@/utils/content-type';
 import { Content } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { Checkbox } from '@usertour-packages/checkbox';
 import { Label } from '@usertour-packages/label';
+import { useTranslation } from 'react-i18next';
 
 interface ContentUnpublishFormProps {
   content: Content;
   onSuccess: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  name: string;
 }
 
 export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
@@ -36,6 +37,9 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
   const { toast } = useToast();
   const { environmentList } = useEnvironmentListContext();
   const [selectedEnvironments, setSelectedEnvironments] = React.useState<string[]>([]);
+  const { t } = useTranslation();
+  const typeContext = getContentTypeGenderContext(content?.type);
+  const translatedType = content?.type ? t(`contents.types.${content.type}`) : '';
 
   // Reset selected environments when dialog opens
   React.useEffect(() => {
@@ -89,11 +93,11 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
 
   const getUnpublishButtonText = () => {
     if (selectedEnvironments.length === 0) {
-      return 'Unpublish';
+      return t('contents.shared.unpublish.button');
     }
 
     if (selectedEnvironments.length === getPublishedEnvironments().length) {
-      return 'Unpublish from all environments';
+      return t('contents.shared.unpublish.buttonAll');
     }
 
     const selectedEnvNames = selectedEnvironments
@@ -101,14 +105,14 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
       .filter(Boolean)
       .join(', ');
 
-    return `Unpublish from ${selectedEnvNames}`;
+    return t('contents.shared.unpublish.buttonFrom', { envNames: selectedEnvNames });
   };
 
   async function handleOnSubmit() {
     if (selectedEnvironments.length === 0) {
       toast({
         variant: 'destructive',
-        title: 'Please select at least one environment to unpublish from.',
+        title: t('contents.shared.unpublish.selectEnvironment'),
       });
       return;
     }
@@ -135,8 +139,12 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
       toast({
         variant: allSuccess ? 'success' : 'destructive',
         title: allSuccess
-          ? `The ${content?.type} has been successfully unpublished from ${envNames}`
-          : 'Some environments failed to unpublish',
+          ? t('contents.shared.unpublish.successToast', {
+              type: translatedType,
+              envNames,
+              context: typeContext,
+            })
+          : t('contents.shared.unpublish.partialFailure'),
       });
 
       onSuccess();
@@ -155,10 +163,19 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
     <Dialog defaultOpen={true} open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Unpublish {content?.type}</DialogTitle>
+          <DialogTitle>
+            {t('contents.shared.unpublish.title', { type: translatedType, context: typeContext })}
+          </DialogTitle>
           <DialogDescription>
-            When you unpublish a {content?.type}, users will no longer be able to view it. <br />
-            Select the environments you want to unpublish the {content?.type} from.
+            {t('contents.shared.unpublish.descriptionWarning', {
+              type: translatedType,
+              context: typeContext,
+            })}
+            <br />
+            {t('contents.shared.unpublish.descriptionSelect', {
+              type: translatedType,
+              context: typeContext,
+            })}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -184,12 +201,16 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
                       <>
                         <span className="text-sm text-gray-500">(v{version.sequence})</span>
                         {isSelected && (
-                          <span className="text-sm text-destructive">To be unpublished</span>
+                          <span className="text-sm text-destructive">
+                            {t('contents.shared.unpublish.toBeUnpublished')}
+                          </span>
                         )}
                       </>
                     )
                   ) : (
-                    <span className="text-sm text-gray-500">(Not published)</span>
+                    <span className="text-sm text-gray-500">
+                      {t('contents.shared.unpublish.notPublished')}
+                    </span>
                   )}
                 </div>
               </div>
@@ -199,7 +220,7 @@ export const ContentUnpublishForm = (props: ContentUnpublishFormProps) => {
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" type="button">
-              Cancel
+              {t('contents.shared.common.cancel')}
             </Button>
           </DialogClose>
           <Button

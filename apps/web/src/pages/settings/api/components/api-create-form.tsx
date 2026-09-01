@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from '@usertour-packages/form';
 import { Icons } from '@/components/atoms/icons';
+import { useTranslation } from 'react-i18next';
 
 interface ApiCreateFormProps {
   visible: boolean;
@@ -59,6 +60,7 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
   const { environment } = useAppContext();
   const { refetch } = useApiContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -73,14 +75,14 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
       onClose();
       await refetch();
       toast({
-        title: 'Success',
-        description: 'API key created successfully',
+        title: t('common.success'),
+        description: t('settings.api.createSuccess'),
       });
     },
     onError: (error) => {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create API key',
+        title: t('common.error'),
+        description: error.message || t('settings.api.createFailure'),
         variant: 'destructive',
       });
     },
@@ -89,8 +91,8 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
   const onSubmit = async (values: FormValues) => {
     if (!environment) {
       toast({
-        title: 'Error',
-        description: 'Environment not found',
+        title: t('common.error'),
+        description: t('settings.api.environmentMissing'),
         variant: 'destructive',
       });
       return;
@@ -113,7 +115,7 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <DialogHeader>
-                <DialogTitle>New API key</DialogTitle>
+                <DialogTitle>{t('settings.api.createTitle')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <FormField
@@ -121,11 +123,11 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Key Name</FormLabel>
+                      <FormLabel>{t('settings.api.createNameLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter key name" {...field} />
+                        <Input placeholder={t('settings.api.createNamePlaceholder')} {...field} />
                       </FormControl>
-                      <FormDescription>Can be changed later</FormDescription>
+                      <FormDescription>{t('settings.common.changeableLater')}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -133,11 +135,11 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
               </div>
               <DialogFooter>
                 <Button variant="outline" type="button" onClick={onClose} disabled={creating}>
-                  Cancel
+                  {t('settings.common.cancel')}
                 </Button>
                 <Button type="submit" disabled={creating}>
                   {creating && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                  {creating ? 'Creating...' : 'Create'}
+                  {creating ? t('settings.api.creating') : t('settings.api.createButton')}
                 </Button>
               </DialogFooter>
             </form>
@@ -147,7 +149,7 @@ export const ApiCreateForm = ({ visible, onClose }: ApiCreateFormProps) => {
 
       <ApiKeyDialog
         token={newToken}
-        title="New API key Created"
+        title={t('settings.api.keyDialogCreatedTitle')}
         open={!!newToken}
         onOpenChange={() => setNewToken('')}
       />

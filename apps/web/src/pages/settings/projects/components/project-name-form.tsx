@@ -21,6 +21,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
 
 const projectNameFormSchema = z.object({
@@ -62,6 +63,7 @@ export const ProjectNameForm = () => {
     defaultValues: { name: project?.name },
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const onSubmit = async (data: ProjectNameFormValues) => {
     if (!data.name || !project?.id) {
@@ -78,7 +80,7 @@ export const ProjectNameForm = () => {
       await refetch();
       toast({
         variant: 'success',
-        title: 'The company name has been successfully updated',
+        title: t('settings.project.successToast'),
       });
     } catch (error) {
       toast({
@@ -99,7 +101,7 @@ export const ProjectNameForm = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-row justify-between items-center h-10">
-        <h3 className="text-2xl font-semibold tracking-tight">Company Name</h3>
+        <h3 className="text-2xl font-semibold tracking-tight">{t('settings.project.title')}</h3>
       </div>
       <Separator />
       <Form {...form}>
@@ -109,9 +111,13 @@ export const ProjectNameForm = () => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name</FormLabel>
+                <FormLabel>{t('settings.project.nameLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your Company name" {...field} disabled={isLoading} />
+                  <Input
+                    placeholder={t('settings.project.namePlaceholder')}
+                    {...field}
+                    disabled={isLoading}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -120,7 +126,7 @@ export const ProjectNameForm = () => {
 
           <Button type="submit" disabled={isFormDisabled}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? 'Saving...' : 'Save'}
+            {isLoading ? 'Saving...' : t('settings.common.save')}
           </Button>
         </form>
       </Form>

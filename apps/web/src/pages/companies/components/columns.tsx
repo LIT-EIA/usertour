@@ -3,12 +3,13 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@usertour-packages/checkbox';
 
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { BizCompany } from '@usertour/types';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { UserAvatar } from '@/components/molecules/user-avatar';
+import type { TFunction } from 'i18next';
 
-export const columns: ColumnDef<BizCompany>[] = [
+export const getColumns = (t: TFunction): ColumnDef<BizCompany>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -32,14 +33,18 @@ export const columns: ColumnDef<BizCompany>[] = [
   },
   {
     accessorKey: 'id',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Id" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('companies.columns.id')} />
+    ),
     cell: ({ row }) => <div className="px-2">{row.getValue('id')}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
     accessorKey: 'externalId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Company" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('companies.columns.company')} />
+    ),
     cell: ({ row }) => {
       const email = row.original.data?.email || '';
       const name = row.original.data?.name || '';
@@ -85,25 +90,31 @@ export const columns: ColumnDef<BizCompany>[] = [
   // },
 ];
 
-export const columnsSystem: ColumnDef<BizCompany>[] = [
+export const getColumnsSystem = (t: TFunction): ColumnDef<BizCompany>[] => [
   {
     accessorKey: 'environmentId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="environmentId" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('companies.columns.environmentId')} />
+    ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue('environmentId')}</div>,
+    meta: { label: t('companies.columns.environmentId') },
     enableSorting: false,
     enableHiding: true,
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="createdAt" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('companies.columns.createdAt')} />
+    ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium">
-            {format(new Date(row.getValue('createdAt')), 'PPpp')}
+            {formatDate(new Date(row.getValue('createdAt')), 'PPpp')}
           </span>
         </div>
       );
     },
+    meta: { label: t('companies.columns.createdAt') },
   },
 ];

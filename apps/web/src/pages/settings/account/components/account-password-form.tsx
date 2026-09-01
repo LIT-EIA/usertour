@@ -19,6 +19,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
 
 const accountFormSchema = z
@@ -70,6 +71,7 @@ export const AccountPasswordForm = () => {
     },
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const onSubmit = async (data: AccountFormValues) => {
     if (!data.newPassword) {
@@ -86,7 +88,7 @@ export const AccountPasswordForm = () => {
       if (ret.data?.changePassword?.id) {
         toast({
           variant: 'success',
-          title: 'Modified password successfully',
+          title: t('settings.account.password.successToast'),
         });
       }
       setIsLoading(false);
@@ -102,7 +104,9 @@ export const AccountPasswordForm = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-semibold tracking-tight">Change password</h3>
+        <h3 className="text-2xl font-semibold tracking-tight">
+          {t('settings.account.password.title')}
+        </h3>
         {/* <p className="text-sm text-muted-foreground">Update your password.</p> */}
       </div>
       <Separator />
@@ -113,12 +117,12 @@ export const AccountPasswordForm = () => {
             name="currentPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Old password</FormLabel>
+                <FormLabel>{t('settings.account.password.currentLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="current-password"
-                    placeholder="Enter your current password"
+                    placeholder={t('settings.account.password.currentPlaceholder')}
                     {...field}
                   />
                 </FormControl>
@@ -131,12 +135,12 @@ export const AccountPasswordForm = () => {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New password</FormLabel>
+                <FormLabel>{t('settings.account.password.newLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="new-password"
-                    placeholder="Pick a strong password"
+                    placeholder={t('settings.account.password.newPlaceholder')}
                     {...field}
                   />
                 </FormControl>
@@ -149,12 +153,12 @@ export const AccountPasswordForm = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{t('settings.account.password.confirmLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="confirm-password"
-                    placeholder="Repeat the same new password"
+                    placeholder={t('settings.account.password.confirmPlaceholder')}
                     {...field}
                   />
                 </FormControl>
@@ -168,7 +172,7 @@ export const AccountPasswordForm = () => {
             disabled={form.watch('newPassword') === form.watch('currentPassword')}
           >
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            Save
+            {t('settings.common.save')}
           </Button>
         </form>
       </Form>

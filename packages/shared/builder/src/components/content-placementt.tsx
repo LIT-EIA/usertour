@@ -32,6 +32,7 @@ import {
   StepScreenshot,
 } from '@usertour/types';
 import { ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentError, ContentErrorAnchor, ContentErrorContent } from './content-error';
 
 export interface ContentPlacementProps {
@@ -55,6 +56,7 @@ export interface ContentPlacementProps {
   createStep?: (currentVersion: ContentVersion, sequence: number) => Promise<Step | undefined>;
 }
 export const ContentPlacement = (props: ContentPlacementProps) => {
+  const { t } = useTranslation();
   const {
     target,
     attributeList,
@@ -72,8 +74,8 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
     isShowActions = true,
     currentStep,
     createStep,
-    title = 'Element',
-    subTitle = 'Show tooltip on this element',
+    title = t('contentBuilder.shared.elementLabel'),
+    subTitle = t('contentBuilder.flow.showTooltipOnElement'),
   } = props;
 
   const handleSequenceChange = (value: string) => {
@@ -120,13 +122,13 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
             value="auto"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            Auto
+            {t('contentBuilder.shared.auto')}
           </TabsTrigger>
           <TabsTrigger
             value="manual"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            Manual
+            {t('contentBuilder.shared.manual')}
           </TabsTrigger>
         </TabsList>
         <div className="flex flex-col  bg-background-700 p-3.5 rounded-lg space-y-6 mt-2">
@@ -144,7 +146,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     <ContentErrorAnchor>
                       <Button className="w-full rounded-none">
                         <Crosshair2Icon className="mr-2" />
-                        Select another element
+                        {t('contentBuilder.shared.selectAnotherElement')}
                       </Button>
                     </ContentErrorAnchor>
                   </div>
@@ -164,8 +166,8 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                       <ContentErrorAnchor>
                         <Button className="w-full rounded-none">
                           <Crosshair2Icon className="mr-2" />
-                          {!target && 'Select element'}
-                          {target && 'Select another element'}
+                          {!target && t('contentBuilder.shared.selectElementButton')}
+                          {target && t('contentBuilder.shared.selectAnotherElement')}
                         </Button>
                       </ContentErrorAnchor>
                     </div>
@@ -173,47 +175,54 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                 )}
                 <div className="items-center  space-y-2">
                   <div className="flex justify-start items-center space-x-1	">
-                    <Label>Precision</Label>
+                    <Label>{t('contentBuilder.shared.precision.label')}</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <QuestionMarkCircledIcon />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                          <p>
-                            How flexible Usertour should be when looking for the element. If
-                            Usertour can't find your element, try to make the precision looser. lf
-                            Usertour tends to find the wrong element, try to make the precision
-                            stricter.
-                          </p>
+                          <p>{t('contentBuilder.shared.precision.tooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
                   <Select onValueChange={handlePrecisionChange} defaultValue={target?.precision}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a distribute" />
+                      <SelectValue
+                        placeholder={t('contentBuilder.shared.precision.selectPlaceholder')}
+                      />
                     </SelectTrigger>
                     <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
                       <SelectContent>
                         <SelectGroup>
                           <SelectItem value="loosest">
-                            <div className="flex">Loosest</div>
+                            <div className="flex">
+                              {t('contentBuilder.shared.precision.loosest')}
+                            </div>
                           </SelectItem>
                           <SelectItem value="looser">
-                            <div className="flex">Looser</div>
+                            <div className="flex">
+                              {t('contentBuilder.shared.precision.looser')}
+                            </div>
                           </SelectItem>
                           <SelectItem value="loose">
-                            <div className="flex">Loose</div>
+                            <div className="flex">{t('contentBuilder.shared.precision.loose')}</div>
                           </SelectItem>
                           <SelectItem value="strict">
-                            <div className="flex">Strict</div>
+                            <div className="flex">
+                              {t('contentBuilder.shared.precision.strict')}
+                            </div>
                           </SelectItem>
                           <SelectItem value="stricter">
-                            <div className="flex">Stricter</div>
+                            <div className="flex">
+                              {t('contentBuilder.shared.precision.stricter')}
+                            </div>
                           </SelectItem>
                           <SelectItem value="strictest">
-                            <div className="flex">Strictest</div>
+                            <div className="flex">
+                              {t('contentBuilder.shared.precision.strictest')}
+                            </div>
                           </SelectItem>
                         </SelectGroup>
                       </SelectContent>
@@ -223,7 +232,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                 <div className="flex items-center justify-between space-x-2">
                   <div className="flex space-x-2 grow">
                     <Label htmlFor="dynamic-content" className="flex flex-col space-y-1">
-                      <span className="font-normal">Dynamic text</span>
+                      <span className="font-normal">{t('contentBuilder.shared.dynamicText')}</span>
                     </Label>
                     <TooltipProvider>
                       <Tooltip>
@@ -231,10 +240,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                           <QuestionMarkCircledIcon />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                          <p>
-                            If the element's text is dynamic and may change, enabled this switch to
-                            make Usertour find it without considering its current text.
-                          </p>
+                          <p>{t('contentBuilder.shared.dynamicTextTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -248,7 +254,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                 </div>
               </div>
               <ContentErrorContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
-                Please select an element
+                {t('contentBuilder.shared.selectElementError')}
               </ContentErrorContent>
             </ContentError>
           </TabsContent>
@@ -258,14 +264,16 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                 <h1 className="text-sm">{subTitle}</h1>
                 <div className="flex flex-col space-y-2">
                   <div className="flex justify-start items-center space-x-1	">
-                    <Label htmlFor="button-manual-element-text">Element text</Label>
+                    <Label htmlFor="button-manual-element-text">
+                      {t('contentBuilder.shared.elementText')}
+                    </Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <QuestionMarkCircledIcon />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                          <p>Usertour will select an element containing the text you write here.</p>
+                          <p>{t('contentBuilder.shared.elementTextTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -274,23 +282,20 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     className="bg-background-900"
                     id="button-manual-element-text"
                     value={target?.content}
-                    placeholder="None"
+                    placeholder={t('contentBuilder.checklist.none')}
                     onChange={handleElementTextChange}
                   />
                   <div className="flex justify-start items-center space-x-1	">
-                    <Label htmlFor="button-manual-css-selector">CSS selector</Label>
+                    <Label htmlFor="button-manual-css-selector">
+                      {t('contentBuilder.shared.cssSelector')}
+                    </Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <QuestionMarkCircledIcon />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                          <p>
-                            Advanced feature: If possible, we recommend selecting elements using
-                            text. lf an element does not have text, or the text is very generic, you
-                            can select it using a CSS selector instead. lf both text and CSS
-                            selector is filled in, Usertour will select an element matching both.
-                          </p>
+                          <p>{t('contentBuilder.shared.cssSelectorTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -300,7 +305,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                       className="bg-background-900"
                       id="button-manual-css-selector"
                       value={target?.customSelector}
-                      placeholder="None"
+                      placeholder={t('contentBuilder.checklist.none')}
                       onChange={handleSelectorChange}
                     />
                   </ContentErrorAnchor>
@@ -319,47 +324,42 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     ))}
                   </div>
                   <div className="flex justify-start items-center space-x-1	">
-                    <Label htmlFor="button-manual-css-selector">If multiple matches</Label>
+                    <Label htmlFor="button-manual-css-selector">
+                      {t('contentBuilder.shared.ifMultipleMatches')}
+                    </Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <QuestionMarkCircledIcon />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                          <p>
-                            If multiple elements match your criteria, you can tell Usertour which of
-                            the elements to select.
-                          </p>
-                          <p>
-                            Elements are sorted first by vertical position and second by horizontal
-                            position. l.e. an element higher up on the page and more towards the
-                            left takes precedence.{' '}
-                          </p>
+                          <p>{t('contentBuilder.shared.ifMultipleMatches')}</p>
+                          <p>{t('contentBuilder.shared.ifMultipleMatchesTooltip')} </p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
                   <Select onValueChange={handleSequenceChange} defaultValue={target?.sequence}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a option" />
+                      <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
                     </SelectTrigger>
                     <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
                       <SelectContent>
                         <SelectGroup>
                           <SelectItem value="1st">
-                            <div className="flex">select 1st element</div>
+                            <div className="flex">{t('contentBuilder.shared.selectElement.1')}</div>
                           </SelectItem>
                           <SelectItem value="2st">
-                            <div className="flex">select 2st element</div>
+                            <div className="flex">{t('contentBuilder.shared.selectElement.2')}</div>
                           </SelectItem>
                           <SelectItem value="3st">
-                            <div className="flex">select 3st element</div>
+                            <div className="flex">{t('contentBuilder.shared.selectElement.3')}</div>
                           </SelectItem>
                           <SelectItem value="4st">
-                            <div className="flex">select 4st element</div>
+                            <div className="flex">{t('contentBuilder.shared.selectElement.4')}</div>
                           </SelectItem>
                           <SelectItem value="5st">
-                            <div className="flex">select 5st element</div>
+                            <div className="flex">{t('contentBuilder.shared.selectElement.5')}</div>
                           </SelectItem>
                         </SelectGroup>
                       </SelectContent>
@@ -368,14 +368,14 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                 </div>
               </div>
               <ContentErrorContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
-                CSS selector is required
+                {t('contentBuilder.shared.cssSelectorRequired')}
               </ContentErrorContent>
             </ContentError>
           </TabsContent>
           {isShowActions && (
             <div className="flex flex-col space-y-2">
               <div className="items-center  space-y-2">
-                <Label>When target element is clicked</Label>
+                <Label>{t('contentBuilder.shared.whenTargetClicked')}</Label>
 
                 <ContentActions
                   zIndex={zIndex + EXTENSION_SELECT}

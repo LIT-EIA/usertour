@@ -12,6 +12,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { cn, isDark } from '@usertour/helpers';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const firstLetterToUpperCase = (word: string) => {
   const firstLetter = word.charAt(0);
@@ -48,6 +49,7 @@ const tailwindColorData: TailWindColorDataType[][] = formatData(TAILWINDCSS_COLO
 
 const Picker = (props: PickerProps) => {
   const { color, onChange, isAuto = false, showAutoButton = true } = props;
+  const { t } = useTranslation();
   const [inputColor, setInputColor] = useState(!isAuto ? color : '');
 
   const handleSubmit = useCallback(() => {
@@ -91,7 +93,9 @@ const Picker = (props: PickerProps) => {
                   className="text-primary cursor-pointer"
                 />
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs bg-slate-700">Use this color</TooltipContent>
+              <TooltipContent className="max-w-xs bg-slate-700">
+                {t('common.colorPicker.useThisColor')}
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           {showAutoButton && (
@@ -106,7 +110,7 @@ const Picker = (props: PickerProps) => {
                   />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs bg-slate-700">
-                  Remove color(use default)
+                  {t('common.colorPicker.removeColor')}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -114,7 +118,7 @@ const Picker = (props: PickerProps) => {
         </div>
         <Separator />
         <div className="flex flex-row justify-between text-sm">
-          <span>Tailwind CSS colors</span>
+          <span>{t('common.colorPicker.tailwindColors')}</span>
         </div>
         <div className="flex flex-row">
           {tailwindColorData.map((row, index) => (
@@ -132,7 +136,11 @@ const Picker = (props: PickerProps) => {
                       />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs bg-slate-700">
-                      Tailwind {firstLetterToUpperCase(col.name)} {col.level}: {col.color}
+                      {t('common.colorPicker.tailwindSwatchTooltip', {
+                        name: firstLetterToUpperCase(col.name),
+                        level: col.level,
+                        color: col.color,
+                      })}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -155,6 +163,7 @@ type ThemeColorPickerProps = {
 };
 
 export const ThemeColorPicker = (props: ThemeColorPickerProps) => {
+  const { t } = useTranslation();
   const {
     defaultColor,
     onChange,
@@ -198,7 +207,7 @@ export const ThemeColorPicker = (props: ThemeColorPickerProps) => {
             background: color,
           }}
         >
-          {isAuto ? 'Auto' : color.toUpperCase()}
+          {isAuto ? t('common.colorPicker.auto') : color.toUpperCase()}
         </Button>
       </PopoverTrigger>
       <PopoverContent

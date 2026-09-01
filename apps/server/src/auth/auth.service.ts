@@ -561,12 +561,12 @@ export class AuthService {
 
   async sendResetPasswordEmail(id: string, email: string, name: string) {
     const link = `${this.configService.get('app.homepageUrl')}/auth/password-reset/${id}`;
-    var resetData = {
+    const resetData = {
       name,
       url: link,
     };
 
-    console.log("Password Reset:", resetData);
+    console.log('Password Reset:', resetData);
     return await this.sendEmail({
       from: this.configService.get('auth.email.sender'), // sender address
       to: email, // list of receivers

@@ -7,7 +7,12 @@ import { parseSelectorWithCondition } from './selector-parser';
  * Interface for iframe SDK communication
  */
 export interface IframeSDKMessage {
-  type: 'usertour-step-complete' | 'usertour-step-action' | 'usertour-element-found' | 'usertour-element-not-found' | 'usertour-iframe-ready';
+  type:
+    | 'usertour-step-complete'
+    | 'usertour-step-action'
+    | 'usertour-element-found'
+    | 'usertour-element-not-found'
+    | 'usertour-iframe-ready';
   stepId?: string;
   action?: string;
   element?: {
@@ -85,7 +90,7 @@ export class IframeSDK {
    */
   sendMessageToParent(message: IframeSDKMessage): void {
     try {
-      if (window && window.parent) {
+      if (window?.parent) {
         window.parent.postMessage(message, '*');
       }
     } catch (error) {
@@ -230,7 +235,7 @@ export class IframeSDK {
           type: 'usertour-step-action' as const,
           stepId,
           action: 'handleActions',
-          data: { actions }
+          data: { actions },
         };
         this.sendMessageToParent(message);
       } else {
@@ -238,7 +243,7 @@ export class IframeSDK {
         this.completeStep(stepId, {
           action: 'click',
           element: element.tagName,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
     };

@@ -27,6 +27,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface EditFormProps {
@@ -51,6 +52,7 @@ export const EnvironmentEditForm = (props: EditFormProps) => {
   const [updateMutation] = useMutation(updateEnvironments);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -89,7 +91,7 @@ export const EnvironmentEditForm = (props: EditFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Rename Environment </DialogTitle>
+              <DialogTitle>{t('settings.environments.editTitle')}</DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -99,9 +101,12 @@ export const EnvironmentEditForm = (props: EditFormProps) => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Environment name</FormLabel>
+                        <FormLabel>{t('settings.environments.nameLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter environment name" {...field} />
+                          <Input
+                            placeholder={t('settings.environments.namePlaceholder')}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -112,11 +117,11 @@ export const EnvironmentEditForm = (props: EditFormProps) => {
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => onClose()}>
-                Cancel
+                {t('settings.common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('settings.environments.saveButton')}
               </Button>
             </DialogFooter>
           </form>

@@ -29,6 +29,7 @@ import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 interface RenameFormProps {
@@ -54,6 +55,7 @@ export const ThemeRenameForm = (props: RenameFormProps) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const showError = (title: string) => {
     toast({
@@ -86,7 +88,7 @@ export const ThemeRenameForm = (props: RenameFormProps) => {
       });
 
       if (!ret.data?.updateTheme?.id) {
-        showError('Update environment failed.');
+        showError(t('settings.themes.renameFailure'));
       }
     } catch (error) {
       showError(getErrorMessage(error));
@@ -103,7 +105,7 @@ export const ThemeRenameForm = (props: RenameFormProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
-              <DialogTitle>Rename Theme </DialogTitle>
+              <DialogTitle>{t('settings.themes.renameTitle')}</DialogTitle>
             </DialogHeader>
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
@@ -113,9 +115,12 @@ export const ThemeRenameForm = (props: RenameFormProps) => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Theme name</FormLabel>
+                        <FormLabel>{t('settings.themes.duplicateNameLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter environment name" {...field} />
+                          <Input
+                            placeholder={t('settings.themes.duplicateNamePlaceholder')}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -127,12 +132,12 @@ export const ThemeRenameForm = (props: RenameFormProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" type="button">
-                  Cancel
+                  {t('settings.common.cancel')}
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
+                {t('settings.common.submit')}
               </Button>
             </DialogFooter>
           </form>

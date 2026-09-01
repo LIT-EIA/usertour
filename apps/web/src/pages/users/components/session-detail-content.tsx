@@ -15,8 +15,8 @@ import {
   EventAttributes,
   flowReasonTitleMap,
 } from '@usertour/types';
-import { format, formatDistanceToNow } from 'date-fns';
 import { useState, Fragment } from 'react';
+import { formatDate, formatRelativeTime } from '@/utils/common';
 import { useAttributeListContext } from '@/contexts/attribute-list-context';
 import { LauncherProgressColumn } from '@/components/molecules/session';
 import { FlowProgressColumn } from '@/components/molecules/session';
@@ -28,6 +28,7 @@ import { SessionActionDropdownMenu } from '@/components/molecules/session-action
 import { contentTypesConfig } from '@usertour-packages/shared-editor';
 import { SessionResponse } from '@/components/molecules/session-detail';
 import { ContentLoading } from '@/components/molecules/content-loading';
+import { useTranslation } from 'react-i18next';
 
 const SessionItemContainer = ({
   children,
@@ -82,6 +83,7 @@ const SessionDetailContentInner = ({
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const { attributeList } = useAttributeListContext();
   const { eventList } = useEventListContext();
+  const { t } = useTranslation();
   const content = session?.content;
   const contentType = content?.type;
   const version = session?.version;
@@ -101,10 +103,10 @@ const SessionDetailContentInner = ({
       <div className="flex flex-col items-center justify-center py-8">
         <img
           src="/images/rocket.png"
-          alt="Session not found"
+          alt={t('users.sessions.detail.notFound')}
           className="w-16 h-16 mb-4 opacity-50"
         />
-        <p className="text-muted-foreground text-center">Session not found or incomplete data.</p>
+        <p className="text-muted-foreground text-center">{t('users.sessions.detail.notFound')}</p>
       </div>
     );
   }
@@ -177,7 +179,7 @@ const SessionDetailContentInner = ({
               navigator(`/env/${environmentId}/users`);
             }}
           />
-          <span>Session Detail</span>
+          <span>{t('users.sessions.detail.title')}</span>
           <div className="ml-auto">
             <SessionActionDropdownMenu
               session={session}
@@ -191,7 +193,7 @@ const SessionDetailContentInner = ({
               }}
             >
               <Button variant="secondary">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('users.sessions.detail.actionsMenu')}</span>
                 <DotsHorizontalIcon className="h-4 w-4" />
               </Button>
             </SessionActionDropdownMenu>
@@ -201,7 +203,9 @@ const SessionDetailContentInner = ({
       <div className="flex flex-col space-y-6 w-full max-w-screen-xl mx-auto p-14 mt-12  ">
         <SessionItemContainer className="grid grid-cols-2 gap-2 gap-x-12">
           <div className="border-b flex flex-col pb-1">
-            <span className="text-sm text-foreground/60">User</span>
+            <span className="text-sm text-foreground/60">
+              {t('users.sessions.detail.fields.user')}
+            </span>
             <Link
               className="text-primary"
               to={`/env/${environmentId}/user/${session?.bizUser?.id}`}
@@ -209,7 +213,7 @@ const SessionDetailContentInner = ({
               {session?.bizUser?.data?.name ??
                 session?.bizUser?.data?.email ??
                 session?.bizUser?.data?.externalId ??
-                'Unnamed user'}
+                t('users.sessions.detail.unnamedUser')}
             </Link>
           </div>
           <div className="border-b flex flex-col pb-1">
@@ -222,7 +226,9 @@ const SessionDetailContentInner = ({
             </Link>
           </div>
           <div className="border-b flex flex-col pb-1">
-            <span className="text-sm text-foreground/60">Version</span>
+            <span className="text-sm text-foreground/60">
+              {t('users.sessions.detail.fields.version')}
+            </span>
             <Link
               className="text-primary"
               to={`/env/${environmentId}/flows/${session?.content?.id}/versions`}
@@ -231,18 +237,25 @@ const SessionDetailContentInner = ({
             </Link>
           </div>
           <div className="border-b flex flex-col pb-1">
-            <span className="text-sm text-foreground/60">Started</span>
+            <span className="text-sm text-foreground/60">
+              {t('users.sessions.detail.fields.started')}
+            </span>
             <span>
-              {session?.createdAt && formatDistanceToNow(new Date(session?.createdAt))} ago
+              {session?.createdAt &&
+                formatRelativeTime(new Date(session.createdAt), { addSuffix: true })}
             </span>
           </div>
           <div className="border-b flex flex-col pb-1">
-            <span className="text-sm text-foreground/60">Start reason</span>
+            <span className="text-sm text-foreground/60">
+              {t('users.sessions.detail.fields.startReason')}
+            </span>
             <span>{getStartReasonTitle(startEvent)}</span>
           </div>
         </SessionItemContainer>
         <SessionItemContainer>
-          <div className="mb-2 flex flex-row items-center font-bold	">Progress</div>
+          <div className="mb-2 flex flex-row items-center font-bold	">
+            {t('users.sessions.detail.progress')}
+          </div>
           {contentType === ContentDataType.CHECKLIST && (
             <ChecklistProgressColumn original={session} eventList={eventList} version={version} />
           )}
@@ -257,7 +270,9 @@ const SessionDetailContentInner = ({
 
         {answerEvents && answerEvents.length > 0 && (
           <SessionItemContainer>
-            <div className="mb-2 flex flex-row items-center font-bold">Response</div>
+            <div className="mb-2 flex flex-row items-center font-bold">
+              {t('users.sessions.detail.response')}
+            </div>
             <SessionResponse answerEvents={answerEvents} />
           </SessionItemContainer>
         )}
@@ -265,7 +280,7 @@ const SessionDetailContentInner = ({
         <SessionItemContainer>
           <div className="mb-2 flex flex-row items-center font-bold	">
             <ActivityLogIcon width={18} height={18} className="mr-2" />
-            Activity feed
+            {t('users.sessions.detail.activityFeed')}
           </div>
           <div className="flex flex-col items-center w-full h-full justify-center">
             <Table>
@@ -278,7 +293,7 @@ const SessionDetailContentInner = ({
                         onClick={() => handleRowClick(bizEvent.id)}
                       >
                         <TableCell className="w-1/4">
-                          {format(new Date(bizEvent.createdAt), 'yyyy-MM-dd HH:mm:ss')}
+                          {formatDate(new Date(bizEvent.createdAt), 'yyyy-MM-dd HH:mm:ss')}
                         </TableCell>
                         <TableCell className="flex justify-between items-center">
                           {bizEvent.event?.displayName}
@@ -312,7 +327,9 @@ const SessionDetailContentInner = ({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell className="h-24 text-center">No events found.</TableCell>
+                    <TableCell className="h-24 text-center">
+                      {t('users.sessions.detail.noEvents')}
+                    </TableCell>
                   </TableRow>
                 )}
               </TableBody>

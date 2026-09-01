@@ -12,6 +12,7 @@ import { Segment } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { LoadingButton } from '@/components/molecules/loading-button';
 import { useDeleteSegmentMutation } from '@usertour-packages/shared-hooks';
+import { useTranslation } from 'react-i18next';
 
 interface CompanySegmentDeleteFormProps {
   segment: Segment;
@@ -28,12 +29,13 @@ export const CompanySegmentDeleteForm = ({
 }: CompanySegmentDeleteFormProps) => {
   const { invoke: deleteSegment, loading } = useDeleteSegmentMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDeleteSubmit = async () => {
     if (!segment?.id) {
       toast({
         variant: 'destructive',
-        title: 'Invalid segment data',
+        title: t('companies.dialogs.deleteSegment.invalidData'),
       });
       return;
     }
@@ -44,14 +46,14 @@ export const CompanySegmentDeleteForm = ({
       if (success) {
         toast({
           variant: 'success',
-          title: `The segment "${segment.name}" has been successfully deleted`,
+          title: t('companies.dialogs.deleteSegment.deleteSuccess', { segmentName: segment.name }),
         });
         onSubmit(true);
         onOpenChange(false);
       } else {
         toast({
           variant: 'destructive',
-          title: 'Failed to delete segment',
+          title: t('companies.dialogs.deleteSegment.deleteFailure'),
         });
         onSubmit(false);
       }
@@ -68,17 +70,22 @@ export const CompanySegmentDeleteForm = ({
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete segment</AlertDialogTitle>
+          <AlertDialogTitle>{t('companies.dialogs.deleteSegment.title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the segment{' '}
-            <span className="font-bold text-foreground">{segment.name}</span>? This action cannot be
-            undone.
+            <span
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: translated string; i18next escapes interpolated values by default
+              dangerouslySetInnerHTML={{
+                __html: t('companies.dialogs.deleteSegment.description', {
+                  segmentName: segment.name,
+                }),
+              }}
+            />
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('companies.actions.cancel')}</AlertDialogCancel>
           <LoadingButton onClick={handleDeleteSubmit} variant="destructive" loading={loading}>
-            Yes, delete segment
+            {t('companies.dialogs.deleteSegment.confirmButton')}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

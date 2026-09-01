@@ -7,6 +7,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { useCallback } from 'react';
 import { ColorResult, SketchPicker } from 'react-color';
+import { useTranslation } from 'react-i18next';
 import { useSlate } from 'slate-react';
 import { getTextProps, setTextProps } from '../../lib/text';
 
@@ -18,6 +19,7 @@ const TYPE = 'color';
 const DEFAULT_COLOR = '#000000';
 
 export const ColorPicker = ({ container }: ColorPickerProps) => {
+  const { t } = useTranslation();
   const editor = useSlate();
 
   const handleChange = useCallback(
@@ -46,7 +48,7 @@ export const ColorPicker = ({ container }: ColorPickerProps) => {
               </Popover.Trigger>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
-              <p>Font color</p>
+              <p>{t('contentBuilder.editor.toolbar.color.tooltip')}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

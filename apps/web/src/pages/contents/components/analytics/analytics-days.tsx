@@ -11,33 +11,40 @@ import {
 } from '@usertour-packages/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@usertour-packages/tabs';
 import { ContentDataType } from '@usertour/types';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { useEffect, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 import { AnalyticsDaysSkeleton } from './analytics-skeleton';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 // Add new function to generate chart configs
 const generateChartConfig = (
   chartType: 'view' | 'rate',
   contentType: ContentDataType,
+  t: TFunction,
 ): ChartConfig => {
+  const isLauncher = contentType === ContentDataType.LAUNCHER;
   if (chartType === 'view') {
     return {
       uniqueViews: {
-        label: 'Unique Views',
+        label: t('contents.analytics.chart.uniqueViews'),
         color: 'hsl(var(--chart-1))',
       },
       uniqueCompletions: {
-        label:
-          contentType === ContentDataType.LAUNCHER ? 'Unique Activations' : 'Unique Completions',
+        label: isLauncher
+          ? t('contents.analytics.chart.uniqueActivations')
+          : t('contents.analytics.chart.uniqueCompletions'),
         color: 'hsl(var(--chart-2))',
       },
       totalViews: {
-        label: 'Total Views',
+        label: t('contents.analytics.chart.totalViews'),
         color: 'hsl(var(--chart-3))',
       },
       totalCompletions: {
-        label: contentType === ContentDataType.LAUNCHER ? 'Total Activations' : 'Total Completions',
+        label: isLauncher
+          ? t('contents.analytics.chart.totalActivations')
+          : t('contents.analytics.chart.totalCompletions'),
         color: 'hsl(var(--chart-4))',
       },
     };
@@ -45,17 +52,15 @@ const generateChartConfig = (
 
   return {
     unique: {
-      label:
-        contentType === ContentDataType.LAUNCHER
-          ? 'Unique Activation Rate'
-          : 'Unique Completion rate',
+      label: isLauncher
+        ? t('contents.analytics.views.launcher.uniqueActivationRate')
+        : t('contents.analytics.views.uniqueCompletionRate'),
       color: 'hsl(var(--chart-1))',
     },
     total: {
-      label:
-        contentType === ContentDataType.LAUNCHER
-          ? 'Total Activation Rate'
-          : 'Total Completion rate',
+      label: isLauncher
+        ? t('contents.analytics.views.launcher.totalActivationRate')
+        : t('contents.analytics.views.totalCompletionRate'),
       color: 'hsl(var(--chart-2))',
     },
   };
@@ -203,13 +208,14 @@ export const AnalyticsDays = () => {
   const contentType = content?.type;
   const [viewData, setViewData] = useState<ChartDataType[]>();
   const [rateData, setRateData] = useState<RateChartDataType[]>();
+  const { t } = useTranslation();
 
   // Improve data transformation
   useEffect(() => {
     if (!analyticsData?.viewsByDay) return;
 
     const transformData = analyticsData.viewsByDay.map((view) => {
-      const date = format(new Date(view.date), 'PP');
+      const date = formatDate(new Date(view.date), 'PP');
       return {
         viewData: {
           date,
@@ -246,28 +252,28 @@ export const AnalyticsDays = () => {
         <Card>
           <CardHeader>
             <CardTitle className="space-between flex flex-row  items-center">
-              <div className="grow	">Performance</div>
+              <div className="grow	">{t('contents.analytics.performance.title')}</div>
               <TabsList className="flex-none">
                 <TabsTrigger value="views" className="relative">
-                  Views
+                  {t('contents.analytics.chart.views')}
                 </TabsTrigger>
-                <TabsTrigger value="rate">Rate</TabsTrigger>
+                <TabsTrigger value="rate">{t('contents.analytics.chart.rate')}</TabsTrigger>
               </TabsList>
             </CardTitle>
             {/* <CardDescription>
-              {dateRange && dateRange.from && format(new Date(dateRange?.from), "PP")} - {dateRange && dateRange.to && format(new Date(dateRange?.to), "PP")}
+              {dateRange && dateRange.from && formatDate(new Date(dateRange?.from), "PP")} - {dateRange && dateRange.to && formatDate(new Date(dateRange?.to), "PP")}
             </CardDescription> */}
           </CardHeader>
           <TabsContent value="views" className="border-none p-0 outline-none">
             <AnalyticsViewChart
-              chartConfig={generateChartConfig('view', contentType)}
+              chartConfig={generateChartConfig('view', contentType, t)}
               chartData={viewData}
             />
           </TabsContent>
           <TabsContent value="rate" className="border-none p-0 outline-none">
             {/* <AnalyticsChart chartConfig={totalChartConfig} chartData={totalData} /> */}
             <AnalyticsRateChart
-              chartConfig={generateChartConfig('rate', contentType)}
+              chartConfig={generateChartConfig('rate', contentType, t)}
               chartData={rateData}
             />
           </TabsContent>

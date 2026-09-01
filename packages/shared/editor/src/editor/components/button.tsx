@@ -21,6 +21,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { RulesCondition } from '@usertour/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
 import { EditorError, EditorErrorAnchor, EditorErrorContent } from '../../components/editor-error';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
@@ -80,52 +81,55 @@ const MarginControls = ({
   element: ContentEditorButtonElement;
   onMarginChange: (position: MarginPosition, value: string) => void;
   onMarginEnabledChange: (enabled: boolean) => void;
-}) => (
-  <>
-    <div className="flex gap-x-2">
-      <Checkbox
-        id="margin"
-        checked={element.margin?.enabled}
-        onCheckedChange={onMarginEnabledChange}
-      />
-      <Label htmlFor="margin">Margin</Label>
-    </div>
-    {element.margin?.enabled && (
+}) => {
+  const { t } = useTranslation();
+  return (
+    <>
       <div className="flex gap-x-2">
-        <div className="flex flex-col justify-center">
-          <Input
-            value={element.margin?.left}
-            placeholder="Left"
-            onChange={(e) => onMarginChange('left', e.target.value)}
-            className="bg-background flex-none w-20"
-          />
-        </div>
-        <div className="flex flex-col justify-center gap-y-2">
-          <Input
-            value={element.margin?.top}
-            onChange={(e) => onMarginChange('top', e.target.value)}
-            placeholder="Top"
-            className="bg-background flex-none w-20"
-          />
-          <Input
-            value={element.margin?.bottom}
-            onChange={(e) => onMarginChange('bottom', e.target.value)}
-            placeholder="Bottom"
-            className="bg-background flex-none w-20"
-          />
-        </div>
-        <div className="flex flex-col justify-center">
-          <Input
-            value={element.margin?.right}
-            placeholder="Right"
-            onChange={(e) => onMarginChange('right', e.target.value)}
-            className="bg-background flex-none w-20"
-          />
-        </div>
+        <Checkbox
+          id="margin"
+          checked={element.margin?.enabled}
+          onCheckedChange={onMarginEnabledChange}
+        />
+        <Label htmlFor="margin">{t('contentBuilder.editor.margin.label')}</Label>
       </div>
-    )}
-  </>
-);
+      {element.margin?.enabled && (
+        <div className="flex gap-x-2">
+          <div className="flex flex-col justify-center">
+            <Input
+              value={element.margin?.left}
+              placeholder={t('contentBuilder.editor.common.left')}
+              onChange={(e) => onMarginChange('left', e.target.value)}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+          <div className="flex flex-col justify-center gap-y-2">
+            <Input
+              value={element.margin?.top}
+              onChange={(e) => onMarginChange('top', e.target.value)}
+              placeholder={t('contentBuilder.editor.common.top')}
+              className="bg-background flex-none w-20"
+            />
+            <Input
+              value={element.margin?.bottom}
+              onChange={(e) => onMarginChange('bottom', e.target.value)}
+              placeholder={t('contentBuilder.editor.common.bottom')}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+          <div className="flex flex-col justify-center">
+            <Input
+              value={element.margin?.right}
+              placeholder={t('contentBuilder.editor.common.right')}
+              onChange={(e) => onMarginChange('right', e.target.value)}
+              className="bg-background flex-none w-20"
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 // Action buttons component
 const ActionButtons = ({
@@ -136,47 +140,59 @@ const ActionButtons = ({
   onDelete: () => void;
   onAddLeft: () => void;
   onAddRight: () => void;
-}) => (
-  <div className="flex items-center">
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="flex-none hover:bg-red-200"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-          >
-            <DeleteIcon className="fill-red-500" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Delete button</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-    <div className="grow" />
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button className="flex-none" variant="ghost" size="icon" onClick={onAddLeft}>
-            <InsertColumnLeftIcon className="fill-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Insert button to the left</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-    <div className="flex-none mx-1 leading-10">Insert button</div>
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button className="flex-none" variant="ghost" size="icon" onClick={onAddRight}>
-            <InsertColumnRightIcon className="fill-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">Insert button to the right</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  </div>
-);
+}) => {
+  const { t } = useTranslation();
+  const entity = t('contentBuilder.editor.actionButtons.entity.button');
+  return (
+    <div className="flex items-center">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="flex-none hover:bg-red-200"
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+            >
+              <DeleteIcon className="fill-red-500" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.delete', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <div className="grow" />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddLeft}>
+              <InsertColumnLeftIcon className="fill-foreground" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.insertLeft', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <div className="flex-none mx-1 leading-10">
+        {t('contentBuilder.editor.actionButtons.insert', { entity })}
+      </div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddRight}>
+              <InsertColumnRightIcon className="fill-foreground" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            {t('contentBuilder.editor.actionButtons.insertRight', { entity })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+};
 
 // Main editable button component
 export interface ContentEditorButtonProps {
@@ -187,6 +203,7 @@ export interface ContentEditorButtonProps {
 
 export const ContentEditorButton = (props: ContentEditorButtonProps) => {
   const { element, path, id } = props;
+  const { t } = useTranslation();
   const {
     zIndex,
     insertElementInColumn,
@@ -297,25 +314,29 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
               alignOffset={-2}
             >
               <div className="flex flex-col gap-2.5">
-                <Label htmlFor="button-text">Button text</Label>
+                <Label htmlFor="button-text">{t('contentBuilder.editor.button.text')}</Label>
                 <Input
                   type="text"
                   className="bg-background"
                   id="button-text"
                   value={element.data.text}
-                  placeholder="Enter button text"
+                  placeholder={t('contentBuilder.editor.button.textPlaceholder')}
                   onChange={handleButtonTextChange}
                 />
 
-                <Label>Button style</Label>
+                <Label>{t('contentBuilder.editor.button.style')}</Label>
                 <Select onValueChange={handleButtonStyleChange} value={element.data.type}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a distribute" />
+                    <SelectValue placeholder={t('contentBuilder.editor.button.stylePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent style={{ zIndex: zIndex + EDITOR_SELECT }}>
                     <SelectGroup>
-                      <SelectItem value={BUTTON_STYLES.DEFAULT}>Primary</SelectItem>
-                      <SelectItem value={BUTTON_STYLES.SECONDARY}>Secondary</SelectItem>
+                      <SelectItem value={BUTTON_STYLES.DEFAULT}>
+                        {t('contentBuilder.editor.button.stylePrimary')}
+                      </SelectItem>
+                      <SelectItem value={BUTTON_STYLES.SECONDARY}>
+                        {t('contentBuilder.editor.button.styleSecondary')}
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -326,7 +347,7 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
                   onMarginEnabledChange={handleMarginCheckedChange}
                 />
 
-                <Label>When button is clicked</Label>
+                <Label>{t('contentBuilder.editor.button.whenClicked')}</Label>
                 <ContentActions
                   zIndex={zIndex}
                   isShowIf={false}
@@ -352,7 +373,7 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent style={{ zIndex: zIndex }}>
-        please select at least one action
+        {t('contentBuilder.editor.button.actionRequired')}
       </EditorErrorContent>
     </EditorError>
   );

@@ -16,6 +16,7 @@ import { useSegmentListQuery } from '@usertour-packages/shared-hooks';
 import { Switch } from '@usertour-packages/switch';
 import { ChecklistItemType, ContentActionsItemType, RulesCondition } from '@usertour/types';
 import { useId } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext, useChecklistContext } from '../../contexts';
 import { useToken } from '../../hooks/use-token';
 import { SidebarContainer } from '../sidebar';
@@ -23,6 +24,7 @@ import { SidebarContainer } from '../sidebar';
 const ChecklistItemHeader = () => {
   const { setCurrentMode } = useBuilderContext();
   const { setCurrentItem } = useChecklistContext();
+  const { t } = useTranslation();
   return (
     <CardHeader className="flex-none p-4 space-y-2">
       <CardTitle className="flex flex-row space-x-1 text-base items-center">
@@ -37,7 +39,7 @@ const ChecklistItemHeader = () => {
         >
           <ChevronLeftIcon className="h-6 w-6 " />
         </Button>
-        <span className=" truncate ...">Checklist Item</span>
+        <span className=" truncate ...">{t('contentBuilder.checklist.item')}</span>
       </CardTitle>
     </CardHeader>
   );
@@ -49,6 +51,7 @@ const ChecklistItemBody = () => {
   const { contents } = useContentListContext();
   const { environmentId } = useBuilderContext();
   const formPrefix = useId();
+  const { t } = useTranslation();
   const { token } = useToken();
   const { segmentList } = useSegmentListQuery(environmentId);
   const handleInputChange =
@@ -81,29 +84,31 @@ const ChecklistItemBody = () => {
       <ScrollArea className="h-full">
         <div className="flex-col space-y-3 p-4">
           <div className="flex flex-col space-y-2">
-            <Label htmlFor={`${formPrefix}-name`}>Name</Label>
+            <Label htmlFor={`${formPrefix}-name`}>{t('contentBuilder.checklist.itemName')}</Label>
             <Input
               id={`${formPrefix}-name`}
               className="bg-background-900"
               value={currentItem?.name}
-              placeholder="None"
+              placeholder={t('contentBuilder.checklist.none')}
               onChange={handleInputChange('name')}
             />
           </div>
           <div className="flex flex-col space-y-2">
             <div className="flex justify-start items-center space-x-1	">
-              <Label htmlFor={`${formPrefix}-description`}>Optional text below task name</Label>
+              <Label htmlFor={`${formPrefix}-description`}>
+                {t('contentBuilder.checklist.itemDescription')}
+              </Label>
             </div>
             <Input
               id={`${formPrefix}-description`}
               className="bg-background-900"
               value={currentItem?.description}
-              placeholder="None"
+              placeholder={t('contentBuilder.checklist.none')}
               onChange={handleInputChange('description')}
             />
           </div>
           <div className="flex flex-col space-y-2">
-            <Label>When task is clicked</Label>
+            <Label>{t('contentBuilder.checklist.whenClicked')}</Label>
             <ContentActions
               zIndex={zIndex + EXTENSION_SELECT}
               isShowIf={false}
@@ -123,7 +128,7 @@ const ChecklistItemBody = () => {
             />
           </div>
           <div className="flex flex-col space-y-2">
-            <Label>Mark completed</Label>
+            <Label>{t('contentBuilder.checklist.markCompleted')}</Label>
             <Rules
               onDataChange={handleRulesChange('completeConditions')}
               defaultConditions={currentItem?.completeConditions ?? []}
@@ -137,7 +142,7 @@ const ChecklistItemBody = () => {
           <div className="flex flex-col space-y-2">
             <div className="flex items-center justify-between space-x-2">
               <Label htmlFor={'dddd'} className="font-normal">
-                Only show task
+                {t('contentBuilder.checklist.onlyShowTask')}
               </Label>
               <Switch
                 id={'dddd'}
@@ -165,11 +170,12 @@ const ChecklistItemBody = () => {
 
 const ChecklistItemFooter = () => {
   const { saveCurrentItem, isLoading } = useChecklistContext();
+  const { t } = useTranslation();
   return (
     <CardFooter className="flex-none p-5">
       <Button className="w-full h-10" disabled={isLoading} onClick={saveCurrentItem}>
         {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-        Save
+        {t('contentBuilder.common.save')}
       </Button>
     </CardFooter>
   );

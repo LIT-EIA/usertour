@@ -19,8 +19,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useRulesContext } from './rules-context';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
 import { ElementSelector } from '../selector/element-selector';
@@ -40,17 +43,17 @@ export interface RulesTextInputProps {
   };
 }
 
-const conditions = [
-  { value: 'is', name: 'is' },
-  { value: 'not', name: 'is not' },
-  { value: 'contains', name: 'contains' },
-  { value: 'notContain', name: 'does not contain' },
-  { value: 'startsWith', name: 'starts with' },
-  { value: 'endsWith', name: 'ends with' },
-  { value: 'match', name: 'matches regular expression' },
-  { value: 'unmatch', name: 'does not match regular expression' },
-  { value: 'any', name: 'has any value' },
-  { value: 'empty', name: 'is empty' },
+const buildConditions = (t: TFunction) => [
+  { value: 'is', name: t('conditions.operators.is') },
+  { value: 'not', name: t('conditions.operators.isNot') },
+  { value: 'contains', name: t('conditions.operators.contains') },
+  { value: 'notContain', name: t('conditions.operators.doesNotContain') },
+  { value: 'startsWith', name: t('conditions.operators.startsWith') },
+  { value: 'endsWith', name: t('conditions.operators.endsWith') },
+  { value: 'match', name: t('conditions.operators.matchesRegex') },
+  { value: 'unmatch', name: t('conditions.operators.doesNotMatchRegex') },
+  { value: 'any', name: t('conditions.operators.hasAnyValue') },
+  { value: 'empty', name: t('conditions.operators.isEmpty') },
 ];
 
 interface RulesTextInputContextValue {
@@ -60,6 +63,7 @@ interface RulesTextInputContextValue {
   setInputValue: Dispatch<SetStateAction<string>>;
   elementData: ElementSelectorPropsData;
   setElementData: Dispatch<SetStateAction<ElementSelectorPropsData>>;
+  conditions: ReturnType<typeof buildConditions>;
 }
 
 const RulesTextInputContext = createContext<RulesTextInputContextValue | undefined>(undefined);
@@ -87,7 +91,7 @@ const RulesTextInputInput = () => {
 };
 
 const RulesTextInputCondition = () => {
-  const { conditionValue, setConditionValue } = useRulesTextInputContext();
+  const { conditionValue, setConditionValue, conditions } = useRulesTextInputContext();
   return (
     <>
       <Select defaultValue={conditionValue} onValueChange={setConditionValue}>
@@ -118,6 +122,8 @@ const RulesTextInputCondition = () => {
 
 export const RulesTextInput = (props: RulesTextInputProps) => {
   const { index, data, type } = props;
+  const { t } = useTranslation();
+  const conditions = useMemo(() => buildConditions(t), [t]);
   const [conditionValue, setConditionValue] = useState(data.logic ?? 'is');
   const [inputValue, setInputValue] = useState(data.value ?? '');
 
@@ -188,6 +194,7 @@ export const RulesTextInput = (props: RulesTextInputProps) => {
     setElementData,
     inputValue,
     setInputValue,
+    conditions,
   };
 
   return (
@@ -203,7 +210,7 @@ export const RulesTextInput = (props: RulesTextInputProps) => {
               <RulesPopover onOpenChange={handleOnOpenChange} open={open}>
                 <RulesPopoverTrigger className="space-y-1">
                   <div className="grow pr-6 text-sm text-wrap break-all">
-                    The value of this input{' '}
+                    {t('conditions.types.textInput.prefix')}{' '}
                   </div>
                   <div>
                     {elementData && elementData.type === 'auto' && elementData.screenshot && (
@@ -223,7 +230,9 @@ export const RulesTextInput = (props: RulesTextInputProps) => {
                       elementData.type === 'manual' &&
                       elementData.content === '' &&
                       elementData.customSelector === '' && (
-                        <span className="font-bold text-destructive">No element selected yet</span>
+                        <span className="font-bold text-destructive">
+                          {t('conditions.types.element.notSelected')}
+                        </span>
                       )}
                   </div>
                   <div>
@@ -235,7 +244,7 @@ export const RulesTextInput = (props: RulesTextInputProps) => {
                 </RulesPopoverTrigger>
                 <RulesPopoverContent side="right">
                   <div className=" flex flex-col space-y-2">
-                    <div>If the value of this input...</div>
+                    <div>{t('conditions.types.textInput.editorTitle')}</div>
                     {/* <RulesTextInputSelector /> */}
                     <ElementSelector
                       data={{

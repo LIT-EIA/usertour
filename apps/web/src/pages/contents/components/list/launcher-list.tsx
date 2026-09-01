@@ -8,10 +8,12 @@ import { EmptyPlaceholder } from '../shared/empty-placeholder';
 import { LauncherCreateForm } from '../shared/launcher-create-form';
 import { DataTable } from './data-table';
 import { useAppContext } from '@/contexts/app-context';
+import { useTranslation } from 'react-i18next';
 
 export const LauncherListContent = () => {
   const [open, setOpen] = useState(false);
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const openCreateFormHandler = async () => {
     setOpen(true);
@@ -29,17 +31,16 @@ export const LauncherListContent = () => {
       <div className="flex justify-between">
         <>
           <div className="flex flex-col space-y-1 ">
-            <h3 className="text-2xl font-semibold tracking-tight">Launchers</h3>
+            <h3 className="text-2xl font-semibold tracking-tight">
+              {t('contents.list.launchers.title')}
+            </h3>
             <div className="flex flex-row space-x-1">
-              <p className="text-sm text-muted-foreground">
-                Launchers work well for: Highlighting key features with hotspots, Showing helpful
-                tips with tooltips.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('contents.list.launchers.text')}</p>
             </div>
           </div>
           <Button onClick={openCreateFormHandler} className="flex-none" disabled={isViewOnly}>
             <PlusCircledIcon className="mr-2 h-4 w-4" />
-            Create Launcher
+            {t('contents.list.newButton', { type: t('contents.types.launcher') })}
           </Button>
         </>
       </div>
@@ -47,12 +48,12 @@ export const LauncherListContent = () => {
       {isLoading && <ContentListSkeleton count={9} />}
       {!isLoading && contents && contents.length === 0 && (
         <EmptyPlaceholder
-          name="No launchers added"
-          description="You have not added any launchers. Add one below."
+          name={t('contents.list.launchers.emptyTitle')}
+          description={t('contents.list.launchers.emptyDescription')}
         >
           <Button onClick={openCreateFormHandler} disabled={isViewOnly}>
             <PlusCircledIcon className="mr-2 h-4 w-4" />
-            Create Launcher
+            {t('contents.list.newButton', { type: t('contents.types.launcher') })}
           </Button>
         </EmptyPlaceholder>
       )}

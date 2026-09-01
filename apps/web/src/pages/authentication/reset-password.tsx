@@ -30,6 +30,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const formSchema = z.object({
   email: z
@@ -50,6 +51,7 @@ export const ResetPassword = () => {
   const { toast } = useToast();
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { t } = useTranslation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -83,11 +85,10 @@ export const ResetPassword = () => {
             <Card>
               <CardHeader className="space-y-1 text-center">
                 <CardTitle className="text-2xl  font-semibold tracking-tight">
-                  Welcome back!
+                  {t('auth.resetPassword.title')}
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
-                  Enter your email address, and we'll send you an email with a link to reset your
-                  password.
+                  {t('auth.resetPassword.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
@@ -97,9 +98,13 @@ export const ResetPassword = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('auth.resetPassword.emailLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your email" type="email" {...field} />
+                          <Input
+                            placeholder={t('auth.resetPassword.emailPlaceholder')}
+                            type="email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -110,14 +115,14 @@ export const ResetPassword = () => {
               <CardFooter className="flex flex-col">
                 <Button className="w-full" type="submit" disabled={isLoading}>
                   {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
-                  Reset password
+                  {t('auth.resetPassword.submitButton')}
                 </Button>
                 <div className="pt-4 text-center text-sm text-muted-foreground">
                   <Link
                     to="/auth/signin"
                     className="underline underline-offset-4 hover:text-primary"
                   >
-                    Back to sign in
+                    {t('auth.resetPassword.backToSignIn')}
                   </Link>{' '}
                 </div>
               </CardFooter>

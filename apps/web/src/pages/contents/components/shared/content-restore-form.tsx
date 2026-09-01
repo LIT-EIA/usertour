@@ -15,6 +15,7 @@ import { getErrorMessage } from '@usertour/helpers';
 import { ContentVersion } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ContentRestoreFormProps {
   version: ContentVersion;
@@ -28,6 +29,7 @@ export const ContentRestoreForm = (props: ContentRestoreFormProps) => {
   const [mutation] = useMutation(restoreContentVersion);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   async function handleOnSubmit() {
     try {
@@ -39,7 +41,7 @@ export const ContentRestoreForm = (props: ContentRestoreFormProps) => {
       if (data.restoreContentVersion.id) {
         toast({
           variant: 'success',
-          title: 'The version retored successfully.',
+          title: t('contents.shared.restore.successToast'),
         });
         onSubmit(true);
       }
@@ -57,21 +59,21 @@ export const ContentRestoreForm = (props: ContentRestoreFormProps) => {
     <Dialog defaultOpen={true} open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Restore version </DialogTitle>
+          <DialogTitle>{t('contents.shared.restore.title')}</DialogTitle>
         </DialogHeader>
         <div>
-          <p>This will load all of the original flow of v{version.sequence} into the Builder.</p>
-          <p>Restore Builder to v{version.sequence}?</p>
+          <p>{t('contents.shared.restore.descriptionLoad', { version: version.sequence })}</p>
+          <p>{t('contents.shared.restore.descriptionConfirm', { version: version.sequence })}</p>
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" type="button">
-              Cancel
+              {t('contents.shared.common.cancel')}
             </Button>
           </DialogClose>
           <Button className="flex-none" type="submit" disabled={isLoading} onClick={handleOnSubmit}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            Yes, restore
+            {t('contents.shared.restore.confirmButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

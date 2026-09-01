@@ -122,7 +122,6 @@ export const useContentListQuery = ({
       orderBy,
     },
   });
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const contentList = data?.queryContent?.edges.map((e: any) => e.node);
 
   const contents = contentList ? (contentList as Content[]) : [];
@@ -220,7 +219,6 @@ export const useQueryTeamMemberListQuery = (projectId: string) => {
     variables: { projectId },
   });
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const teamMembers: TeamMember[] =
     data?.getTeamMembers?.map((item: any) => ({
       userId: item.user.id,
@@ -240,7 +238,6 @@ export const useQueryInviteListQuery = (projectId: string) => {
     variables: { projectId },
   });
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const invites: TeamMember[] =
     data?.getInvites?.map((item: any) => ({
       inviteId: item.id,

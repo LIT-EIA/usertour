@@ -9,13 +9,15 @@ import {
   TableRow,
 } from '@usertour-packages/table';
 import { ContentVersion } from '@usertour/types';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/common';
 import { useEffect } from 'react';
 import { ContentVersionAction } from './content-version-action';
 import { useEnvironmentListContext } from '@/contexts/environment-list-context';
 import { ListSkeleton } from '@/components/molecules/skeleton';
+import { useTranslation } from 'react-i18next';
 
 export const ContentVersionTable = () => {
+  const { t } = useTranslation();
   const { content, loading: contentLoading } = useContentDetailContext();
   const { versionList, refetch, loading: versionListLoading } = useContentVersionListContext();
   const { environmentList, loading: environmentLoading } = useEnvironmentListContext();
@@ -55,9 +57,9 @@ export const ContentVersionTable = () => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Version</TableHead>
-          <TableHead>CreatedAt</TableHead>
-          <TableHead>UpdatedAt</TableHead>
+          <TableHead>{t('contents.versions.columns.version')}</TableHead>
+          <TableHead>{t('contents.versions.columns.createdAt')}</TableHead>
+          <TableHead>{t('contents.versions.columns.updatedAt')}</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
@@ -78,8 +80,8 @@ export const ContentVersionTable = () => {
                   ))}
                 </div>
               </TableCell>
-              <TableCell>{format(new Date(version.createdAt), 'PPpp')}</TableCell>
-              <TableCell>{format(new Date(version.updatedAt), 'PPpp')}</TableCell>
+              <TableCell>{formatDate(new Date(version.createdAt), 'PPpp')}</TableCell>
+              <TableCell>{formatDate(new Date(version.updatedAt), 'PPpp')}</TableCell>
               <TableCell>
                 <ContentVersionAction version={version} />
               </TableCell>
@@ -87,7 +89,7 @@ export const ContentVersionTable = () => {
           ))
         ) : (
           <TableRow>
-            <TableCell className="h-24 text-center">No results.</TableCell>
+            <TableCell className="h-24 text-center">{t('dataTable.noResults')}</TableCell>
           </TableRow>
         )}
       </TableBody>

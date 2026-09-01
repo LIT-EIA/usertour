@@ -10,11 +10,13 @@ import {
   TableRow,
 } from '@usertour-packages/table';
 import { Localization } from '@usertour/types';
-import { format } from 'date-fns';
+import { formatDate as format } from '@/utils/common';
+import { useTranslation } from 'react-i18next';
 import { LocalizationListAction } from './localization-list-action';
 
 export const LocalizationListContent = () => {
   const { localizationList, loading } = useLocalizationListContext();
+  const { t } = useTranslation();
 
   if (loading) {
     return <ListSkeleton />;
@@ -26,9 +28,9 @@ export const LocalizationListContent = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>CreatedAt</TableHead>
+              <TableHead>{t('settings.localizations.columns.code')}</TableHead>
+              <TableHead>{t('settings.localizations.columns.name')}</TableHead>
+              <TableHead>{t('settings.localizations.columns.createdAt')}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -39,7 +41,9 @@ export const LocalizationListContent = () => {
                   <TableCell>{localization.code}</TableCell>
                   <TableCell>
                     {localization.name}{' '}
-                    {localization.isDefault && <Badge variant={'success'}>Default</Badge>}
+                    {localization.isDefault && (
+                      <Badge variant={'success'}>{t('settings.localizations.defaultBadge')}</Badge>
+                    )}
                   </TableCell>
                   <TableCell>{format(new Date(localization.createdAt), 'PPpp')}</TableCell>
                   <TableCell>
@@ -49,7 +53,7 @@ export const LocalizationListContent = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center">No results.</TableCell>
+                <TableCell className="h-24 text-center">{t('dataTable.noResults')}</TableCell>
               </TableRow>
             )}
           </TableBody>

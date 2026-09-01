@@ -8,18 +8,19 @@ import {
   AlertDialogTitle,
 } from '@usertour-packages/alert-dialog';
 import { getErrorMessage } from '@usertour/helpers';
+import { getContentTypeGenderContext } from '@/utils/content-type';
 import { useDeleteContentMutation } from '@usertour-packages/shared-hooks';
 import { Content, ContentDataType } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
 import { LoadingButton } from '@/components/molecules/loading-button';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ContentDeleteFormProps {
   content: Content;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (success: boolean) => void;
-  name: string;
 }
 
 export const ContentDeleteForm = ({
@@ -27,18 +28,20 @@ export const ContentDeleteForm = ({
   open,
   onOpenChange,
   onSubmit,
-  name,
 }: ContentDeleteFormProps) => {
   const { invoke: deleteContent, loading } = useDeleteContentMutation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const contentType = content.type || ContentDataType.FLOW;
   const contentName = content.name;
+  const typeContext = getContentTypeGenderContext(contentType);
+  const translatedType = t(`contents.types.${contentType}`);
 
   const handleDeleteSubmit = useCallback(async () => {
     if (!content?.id) {
       toast({
         variant: 'destructive',
-        title: 'Invalid content data',
+        title: t('contents.deleteDialog.invalidData'),
       });
       return;
     }
@@ -49,14 +52,18 @@ export const ContentDeleteForm = ({
       if (success) {
         toast({
           variant: 'success',
-          title: `The ${contentType} ${contentName} has been successfully deleted`,
+          title: t('contents.deleteDialog.deleteSuccess', {
+            contentType: translatedType,
+            name: contentName,
+            context: typeContext,
+          }),
         });
         onSubmit(true);
         onOpenChange(false);
       } else {
         toast({
           variant: 'destructive',
-          title: 'Failed to delete content',
+          title: t('contents.deleteDialog.deleteFailure'),
         });
         onSubmit(false);
       }
@@ -67,23 +74,28 @@ export const ContentDeleteForm = ({
       });
       onSubmit(false);
     }
-  }, [content?.id, contentType, name, deleteContent, toast, onSubmit, onOpenChange]);
+  }, [content?.id, contentType, deleteContent, toast, onSubmit, onOpenChange]);
 
   return (
     <AlertDialog defaultOpen={open} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {t('contents.deleteDialog.title', { contentType: translatedType })}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone! The {contentType}{' '}
-            <span className="font-bold text-foreground">{contentName}</span> and all data associated
-            with it will be deleted.
+            <span
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: translated string; i18next escapes interpolated values by default
+              dangerouslySetInnerHTML={{
+                __html: t('contents.deleteDialog.description', { name: contentName }),
+              }}
+            />
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('contents.deleteDialog.cancelButton')}</AlertDialogCancel>
           <LoadingButton variant="destructive" onClick={handleDeleteSubmit} loading={loading}>
-            Delete {contentType}
+            {t('contents.deleteDialog.confirmButton', { contentType: translatedType })}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -17,6 +17,7 @@ import { ContentRestoreForm } from '../shared/content-restore-form';
 import { useAppContext } from '@/contexts/app-context';
 import { isPublishedInAllEnvironments } from '@usertour/helpers';
 import { useEnvironmentListContext } from '@/contexts/environment-list-context';
+import { useTranslation } from 'react-i18next';
 
 type ContentVersionActionProps = {
   version: ContentVersion;
@@ -30,6 +31,7 @@ export const ContentVersionAction = (props: ContentVersionActionProps) => {
   const [openPublish, setOpenPublish] = useState(false);
   const [openRetore, setOpenRestore] = useState(false);
   const { environmentList } = useEnvironmentListContext();
+  const { t } = useTranslation();
 
   const isDisabledPublish = isPublishedInAllEnvironments(content, environmentList, version);
 
@@ -54,7 +56,7 @@ export const ContentVersionAction = (props: ContentVersionActionProps) => {
             className="cursor-pointer"
           >
             <PlaneIcon className="w-6" width={16} height={16} />
-            Publish...
+            {t('contents.versions.action.publish')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -65,7 +67,7 @@ export const ContentVersionAction = (props: ContentVersionActionProps) => {
             className="cursor-pointer"
           >
             <ResetIcon className="w-6" width={16} height={16} />
-            Restore...
+            {t('contents.versions.action.restore')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

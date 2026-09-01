@@ -8,7 +8,7 @@ import { EditIcon, PlaneIcon, SpinnerIcon } from '@usertour-packages/icons';
 import { buildConfig, cn, isPublishedInAllEnvironments } from '@usertour/helpers';
 import { ContentDataType } from '@usertour/types';
 import { useToast } from '@usertour-packages/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/utils/common';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ContentEditDropdownMenu } from '../shared/content-edit-dropmenu';
@@ -16,32 +16,34 @@ import { ContentPublishForm } from '../shared/content-publish-form';
 import { ContentRenameForm } from '../shared/content-rename-form';
 import { useEnvironmentListContext } from '@/contexts/environment-list-context';
 import { ContentDetailHeaderSkeleton } from './content-detail-header-skeleton';
-
-const navigations = [
-  {
-    name: 'Analytics',
-    href: '/analytics',
-  },
-  {
-    name: 'Content',
-    href: '/detail',
-  },
-  // {
-  //   name: "Localization",
-  //   href: "/localization",
-  // },
-  {
-    name: 'Versions',
-    href: '/versions',
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   const { contentId } = useParams();
   const { environment } = useAppContext();
   const { contentType } = useContentDetailContext();
   const location = useLocation();
+  const { t } = useTranslation();
   const baseUrl = `/env/${environment?.id}/${contentType}/${contentId}`;
+
+  const navigations = [
+    {
+      name: t('contents.detail.tabs.analytics'),
+      href: '/analytics',
+    },
+    {
+      name: t('contents.detail.tabs.content'),
+      href: '/detail',
+    },
+    // {
+    //   name: t('contents.detail.tabs.localization'),
+    //   href: "/localization",
+    // },
+    {
+      name: t('contents.detail.tabs.versions'),
+      href: '/versions',
+    },
+  ];
 
   const navs = navigations.map((nav) => {
     return { ...nav, href: baseUrl + nav.href };
@@ -74,6 +76,7 @@ export const ContentDetailHeader = () => {
   const { environmentList } = useEnvironmentListContext();
   const [_, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Show skeleton if content is loading
   if (loading) {
@@ -93,9 +96,8 @@ export const ContentDetailHeader = () => {
       if (config.enabledAutoStartRules && !config.autoStartRules.length) {
         toast({
           variant: 'destructive',
-          title: 'Auto-start condition required',
-          description:
-            'Please add at least one condition to the auto-start rule before publishing.',
+          title: t('contents.detail.autoStartConditionRequiredTitle'),
+          description: t('contents.detail.autoStartConditionRequiredDescription'),
         });
         return;
       }
@@ -132,13 +134,16 @@ export const ContentDetailHeader = () => {
               {isSaveing && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
               {!isSaveing && (
                 <div className="px-1 text-sm text-muted-foreground min-w-60 text-right">
-                  {content.editedVersionId !== content.publishedVersionId && version && (
-                    <>Autosaved {formatDistanceToNow(new Date(version?.updatedAt))} ago</>
-                  )}
+                  {content.editedVersionId !== content.publishedVersionId &&
+                    version &&
+                    t('contents.detail.autosaved', {
+                      when: formatRelativeTime(new Date(version?.updatedAt)),
+                    })}
                   {content.editedVersionId === content.publishedVersionId &&
-                    content.publishedAt && (
-                      <>Published {formatDistanceToNow(new Date(content.publishedAt))} ago</>
-                    )}
+                    content.publishedAt &&
+                    t('contents.detail.autosaved', {
+                      when: formatRelativeTime(new Date(content.publishedAt)),
+                    })}
                 </div>
               )}
               {/* <ContentOpenBuilder content={content} /> */}
@@ -150,14 +155,11 @@ export const ContentDetailHeader = () => {
                 disabled={isViewOnly}
               >
                 <EnterIcon className="mr-2" />
-                Edit In Builder
+                {t('contents.detail.editInBuilder')}
               </Button>
-              <Button
-                disabled={isDisabled || isViewOnly}
-                onClick={handlePublishClick}
-              >
+              <Button disabled={isDisabled || isViewOnly} onClick={handlePublishClick}>
                 <PlaneIcon className="mr-1" width={20} height={20} />
-                Publish
+                {t('contents.detail.publish')}
               </Button>
               {content && (
                 <ContentEditDropdownMenu
@@ -172,7 +174,7 @@ export const ContentDetailHeader = () => {
                   }}
                 >
                   <Button variant="secondary">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('contents.detail.actionsMenu')}</span>
                     <DotsHorizontalIcon className="h-4 w-4" />
                   </Button>
                 </ContentEditDropdownMenu>
