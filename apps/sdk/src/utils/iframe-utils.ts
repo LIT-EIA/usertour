@@ -147,7 +147,7 @@ export class IframeUtils {
           case 'usertour-element-setup-complete':
             if (message.stepId) {
               // Call all handlers with onElementSetupComplete callback
-              for (const handler of this.communicationHandlers) {
+              for (const handler of this.communicationHandlers.values()) {
                 handler.onElementSetupComplete?.(message.stepId!);
               }
             }
@@ -155,7 +155,7 @@ export class IframeUtils {
           case 'usertour-step-complete':
             if (message.stepId) {
               // Call all handlers
-              for (const handler of this.communicationHandlers) {
+              for (const handler of this.communicationHandlers.values()) {
                 handler.onStepComplete(message.stepId!, message.data);
               }
             }
@@ -163,7 +163,7 @@ export class IframeUtils {
           case 'usertour-step-action':
             if (message.stepId && message.action) {
               // Call all handlers
-              for (const handler of this.communicationHandlers) {
+              for (const handler of this.communicationHandlers.values()) {
                 handler.onStepAction(message.stepId!, message.action!, message.data);
               }
             }
@@ -188,7 +188,7 @@ export class IframeUtils {
                   };
 
                   // Call all handlers
-                  for (const handler of this.communicationHandlers) {
+                  for (const handler of this.communicationHandlers.values()) {
                     handler.onElementFound(iframeElementInfo);
                   }
                 }
@@ -198,7 +198,7 @@ export class IframeUtils {
           case 'usertour-element-not-found':
             if (message.element) {
               // Call all handlers
-              for (const handler of this.communicationHandlers) {
+              for (const handler of this.communicationHandlers.values()) {
                 handler.onElementNotFound((message.element as any).selector);
               }
             }
