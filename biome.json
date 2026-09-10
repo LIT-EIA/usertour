@@ -63,7 +63,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["**/node_modules/**", "**/dist/**", "locate.ts", "webfonts.ts"]
+    "ignore": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "locate.ts",
+      "webfonts.ts",
+      "apps/web/public/bookmarklet/**"
+    ]
   },
   "vcs": {
     "enabled": true,

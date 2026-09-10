@@ -21,6 +21,12 @@ export const InstallPlugins = () => {
   const [prodEnvironmentId, setProdEnvironmentId] = useState<string>('');
   const [activeView, setActiveView] = useState<string>('bookmarklets');
 
+  const helperBookmarklet = useMemo(() => {
+    const url =
+      typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : '';
+    return `javascript:(function(){var s=document.createElement('script');s.src='${url}/bookmarklet/bookmarklet.min.js?_='+Date.now();s.type='text/javascript';s.async=true;document.body.appendChild(s);})();`;
+  }, []);
+
   const generateBookmarklet = useMemo(() => {
     if (!testEnvironmentId || !prodEnvironmentId || !environmentList) {
       return '#';
@@ -203,11 +209,7 @@ if (usertour && !usertour.isIdentified()) {
                         asChild
                         className="w-full text-center whitespace-normal break-words p-5"
                       >
-                        <a
-                          href="javascript:(function(){  var s=document.createElement('script');  s.src='https://cdn.jsdelivr.net/gh/lit-eia/usertour-extended/dist/bookmarklet.min.js?_='+Date.now();  s.type='text/javascript';  s.async=true;  document.body.appendChild(s);})();"
-                          draggable
-                          className="text-center"
-                        >
+                        <a href={helperBookmarklet} draggable className="text-center">
                           {t('plugins.install.helperBookmarklet')}
                         </a>
                       </Button>
