@@ -1,49 +1,4 @@
 ### Coder template for Usertour
-#
-# Recreates the services defined in docker-compose.yml (postgres, redis, app)
-# using the Terraform docker provider, and runs the Coder agent + code-server
-# *inside* the `app` container itself (not a sidecar), so code-server is attached
-# to the exact container nginx/node run in.
-#
-# This template is deployed via manually-created files in the Coder dashboard's
-# template editor, not `coder templates push` against a checked-out repo. That
-# means this file cannot read local files (no Dockerfile/.env/pnpm-lock.yaml
-# access - the kreuzwerker/docker provider's docker_image build.context is also
-# local-PATH-only, it does not support a remote git URL). So instead of building
-# a custom image, the app container:
-#   1. starts from node:22.13-slim (Debian/glibc - NOT the Dockerfile's alpine
-#      base; the code-server module's standalone install bundles a Node
-#      binary built for glibc, which cannot run on musl/Alpine even with
-#      libc6-compat installed - that only shims simple symbols, not the real
-#      ABI a Node binary needs. Prisma's schema.prisma has "native" in
-#      binaryTargets, so it auto-detects and generates the right glibc engine
-#      when `pnpm install` runs on this image - no override needed there.)
-#   2. installs the same system/npm packages the Dockerfile installs (apt
-#      instead of apk)
-#   3. clones https://github.com/LIT-EIA/usertour.git (branch dev-container,
-#      public repo, no auth needed) into /app on first start
-#   4. runs pnpm install + the repo's own scripts/start.sh (which is fetched by
-#      the clone, so its content doesn't need to be duplicated here)
-# /app is on a persistent volume so edits, .env copies, and node_modules survive
-# a workspace stop/start instead of being re-cloned/reinstalled from scratch.
-#
-# Assumptions / caveats:
-# - The provisioner needs access to the Docker socket (mount
-#   /var/run/docker.sock into it, same as any docker-based Coder deployment).
-# - First workspace start is slow (git clone + apt install + pnpm install all
-#   run live); subsequent starts reuse the /app volume and skip pnpm install
-#   if node_modules already exists.
-# - Host port publishing is off by default (`expose_host_port`) so multiple
-#   workspaces don't fight over the same host port; use the generated coder_app
-#   link to reach the running app instead. Set expose_host_port = true (and
-#   adjust host_port / code_server_host_port if they collide with another
-#   workspace) to publish the app (:80) and code-server (:13337) straight to
-#   the docker host, bypassing Coder's proxy entirely - useful for isolating
-#   whether slowness is coming from Coder's proxy or elsewhere.
-# - This file intentionally does NOT declare the code-server module. Add it via
-#   the Coder dashboard's template editor "Modules" tab (it writes its own
-#   modules.tf, source `registry.coder.com/coder/code-server/coder`) and set its
-#   `folder` field to `/app` so it opens on the right directory.
 
 terraform {
   required_providers {
@@ -221,7 +176,7 @@ resource "coder_app" "usertour" {
   url          = "http://127.0.0.1:80"
   icon         = "/icon/container.svg"
   subdomain    = true
-  share        = "owner"
+  share        = "public"
   open_in      = "tab"
   healthcheck {
     url       = "http://127.0.0.1:80"
@@ -391,10 +346,17 @@ resource "docker_container" "app" {
     ( ${coder_agent.main.init_script} ) &
 
     apt-get install -y --no-install-recommends nginx openssl gettext-base git netcat-openbsd
-    npm install -g pnpm prisma
+    npm install -g pnpm prisma@5.12.1 prisma-dbml-generator@0.12.0 husky@9.1.7
 
+    # --no-single-branch (and no --depth) so every branch's history is
+    # fetched, not just var.git_ref's tip - /app is a persistent volume and
+    # this clone only ever runs once (guarded below), so if it were shallow/
+    # single-branch, none of this repo's other branches would ever become
+    # reachable from inside the workspace afterwards (no `git fetch`/
+    # `git checkout <other-branch>` from code-server without first
+    # unshallowing and adding the remote branch back).
     if [ ! -d /app/.git ]; then
-      git clone --branch ${var.git_ref} --depth 1 ${var.git_repo_url} /app
+      git clone --no-single-branch --branch ${var.git_ref} ${var.git_repo_url} /app
     fi
     cd /app
 
@@ -431,13 +393,10 @@ resource "docker_container" "app" {
 JSON
     fi
 
-    # --prod=false: NODE_ENV=production is already set in this container's
-    # env (matching docker-compose), which makes pnpm skip devDependencies -
-    # including the project's own pinned `prisma` CLI. Without it, `pnpm
-    # prisma` at runtime falls back to whatever `npm install -g prisma`
-    # above resolved (latest, currently a major version ahead), which
-    # doesn't understand this project's older schema.prisma syntax.
-    [ -x node_modules/.bin/prisma ] || pnpm install --prod=false
+    # NODE_ENV=production causes pnpm v9 to skip devDependencies, which
+    # drops the repo's own pinned prisma CLI and husky (needed for prepare).
+    # Override NODE_ENV just for this install so all deps are resolved.
+    [ -x node_modules/.bin/prisma ] || NODE_ENV=development pnpm install
 
     # getaddrinfo("localhost") on this container resolves ::1 (IPv6) before
     # 127.0.0.1. Vite's dev server host config defaults to the string
@@ -465,7 +424,66 @@ JSON
     until nc -z postgres 5432; do sleep 1; done
     until nc -z redis 6379; do sleep 1; done
 
-    exec ./scripts/start.sh
+    # From here on, no single failure is allowed to take down this script -
+    # this process is the container's PID 1, and the coder agent (started
+    # above as a backgrounded subshell of THIS SAME script) dies the instant
+    # this process exits, however it exits. `set -e` up to this point was
+    # useful for failing fast on a broken apt/git/pnpm setup; past this
+    # point it's actively dangerous, because some branches' scripts/start.sh
+    # ends by exec'ing the real app process (e.g. `node dist/main`) instead
+    # of the old `sleep infinity` keep-alive - if that process ever exits
+    # (crash, missing build output, bad env), the old `exec ./scripts/start.sh`
+    # below would exit right along with it and Coder would report "Workspace
+    # agent has disconnected" with no way to open a terminal and debug.
+    set +e
+
+    # Some branches (e.g. anything whose nginx config serves static files
+    # from /usr/share/nginx/html instead of proxying to a Vite dev server)
+    # expect the app to have already gone through this repo's Dockerfile
+    # build stages - this template only clones source and never builds an
+    # image, so replicate that build here, best-effort, before handing off
+    # to the branch's own start.sh. Branches that don't need this (nginx
+    # still proxies to a dev server) skip straight past it.
+    if grep -q '/usr/share/nginx/html' nginx/default.conf 2>/dev/null && [ ! -f apps/web/dist/index.html ]; then
+      echo "Static-build branch detected - running its Dockerfile's build steps once (web/sdk/server), since this template clones source instead of building an image."
+
+      # Mirrors the web-builder stage's config.js generation: turns each
+      # VITE_ key in apps/web/.env.example into a window.ENV placeholder that
+      # the branch's own start.sh envsubst's at runtime from real env vars.
+      if [ -f apps/web/.env.example ] && [ ! -s apps/web/public/config.js ]; then
+        mkdir -p apps/web/public
+        { echo "window.ENV = {"
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            var_name=$(echo "$line" | cut -d'=' -f1 | tr -d ' ' | sed 's/VITE_//')
+            echo "  $var_name: '\$$var_name',"
+          done < apps/web/.env.example
+          echo "};"
+        } > apps/web/public/config.js
+      fi
+
+      pnpm --filter @usertour/types build
+      pnpm --filter @usertour/web build
+      pnpm --filter @usertour/sdk build
+      pnpm --filter @usertour/sdk build:iife
+      pnpm --filter @usertour/server build
+    fi
+
+    # Stage whatever got built (this run or a previous one) where a
+    # static-build branch's nginx config / start.sh expect to find it -
+    # the branch's own Dockerfile does this with COPY --from=builder; we
+    # don't have separate build stages here, so copy/symlink instead.
+    [ -d apps/web/dist ] && mkdir -p /usr/share/nginx/html/web && cp -r apps/web/dist/. /usr/share/nginx/html/web/
+    [ -d apps/sdk/dist ] && mkdir -p /usr/share/nginx/html/sdk && cp -r apps/sdk/dist/. /usr/share/nginx/html/sdk/
+    [ -d apps/server/dist ] && rm -rf /app/dist && ln -s apps/server/dist /app/dist
+
+    # Run the branch's own start script - NOT exec'd, so no matter how it
+    # ends (the old dev-container-style `sleep infinity`, a crash, a
+    # missing build artifact on some future branch), control returns here
+    # instead of taking the container down with it.
+    ./scripts/start.sh
+    echo "scripts/start.sh exited ($?) - keeping the container (and Coder agent) alive so the workspace stays reachable for debugging instead of disconnecting."
+    exec sleep infinity
     EOT
   ]
 
