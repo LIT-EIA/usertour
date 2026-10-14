@@ -44,7 +44,9 @@ export const AttributeListContent = (props: AttributeListContentProps) => {
               <TableHead>{t('settings.attributes.columns.codeName')}</TableHead>
               <TableHead>{t('settings.attributes.columns.dataType')}</TableHead>
               <TableHead>{t('settings.attributes.columns.createdAt')}</TableHead>
-              <TableHead />
+              <TableHead>
+                <span className="sr-only">{t('common.actionsColumn')}</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

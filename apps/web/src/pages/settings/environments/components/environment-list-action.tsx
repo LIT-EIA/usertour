@@ -48,7 +48,8 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
             className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
             disabled={isViewOnly}
           >
-            <DotsHorizontalIcon className="h-4 w-4" />
+            <span className="sr-only">{t('common.moreActions')}</span>
+            <DotsHorizontalIcon className="h-4 w-4" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[200px]">

@@ -24,6 +24,7 @@ import { useCallback, useState } from 'react';
 import { useCopyToClipboard } from 'react-use';
 import { useTranslation } from 'react-i18next';
 import { EnvironmentListAction } from './environment-list-action';
+import { TooltipIconButton } from '@usertour-packages/shared-components';
 
 interface EnvironmentListContentTableRowProps {
   environment: Environment;
@@ -51,10 +52,15 @@ const EnvironmentListContentTableRow = (props: EnvironmentListContentTableRowPro
           <Button
             variant={'ghost'}
             size={'icon'}
-            className={cn('w-6 h-6 rounded', isShowCopy ? 'visible' : 'invisible')}
+            // opacity (not visibility) so the button stays keyboard-focusable and appears on focus
+            className={cn(
+              'w-6 h-6 rounded focus-visible:opacity-100',
+              isShowCopy ? 'opacity-100' : 'opacity-0',
+            )}
             onClick={handleCopy}
+            aria-label={t('common.copyToClipboard')}
           >
-            <CopyIcon className="w-4 h-4" />
+            <CopyIcon className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </TableCell>
@@ -85,7 +91,12 @@ export const EnvironmentListContent = () => {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <QuestionMarkCircledIcon className="inline ml-1 cursor-help" />
+                      <TooltipIconButton>
+                        <QuestionMarkCircledIcon
+                          className="inline ml-1 cursor-help"
+                          aria-hidden="true"
+                        />
+                      </TooltipIconButton>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs bg-foreground text-background">
                       {t('settings.environments.tokenTooltip')}
@@ -94,7 +105,9 @@ export const EnvironmentListContent = () => {
                 </TooltipProvider>
               </TableHead>
               <TableHead>{t('settings.environments.columns.createdAt')}</TableHead>
-              <TableHead />
+              <TableHead>
+                <span className="sr-only">{t('common.actionsColumn')}</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -126,13 +126,13 @@ const SubscriptionPlan = ({ projectId }: { projectId: string }) => {
         <div className="py-8 grid grid-cols-1 sm:grid-cols-8 gap-x-12 gap-y-4">
           <div className="col-span-3 flex flex-col gap-1">
             <div className="flex flex-wrap gap-2">
-              <h1 className="text-zinc-950/90 dark:text-white/90">
+              <h2 className="text-zinc-950/90 dark:text-white/90">
                 {t('settings.subscription.heading')}
-              </h1>
+              </h2>
             </div>
-            <h2 className="text-zinc-950/50 dark:text-white/50 text-sm">
+            <p className="text-zinc-950/50 dark:text-white/50 text-sm">
               {t('settings.subscription.description')}
-            </h2>
+            </p>
           </div>
           <div className="flex flex-col col-span-5 space-y-2 p-4 pt-1 xl:p-4 rounded-xl bg-zinc-950/5 dark:bg-white/5">
             <div className="flex max-xl:flex-col max-xl:gap-y-3 justify-center xl:items-center xl:justify-between">

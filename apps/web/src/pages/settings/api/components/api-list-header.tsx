@@ -14,9 +14,9 @@ export const ApiListHeader = () => {
     <div className="relative ">
       <div className="flex flex-col space-y-2">
         <div className="flex flex-row justify-between ">
-          <h3 className="text-2xl font-semibold tracking-tight">
+          <h2 className="text-2xl font-semibold tracking-tight">
             {t('settings.api.title', { environment: environment?.name })}
-          </h3>
+          </h2>
           <Button variant="default" onClick={() => setIsCreateModalVisible(true)}>
             <PlusIcon className="mr-2 h-4 w-4" />
             {t('settings.api.newButton')}

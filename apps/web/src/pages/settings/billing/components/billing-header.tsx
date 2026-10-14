@@ -7,7 +7,7 @@ export const SettingsBillingHeader = () => {
       <div className="relative ">
         <div className="flex flex-col space-y-2">
           <div className="flex flex-row justify-between ">
-            <h3 className="text-2xl font-semibold tracking-tight">{t('settings.billing.title')}</h3>
+            <h2 className="text-2xl font-semibold tracking-tight">{t('settings.billing.title')}</h2>
           </div>
         </div>
       </div>

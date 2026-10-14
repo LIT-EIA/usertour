@@ -101,7 +101,7 @@ export const ProjectNameForm = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-row justify-between items-center h-10">
-        <h3 className="text-2xl font-semibold tracking-tight">{t('settings.project.title')}</h3>
+        <h2 className="text-2xl font-semibold tracking-tight">{t('settings.project.title')}</h2>
       </div>
       <Separator />
       <Form {...form}>

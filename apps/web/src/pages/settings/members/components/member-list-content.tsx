@@ -25,7 +25,7 @@ const MemberListContentTableRow = (props: MemberListContentTableRowProps) => {
     <TableRow className="cursor-pointer">
       <TableCell>
         <div className="flex flex-row items-center gap-2">
-          <UserAvatar email={data.email} name={data.name} />
+          <UserAvatar email={data.email} name={data.name} decorative />
           <span>{data.name}</span>
           {data.isInvite && <Badge variant="success">{t('settings.team.invitePending')}</Badge>}
         </div>
@@ -59,7 +59,9 @@ export const MemberListContent = () => {
               <TableHead>{t('settings.team.columns.email')}</TableHead>
               <TableHead>{t('settings.team.columns.role')}</TableHead>
               {/* <TableHead>CreatedAt</TableHead> */}
-              <TableHead />
+              <TableHead>
+                <span className="sr-only">{t('common.actionsColumn')}</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

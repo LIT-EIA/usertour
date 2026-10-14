@@ -10,9 +10,9 @@ export const IntegrationsListHeader = () => {
     <div className="relative ">
       <div className="flex flex-col space-y-2">
         <div className="flex flex-row justify-between ">
-          <h3 className="text-2xl font-semibold tracking-tight">
+          <h2 className="text-2xl font-semibold tracking-tight">
             {t('settings.integrations.title', { environment: environment?.name })}
-          </h3>
+          </h2>
         </div>
         <div className="text-sm text-muted-foreground">
           {t('settings.integrations.headerBody')} <br />

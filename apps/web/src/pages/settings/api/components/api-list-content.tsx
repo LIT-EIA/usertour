@@ -28,7 +28,9 @@ export const ApiListContent = () => {
         <TableRow>
           <TableHead className="w-1/2">{t('settings.api.columns.name')}</TableHead>
           <TableHead className="w-1/2">{t('settings.api.columns.key')}</TableHead>
-          <TableHead className="w-[80px]" />
+          <TableHead className="w-[80px]">
+            <span className="sr-only">{t('common.actionsColumn')}</span>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

@@ -56,7 +56,8 @@ export const AttributeListAction = (props: AttributeListActionProps) => {
               className="flex h-8 w-8 p-0 data-[state=open]:bg-muted opacity-50"
               disabled={isViewOnly}
             >
-              <DotsHorizontalIcon className="h-4 w-4" />
+              <span className="sr-only">{t('common.moreActions')}</span>
+              <DotsHorizontalIcon className="h-4 w-4" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-slate-700">
@@ -77,7 +78,8 @@ export const AttributeListAction = (props: AttributeListActionProps) => {
         <DropdownMenu>
           <DropdownMenuTrigger disabled={attribute.predefined || isViewOnly} asChild>
             <Button variant="ghost" className="flex h-8 w-8 p-0 data-[state=open]:bg-muted">
-              <DotsHorizontalIcon className="h-4 w-4" />
+              <span className="sr-only">{t('common.moreActions')}</span>
+              <DotsHorizontalIcon className="h-4 w-4" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[200px]">
