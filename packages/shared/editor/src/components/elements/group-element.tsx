@@ -242,15 +242,20 @@ const SideBar = (props: SideBarProps) => {
       <div style={{ ...customStyle, display: isShow ? '' : 'none' }} />
       <Popover.Root onOpenChange={setIsOpen} open={isOpen}>
         <Popover.Trigger asChild>
-          <PlusIcon3
-            className="text-[#22c55e] h-5 w-5"
-            // onClick={() => setIsActivedButton(true)}
+          <button
+            type="button"
+            aria-label={t('contentBuilder.editor.addContentBlock')}
+            className="inline-flex rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ ...customIconStyle, display: isShow ? '' : 'none' }}
             onMouseOver={() => {
               setHover(true);
             }}
             onMouseOut={() => setHover(false)}
-          />
+            onFocus={() => setHover(true)}
+            onBlur={() => setHover(false)}
+          >
+            <PlusIcon3 className="text-[#22c55e] h-5 w-5" aria-hidden="true" />
+          </button>
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content
@@ -263,14 +268,15 @@ const SideBar = (props: SideBarProps) => {
           >
             <div className="grid grid-cols-3 gap-2">
               {sidebarButtons.map(({ name, icon: Icon, node }, index) => (
-                <div
+                <button
+                  type="button"
                   key={index}
                   onClick={() => handleButtonClick(node)}
-                  className="rounded-lg flex flex-col border hover:shadow-lg dark:hover:shadow-lg-light cursor-pointer p-4 items-center justify-center pb-2"
+                  className="rounded-lg flex flex-col border hover:shadow-lg dark:hover:shadow-lg-light cursor-pointer p-4 items-center justify-center pb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Icon className="h-8 w-8 text-primary" />
+                  <Icon className="h-8 w-8 text-primary" aria-hidden="true" />
                   {name}
-                </div>
+                </button>
               ))}
             </div>
           </Popover.Content>

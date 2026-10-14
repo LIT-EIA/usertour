@@ -123,12 +123,14 @@ const NPSPopoverContent = memo(
 
         <div className="flex flex-row gap-2">
           <Input
+            aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
             type="text"
             value={localData.lowLabel || ''}
             placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
             onChange={(e) => handleDataChange({ lowLabel: e.target.value })}
           />
           <Input
+            aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
             type="text"
             value={localData.highLabel || ''}
             placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}

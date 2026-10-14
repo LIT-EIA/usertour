@@ -181,7 +181,13 @@ export const AttributeCreateForm = ({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <button
+                                type="button"
+                                aria-label={t('common.moreInfo')}
+                                className="ml-1 inline-flex rounded-full cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <QuestionMarkCircledIcon aria-hidden="true" />
+                              </button>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -252,7 +258,13 @@ export const AttributeCreateForm = ({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <button
+                                type="button"
+                                aria-label={t('common.moreInfo')}
+                                className="ml-1 inline-flex rounded-full cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <QuestionMarkCircledIcon aria-hidden="true" />
+                              </button>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -312,7 +324,13 @@ export const AttributeCreateForm = ({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <button
+                                type="button"
+                                aria-label={t('common.moreInfo')}
+                                className="ml-1 inline-flex rounded-full cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <QuestionMarkCircledIcon aria-hidden="true" />
+                              </button>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -350,7 +368,13 @@ export const AttributeCreateForm = ({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <button
+                                type="button"
+                                aria-label={t('common.moreInfo')}
+                                className="ml-1 inline-flex rounded-full cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <QuestionMarkCircledIcon aria-hidden="true" />
+                              </button>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -389,7 +413,13 @@ export const AttributeCreateForm = ({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <button
+                              type="button"
+                              aria-label={t('common.moreInfo')}
+                              className="ml-1 inline-flex rounded-full cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <QuestionMarkCircledIcon aria-hidden="true" />
+                            </button>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             <p>

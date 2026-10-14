@@ -237,7 +237,9 @@ export const PopperEditor = (props: PopperEditorProps) => {
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
+            className="rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('contentBuilder.editor.placeholderMini')}
+            aria-label={t('contentBuilder.editor.contentAriaLabel')}
             spellCheck
             autoFocus={false}
             style={{ outline: 'none' }}
@@ -339,8 +341,9 @@ export const PopperEditorMini = (props: PopperEditorProps) => {
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
-            className="grow"
+            className="grow rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('contentBuilder.editor.placeholderMini')}
+            aria-label={t('contentBuilder.editor.contentAriaLabel')}
             spellCheck
             autoFocus={true}
             style={{ outline: 'none' }}

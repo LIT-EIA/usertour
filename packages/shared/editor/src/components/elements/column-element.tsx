@@ -252,6 +252,7 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
               <div className="flex gap-x-2">
                 {element.width?.type !== 'fill' && (
                   <Input
+                    aria-label={t('contentBuilder.editor.column.width')}
                     type="width"
                     value={element.width?.value}
                     placeholder={t('contentBuilder.editor.column.width')}
@@ -263,7 +264,10 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                   onValueChange={handleWidthTypeChange}
                   defaultValue={element.width?.type ?? 'percent'}
                 >
-                  <SelectTrigger className="shrink">
+                  <SelectTrigger
+                    aria-label={t('contentBuilder.editor.width.selectType')}
+                    className="shrink"
+                  >
                     <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                   </SelectTrigger>
                   <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -288,7 +292,7 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                 onValueChange={handleDistributeValueChange}
                 defaultValue={element.style.justifyContent}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t('contentBuilder.editor.column.distribute')}>
                   <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                 </SelectTrigger>
                 <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -334,8 +338,11 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                         variant="ghost"
                         size="icon"
                         onClick={handleDelete}
+                        aria-label={t('contentBuilder.editor.actionButtons.delete', {
+                          entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                        })}
                       >
-                        <DeleteIcon className="fill-red-700" />
+                        <DeleteIcon className="fill-red-700" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
@@ -356,8 +363,11 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                         variant="ghost"
                         size="icon"
                         onClick={handleAddLeftColumn}
+                        aria-label={t('contentBuilder.editor.actionButtons.insertLeft', {
+                          entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                        })}
                       >
-                        <InsertColumnLeftIcon className="fill-foreground" />
+                        <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
@@ -382,8 +392,11 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
                         variant="ghost"
                         size="icon"
                         onClick={handleAddRightColumn}
+                        aria-label={t('contentBuilder.editor.actionButtons.insertRight', {
+                          entity: t('contentBuilder.editor.actionButtons.entity.column'),
+                        })}
                       >
-                        <InsertColumnRightIcon className="fill-foreground" />
+                        <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">

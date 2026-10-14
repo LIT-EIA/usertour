@@ -107,8 +107,9 @@ export const LinkElement = (props: RenderElementProps) => {
                       variant="ghost"
                       size="icon"
                       onClick={handleDelete}
+                      aria-label={t('contentBuilder.editor.link.removeLink')}
                     >
-                      <DeleteIcon className="fill-red-500" />
+                      <DeleteIcon className="fill-red-500" aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">

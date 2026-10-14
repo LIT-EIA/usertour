@@ -173,14 +173,15 @@ export const ContentEditorSideBarPopper = (
         >
           <div className="grid grid-cols-3 gap-2">
             {filteredContentTypes.map(({ name, icon: Icon, element }, index) => (
-              <div
+              <button
+                type="button"
                 key={index}
                 onClick={() => handleClick(element)}
-                className="rounded-lg text-sm flex flex-col border hover:shadow-lg dark:hover:shadow-lg-light cursor-pointer p-4 items-center justify-center pb-2"
+                className="rounded-lg text-sm flex flex-col border hover:shadow-lg dark:hover:shadow-lg-light cursor-pointer p-4 items-center justify-center pb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Icon className="h-6 w-6 text-primary" />
+                <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
                 {name}
-              </div>
+              </button>
             ))}
           </div>
         </Popover.Content>
@@ -197,6 +198,7 @@ export interface ContentEditorSideBarProps {
 }
 
 export const ContentEditorSideBar = (props: ContentEditorSideBarProps) => {
+  const { t } = useTranslation();
   const { onClick, type, setIsOpen } = props;
   const [isHover, setHover] = useState(false);
   const [customStyle, setCustomStyle] = useState<CSSProperties>();
@@ -228,14 +230,20 @@ export const ContentEditorSideBar = (props: ContentEditorSideBarProps) => {
       <div style={{ ...customStyle }} />
       {customIconStyle && (
         <ContentEditorSideBarPopper onClick={handleButtonClick} onOpenChange={handleOnOpenChange}>
-          <PlusIcon3
-            className="text-[#22c55e] h-5 w-5"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.editor.addContentBlock')}
+            className="inline-flex rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ ...customIconStyle }}
             onMouseOver={() => {
               setHover(true);
             }}
             onMouseOut={() => setHover(false)}
-          />
+            onFocus={() => setHover(true)}
+            onBlur={() => setHover(false)}
+          >
+            <PlusIcon3 className="text-[#22c55e] h-5 w-5" aria-hidden="true" />
+          </button>
         </ContentEditorSideBarPopper>
       )}
     </>

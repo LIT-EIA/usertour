@@ -153,11 +153,13 @@ const OptionsEditor = memo(
         {options.map((option, index) => (
           <div key={index} className="flex gap-2">
             <Input
+              aria-label={t('contentBuilder.editor.multipleChoice.optionValue')}
               value={option.value}
               onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
               placeholder={t('contentBuilder.editor.multipleChoice.optionValue')}
             />
             <Input
+              aria-label={t('contentBuilder.editor.multipleChoice.optionLabel')}
               value={option.label}
               onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
               placeholder={t('contentBuilder.editor.multipleChoice.optionLabel')}
@@ -174,8 +176,9 @@ const OptionsEditor = memo(
                         options: options.filter((_, i) => i !== index),
                       })
                     }
+                    aria-label={t('contentBuilder.editor.multipleChoice.removeOption')}
                   >
-                    <DeleteIcon className="fill-red-500" />
+                    <DeleteIcon className="fill-red-500" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
@@ -223,6 +226,7 @@ const MultipleSelectionSettings = memo(
         </Label>
         <div className="flex flex-row gap-2 items-center">
           <Input
+            aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
             type="number"
             value={localData.lowRange}
             placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
@@ -230,6 +234,7 @@ const MultipleSelectionSettings = memo(
           />
           <p>-</p>
           <Input
+            aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
             type="number"
             value={localData.highRange}
             placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
@@ -510,11 +515,13 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                   {localData.options.map((option, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
+                        aria-label={t('contentBuilder.editor.multipleChoice.optionValue')}
                         value={option.value}
                         onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
                         placeholder={t('contentBuilder.editor.multipleChoice.optionValue')}
                       />
                       <Input
+                        aria-label={t('contentBuilder.editor.multipleChoice.optionLabel')}
                         value={option.label}
                         onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
                         placeholder={t('contentBuilder.editor.multipleChoice.optionLabel')}
@@ -531,8 +538,9 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                                   options: localData.options.filter((_, i) => i !== index),
                                 })
                               }
+                              aria-label={t('contentBuilder.editor.multipleChoice.removeOption')}
                             >
-                              <DeleteIcon className="fill-red-500" />
+                              <DeleteIcon className="fill-red-500" aria-hidden="true" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs">
@@ -564,6 +572,7 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                     </Label>
                     <div className="flex flex-row gap-2 items-center">
                       <Input
+                        aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
                         type="number"
                         value={localData.lowRange}
                         placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
@@ -571,6 +580,7 @@ export const ContentEditorMultipleChoice = (props: ContentEditorMultipleChoicePr
                       />
                       <p>-</p>
                       <Input
+                        aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
                         type="number"
                         value={localData.highRange}
                         placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
@@ -691,6 +701,7 @@ const OtherOptionSerialize = memo(
           {isEditing ? (
             <>
               <input
+                aria-label={t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
                 ref={otherInputRef}
                 placeholder={t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
                 value={otherValue}
@@ -708,8 +719,9 @@ const OtherOptionSerialize = memo(
                   setIsEditing(false);
                   onClick?.(element, otherValue);
                 }}
+                aria-label={t('common.done')}
               >
-                <CheckboxIcon2 />
+                <CheckboxIcon2 aria-hidden="true" />
               </Button>
             </>
           ) : (
@@ -831,6 +843,7 @@ export const ContentEditorMultipleChoiceSerialize = memo(
                   <div className="flex items-center grow gap-2 relative">
                     {isEditing ? (
                       <input
+                        aria-label={t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
                         ref={otherInputRef}
                         placeholder={t('contentBuilder.editor.multipleChoice.otherPlaceholderHint')}
                         value={otherValue}

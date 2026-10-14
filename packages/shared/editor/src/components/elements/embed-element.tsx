@@ -217,6 +217,7 @@ export const EmbedElement = (props: RenderElementProps) => {
               <Label htmlFor="button-text">{t('contentBuilder.editor.embed.url')}</Label>
               <div className="flex gap-x-2">
                 <Input
+                  aria-label={t('contentBuilder.editor.embed.urlPlaceholder')}
                   placeholder={t('contentBuilder.editor.embed.urlPlaceholder')}
                   value={element.url}
                   onChange={handleUrlChange}
@@ -235,6 +236,7 @@ export const EmbedElement = (props: RenderElementProps) => {
               <Label htmlFor="button-text">{t('contentBuilder.editor.embed.displayWidth')}</Label>
               <div className="flex gap-x-2">
                 <Input
+                  aria-label={t('contentBuilder.editor.embed.displayWidth')}
                   type="width"
                   value={element.width?.value}
                   placeholder={t('contentBuilder.editor.embed.displayWidth')}
@@ -245,7 +247,10 @@ export const EmbedElement = (props: RenderElementProps) => {
                   onValueChange={handleWidthTypeChange}
                   defaultValue={element.width?.type ?? 'percent'}
                 >
-                  <SelectTrigger className="shrink w-56">
+                  <SelectTrigger
+                    aria-label={t('contentBuilder.editor.width.selectType')}
+                    className="shrink w-56"
+                  >
                     <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                   </SelectTrigger>
                   <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -274,6 +279,7 @@ export const EmbedElement = (props: RenderElementProps) => {
                 <div className="flex gap-x-2">
                   <div className="flex flex-col justify-center">
                     <Input
+                      aria-label={t('contentBuilder.editor.common.left')}
                       value={element.margin?.left}
                       placeholder={t('contentBuilder.editor.common.left')}
                       onChange={(e) => {
@@ -284,6 +290,7 @@ export const EmbedElement = (props: RenderElementProps) => {
                   </div>
                   <div className="flex flex-col justify-center gap-y-2">
                     <Input
+                      aria-label={t('contentBuilder.editor.common.top')}
                       value={element.margin?.top}
                       onChange={(e) => {
                         handleMarginValueChange(e, 'top');
@@ -292,6 +299,7 @@ export const EmbedElement = (props: RenderElementProps) => {
                       className="bg-background flex-none w-20"
                     />
                     <Input
+                      aria-label={t('contentBuilder.editor.common.bottom')}
                       value={element.margin?.bottom}
                       onChange={(e) => {
                         handleMarginValueChange(e, 'bottom');
@@ -302,6 +310,7 @@ export const EmbedElement = (props: RenderElementProps) => {
                   </div>
                   <div className="flex flex-col justify-center">
                     <Input
+                      aria-label={t('contentBuilder.editor.common.right')}
                       value={element.margin?.right}
                       placeholder={t('contentBuilder.editor.common.right')}
                       onChange={(e) => {
@@ -319,18 +328,37 @@ export const EmbedElement = (props: RenderElementProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={handleDelete}
+                  aria-label={t('contentBuilder.editor.actionButtons.delete', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.embed'),
+                  })}
                 >
-                  <DeleteIcon className="fill-red-700" />
+                  <DeleteIcon className="fill-red-700" aria-hidden="true" />
                 </Button>
                 <div className="grow" />
-                <Button className="flex-none" variant="ghost" size="icon" onClick={handleAddLeft}>
-                  <InsertColumnLeftIcon className="fill-foreground" />
+                <Button
+                  className="flex-none"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleAddLeft}
+                  aria-label={t('contentBuilder.editor.actionButtons.insertLeft', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.embed'),
+                  })}
+                >
+                  <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
                 </Button>
                 <div className="flex-none mx-1 leading-10">
                   {t('contentBuilder.editor.embed.url')}
                 </div>
-                <Button className="flex-none" variant="ghost" size="icon" onClick={handleAddRight}>
-                  <InsertColumnRightIcon className="fill-foreground" />
+                <Button
+                  className="flex-none"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleAddRight}
+                  aria-label={t('contentBuilder.editor.actionButtons.insertRight', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.embed'),
+                  })}
+                >
+                  <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
                 </Button>
               </div>
             </div>

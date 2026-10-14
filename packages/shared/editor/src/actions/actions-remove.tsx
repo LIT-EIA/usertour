@@ -26,12 +26,14 @@ export const ContentActionsRemove = (props: ContentActionsRemoveProps) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <CloseIcon
-              width={18}
-              height={18}
-              className="absolute top-1 right-1 cursor-pointer"
+            <button
+              type="button"
+              aria-label={t('actions.actions.removeAction')}
+              className="absolute top-1 right-1 inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={handleOnClick}
-            />
+            >
+              <CloseIcon width={18} height={18} aria-hidden="true" />
+            </button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
             {t('actions.actions.removeAction')}

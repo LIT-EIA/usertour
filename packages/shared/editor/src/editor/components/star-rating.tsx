@@ -281,6 +281,7 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
                 </Label>
                 <div className="flex flex-row gap-2 items-center">
                   <Input
+                    aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
                     type="number"
                     value={localData.lowRange}
                     placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
@@ -289,6 +290,7 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
                   />
                   <p>-</p>
                   <Input
+                    aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
                     type="number"
                     value={localData.highRange}
                     placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
@@ -306,12 +308,14 @@ export const ContentEditorStarRating = memo<ContentEditorStarRatingProps>((props
                 </Label>
                 <div className="flex flex-row gap-2">
                   <Input
+                    aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
                     type="text"
                     value={localData.lowLabel}
                     placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
                     onChange={(e) => handleDataChange({ lowLabel: e.target.value })}
                   />
                   <Input
+                    aria-label={t('contentBuilder.editor.question.defaultPlaceholder')}
                     type="text"
                     value={localData.highLabel}
                     placeholder={t('contentBuilder.editor.question.defaultPlaceholder')}
