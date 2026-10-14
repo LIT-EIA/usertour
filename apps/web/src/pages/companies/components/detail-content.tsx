@@ -1,6 +1,7 @@
 import { useAttributeListContext } from '@/contexts/attribute-list-context';
+import { BackButton } from '@/components/atoms/back-button';
 import { useCompanyListContext } from '@/contexts/company-list-context';
-import { ArrowLeftIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { CompanyIcon, UserProfile, Delete2Icon, SpinnerIcon } from '@usertour-packages/icons';
 import { AttributeBizTypes, BizCompany, BizUser, BizUserOnCompany } from '@usertour/types';
 import { useEffect, useState, createContext, useContext, ReactNode, Fragment } from 'react';
@@ -285,8 +286,12 @@ const CompanyUserList = () => {
                   variant="outline"
                   size="sm"
                   className="flex items-center space-x-2"
+                  aria-label={t('companies.detail.tooltips.reload')}
                 >
-                  <ReloadIcon className={cn('w-4 h-4', loading && 'animate-spin')} />
+                  <ReloadIcon
+                    className={cn('w-4 h-4', loading && 'animate-spin')}
+                    aria-hidden="true"
+                  />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{t('companies.detail.tooltips.reload')}</TooltipContent>
@@ -523,15 +528,18 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
 
   return (
     <>
-      <div className="border-b bg-white flex-row md:flex w-full fixed justify-between items-center">
+      <div
+        data-page-header
+        className="border-b bg-white flex-row md:flex w-full fixed justify-between items-center"
+      >
         <div className="flex h-16 items-center px-4 w-full">
-          <ArrowLeftIcon
-            className="ml-4 h-6 w-8 cursor-pointer"
+          <BackButton
+            className="ml-4"
             onClick={() => {
               navigator(`/env/${environmentId}/companies`);
             }}
           />
-          <span>{t('companies.detail.title')}</span>
+          <h1>{t('companies.detail.title')}</h1>
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

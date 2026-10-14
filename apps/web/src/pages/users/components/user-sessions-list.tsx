@@ -172,8 +172,12 @@ export const UserSessionsList = () => {
                   variant="outline"
                   size="sm"
                   className="flex items-center space-x-2"
+                  aria-label={t('users.sessions.reload')}
                 >
-                  <ReloadIcon className={cn('w-4 h-4', loading && 'animate-spin')} />
+                  <ReloadIcon
+                    className={cn('w-4 h-4', loading && 'animate-spin')}
+                    aria-hidden="true"
+                  />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{t('users.sessions.reload')}</TooltipContent>

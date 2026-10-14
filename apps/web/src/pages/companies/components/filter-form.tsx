@@ -36,6 +36,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { TooltipIconButton } from '@usertour-packages/shared-components';
 
 interface CreateFormProps {
   isOpen: boolean;
@@ -142,7 +143,12 @@ export const UserSegmentFilterForm = (props: CreateFormProps) => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <TooltipIconButton>
+                              <QuestionMarkCircledIcon
+                                className="ml-1 cursor-help"
+                                aria-hidden="true"
+                              />
+                            </TooltipIconButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             <p>{t('companies.segments.form.segmentTypeTooltip')}</p>

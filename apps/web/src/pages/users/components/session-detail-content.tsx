@@ -1,6 +1,6 @@
+import { BackButton } from '@/components/atoms/back-button';
 import {
   ActivityLogIcon,
-  ArrowLeftIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   DotsHorizontalIcon,
@@ -171,15 +171,18 @@ const SessionDetailContentInner = ({
 
   return (
     <>
-      <div className="border-b bg-white flex-row md:flex w-full fixed justify-between items-center">
+      <div
+        data-page-header
+        className="border-b bg-white flex-row md:flex w-full fixed justify-between items-center"
+      >
         <div className="flex h-16 items-center px-4 w-full">
-          <ArrowLeftIcon
-            className="ml-4 h-6 w-8 cursor-pointer"
+          <BackButton
+            className="ml-4"
             onClick={() => {
               navigator(`/env/${environmentId}/users`);
             }}
           />
-          <span>{t('users.sessions.detail.title')}</span>
+          <h1>{t('users.sessions.detail.title')}</h1>
           <div className="ml-auto">
             <SessionActionDropdownMenu
               session={session}

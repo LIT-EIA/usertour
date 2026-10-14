@@ -54,8 +54,9 @@ function CompanyListContentInner({ environmentId }: { environmentId: string | un
                       onClick={() => {
                         setOpen(true);
                       }}
+                      aria-label={t('companies.segments.tooltips.editName')}
                     >
-                      <EditIcon className="w-4 h-4" />
+                      <EditIcon className="w-4 h-4" aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs bg-slate-700">
@@ -75,8 +76,8 @@ function CompanyListContentInner({ environmentId }: { environmentId: string | un
                 navigate(`/env/${environmentId}/companies`);
               }}
             >
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <DotsVerticalIcon className="h-4 w-4 " />
+              <Button variant="ghost" className="h-8 w-8 p-0" aria-label={t('common.moreActions')}>
+                <DotsVerticalIcon className="h-4 w-4 " aria-hidden="true" />
               </Button>
             </UserEditDropdownMenu>
           )}

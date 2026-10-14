@@ -1,7 +1,8 @@
 import { useAttributeListContext } from '@/contexts/attribute-list-context';
+import { BackButton } from '@/components/atoms/back-button';
 import { useUserListContext } from '@/contexts/user-list-context';
 import { useEventListContext } from '@/contexts/event-list-context';
-import { ArrowLeftIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { UserIcon, UserProfile, Delete2Icon } from '@usertour-packages/icons';
 import { AttributeBizTypes, BizUser } from '@usertour/types';
 import { useEffect, useState } from 'react';
@@ -127,15 +128,18 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
 
   return (
     <>
-      <div className="border-b bg-white flex-row md:flex w-full fixed justify-between items-center">
+      <div
+        data-page-header
+        className="border-b bg-white flex-row md:flex w-full fixed justify-between items-center"
+      >
         <div className="flex h-16 items-center px-4 w-full">
-          <ArrowLeftIcon
-            className="ml-4 h-6 w-8 cursor-pointer"
+          <BackButton
+            className="ml-4"
             onClick={() => {
               navigator(`/env/${environmentId}/users`);
             }}
           />
-          <span>{t('users.detail.title')}</span>
+          <h1>{t('users.detail.title')}</h1>
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
