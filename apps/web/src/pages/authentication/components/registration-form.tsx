@@ -201,7 +201,11 @@ const RegistrationFormFields = () => {
             <FormItem>
               <FormLabel>{t('auth.signUp.nameLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder={t('auth.signUp.namePlaceholder')} {...field} />
+                <Input
+                  placeholder={t('auth.signUp.namePlaceholder')}
+                  autoComplete="name"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -215,7 +219,11 @@ const RegistrationFormFields = () => {
               <FormItem>
                 <FormLabel>{t('auth.signUp.projectNameLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t('auth.signUp.projectNamePlaceholder')} {...field} />
+                  <Input
+                    placeholder={t('auth.signUp.projectNamePlaceholder')}
+                    autoComplete="organization"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -232,6 +240,7 @@ const RegistrationFormFields = () => {
                 <Input
                   placeholder={t('auth.signUp.passwordPlaceholder')}
                   type="password"
+                  autoComplete="new-password"
                   {...field}
                 />
               </FormControl>
@@ -249,6 +258,7 @@ const RegistrationFormFields = () => {
                 <Input
                   placeholder={t('auth.setupAdmin.confirmPasswordPlaceholder')}
                   type="password"
+                  autoComplete="new-password"
                   {...field}
                 />
               </FormControl>

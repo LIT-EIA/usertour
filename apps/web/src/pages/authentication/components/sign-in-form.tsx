@@ -6,7 +6,14 @@ import { Button } from '@usertour-packages/button';
 import { getErrorMessage } from '@usertour/helpers';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@usertour-packages/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@usertour-packages/form';
 import { GithubIcon, GoogleIcon, SpinnerIcon } from '@usertour-packages/icons';
 import { Input } from '@usertour-packages/input';
 import { useToast } from '@usertour-packages/use-toast';
@@ -260,8 +267,14 @@ const SignInForm = (props: SignInFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
+              <FormLabel>{t('auth.signIn.emailLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder={t('auth.signIn.emailPlaceholder')} type="email" {...field} />
+                <Input
+                  placeholder={t('auth.signIn.emailPlaceholder')}
+                  type="email"
+                  autoComplete="email"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -274,10 +287,12 @@ const SignInForm = (props: SignInFormProps) => {
           name="password"
           render={({ field }) => (
             <FormItem>
+              <FormLabel>{t('auth.signIn.passwordLabel')}</FormLabel>
               <FormControl>
                 <Input
                   placeholder={t('auth.signIn.passwordPlaceholder')}
                   type="password"
+                  autoComplete="current-password"
                   {...field}
                 />
               </FormControl>

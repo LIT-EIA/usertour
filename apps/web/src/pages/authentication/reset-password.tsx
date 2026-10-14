@@ -84,7 +84,7 @@ export const ResetPassword = () => {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
               <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl  font-semibold tracking-tight">
+                <CardTitle as="h1" className="text-2xl  font-semibold tracking-tight">
                   {t('auth.resetPassword.title')}
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
@@ -103,6 +103,7 @@ export const ResetPassword = () => {
                           <Input
                             placeholder={t('auth.resetPassword.emailPlaceholder')}
                             type="email"
+                            autoComplete="email"
                             {...field}
                           />
                         </FormControl>

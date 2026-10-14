@@ -84,7 +84,7 @@ export const SignUp = () => {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
               <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl  font-semibold tracking-tight">
+                <CardTitle as="h1" className="text-2xl  font-semibold tracking-tight">
                   {t('auth.magicLink.title')}
                 </CardTitle>
               </CardHeader>
@@ -100,6 +100,7 @@ export const SignUp = () => {
                           <Input
                             placeholder={t('auth.magicLink.emailPlaceholder')}
                             type="email"
+                            autoComplete="email"
                             {...field}
                           />
                         </FormControl>
