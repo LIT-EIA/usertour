@@ -20,6 +20,7 @@ import { AdminEnvSwitcher } from './admin-env-switcher';
 import { AdminMainNav } from './admin-main-nav';
 import { AdminUserNav } from './admin-user-nav';
 import { LanguageSwitcher } from './language-switcher';
+import { MAIN_CONTENT_ID, SkipLink } from './skip-link';
 import { UpgradePlanBanner } from './upgrade-plan-banner';
 
 export const AdminLayoutHeader = () => {
@@ -85,7 +86,11 @@ export const AdminLayoutContent = (props: AdminLayoutBodyProps) => {
     }
   }, [envId, environmentList, setEnvironment]);
 
-  return <div className="flex-col md:flex">{children}</div>;
+  return (
+    <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-col md:flex focus:outline-none">
+      {children}
+    </main>
+  );
 };
 
 AdminLayoutContent.displayName = 'AdminLayoutContent';
@@ -124,7 +129,13 @@ export const AdminLayoutNewContent = (props: AdminLayoutNewContentProps) => {
         <div className="flex justify-end items-center px-3 py-1 border-b flex-shrink-0 dark:border-border/60">
           <LanguageSwitcher />
         </div>
-        <div className="group/sidebar-wrapper flex flex-1 min-h-0 w-full">{children}</div>
+        <main
+          id={MAIN_CONTENT_ID}
+          tabIndex={-1}
+          className="group/sidebar-wrapper flex flex-1 min-h-0 w-full focus:outline-none"
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
@@ -202,7 +213,6 @@ export const AdminLayout = (props: AdminLayoutProps) => {
   const { children } = props;
   const { project, userInfo } = useAppContext();
   const { type } = useParams();
-  const { t } = useTranslation();
   const projectId = project?.id;
   useUserTracking(userInfo);
 
@@ -216,7 +226,6 @@ export const AdminLayout = (props: AdminLayoutProps) => {
         <AttributeListProvider projectId={projectId}>
           <SubscriptionProvider projectId={projectId}>
             <Helmet>
-              <title>{t('common.appTitle')}</title>
               <body
                 className={
                   type === 'builder'
@@ -225,6 +234,7 @@ export const AdminLayout = (props: AdminLayoutProps) => {
                 }
               />
             </Helmet>
+            <SkipLink />
             <UpgradePlanBanner projectId={projectId} />
             {children}
           </SubscriptionProvider>
