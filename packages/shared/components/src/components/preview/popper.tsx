@@ -22,14 +22,28 @@ export const PopperPreview = (props: CreatePopperContentProps) => {
   const handleOnClick = () => {
     onClick(type, data);
   };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleOnClick();
+    }
+  };
   const ref = useRef(null);
   // const serialize = data ? serializeData(JSON.parse(data)) : [];
   return (
+    // Card contains a live widget preview (with its own buttons), so it cannot be a <button>;
+    // expose button semantics + keyboard activation and make the preview inert (WCAG 2.1.1, 4.1.2)
+    // biome-ignore lint/a11y/useSemanticElements: preview content cannot be nested in a <button>
     <div
-      className="rounded-lg bg-background-700 w-52 h-52 flex flex-col cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={text}
+      className="rounded-lg bg-background-700 w-52 h-52 flex flex-col cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       onClick={handleOnClick}
+      onKeyDown={handleKeyDown}
     >
       <div
+        {...({ inert: '' } as React.HTMLAttributes<HTMLDivElement>)}
         className="flex-none justify-center flex flex-col items-center h-44	"
         // style={{ transform: `scale(${scale})` }}
       >

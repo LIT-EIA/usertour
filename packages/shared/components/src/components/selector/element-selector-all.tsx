@@ -22,6 +22,7 @@ import {
 import { Content, ElementSelectorPropsData } from '@usertour/types';
 import { ChangeEvent, useCallback, useRef, useState } from 'react';
 import { SelectorDialog } from './selector-dialog';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 export interface ElementSelectorProps {
   data: ElementSelectorPropsData;
@@ -134,7 +135,9 @@ export const ElementSelector = (props: ElementSelectorProps) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <QuestionMarkCircledIcon />
+                        <TooltipIconButton>
+                          <QuestionMarkCircledIcon aria-hidden="true" />
+                        </TooltipIconButton>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs bg-foreground text-background">
                         <p>
@@ -189,7 +192,9 @@ export const ElementSelector = (props: ElementSelectorProps) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <QuestionMarkCircledIcon />
+                        <TooltipIconButton>
+                          <QuestionMarkCircledIcon aria-hidden="true" />
+                        </TooltipIconButton>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs bg-foreground text-background">
                         <p>
@@ -217,7 +222,9 @@ export const ElementSelector = (props: ElementSelectorProps) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <QuestionMarkCircledIcon />
+                        <TooltipIconButton>
+                          <QuestionMarkCircledIcon aria-hidden="true" />
+                        </TooltipIconButton>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs bg-foreground text-background">
                         <p>Usertour will select an element containing the text you write here.</p>
@@ -236,7 +243,9 @@ export const ElementSelector = (props: ElementSelectorProps) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <QuestionMarkCircledIcon />
+                        <TooltipIconButton>
+                          <QuestionMarkCircledIcon aria-hidden="true" />
+                        </TooltipIconButton>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs bg-foreground text-background">
                         <p>
@@ -274,7 +283,9 @@ export const ElementSelector = (props: ElementSelectorProps) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <QuestionMarkCircledIcon />
+                        <TooltipIconButton>
+                          <QuestionMarkCircledIcon aria-hidden="true" />
+                        </TooltipIconButton>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs bg-foreground text-background">
                         <p>

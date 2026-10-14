@@ -9,6 +9,7 @@ import {
 import { ChangeEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RulesError, RulesErrorAnchor, RulesErrorContent } from './rules-error';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 export interface RulesCurrentTimeProps {
   defaultValue: number;
@@ -42,7 +43,7 @@ export const RulesWait = (props: RulesCurrentTimeProps) => {
           <RulesErrorAnchor asChild>
             <Input
               type="text"
-              name={'Border width'}
+              aria-label={t('conditions.standalone.wait.inputLabel')}
               onChange={handleInputOnChange}
               value={inputValue}
               className="rounded-lg text-sm w-16 h-6 "
@@ -56,7 +57,9 @@ export const RulesWait = (props: RulesCurrentTimeProps) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                <TooltipIconButton>
+                  <QuestionMarkCircledIcon className="ml-1 cursor-help" aria-hidden="true" />
+                </TooltipIconButton>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
                 {t('conditions.standalone.wait.tooltip')}

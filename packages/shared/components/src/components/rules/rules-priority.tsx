@@ -15,6 +15,7 @@ import {
 import { ContentPriority } from '@usertour/types';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 interface RulesPriorityProps {
   defaltValue: ContentPriority;
@@ -44,10 +45,13 @@ export const RulesPriority = (props: RulesPriorityProps) => {
     <div className="flex flex-row items-center space-x-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
-          <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit">
+          <button
+            type="button"
+            className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default"
+          >
             <span>{itemsMapping.find((item) => item.key === value)?.value}</span>
-            <ChevronDownIcon width={16} height={16} />
-          </div>
+            <ChevronDownIcon width={16} height={16} aria-hidden="true" />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           <DropdownMenuRadioGroup value={value} onValueChange={handleOnValueChange}>
@@ -62,7 +66,9 @@ export const RulesPriority = (props: RulesPriorityProps) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <QuestionMarkCircledIcon />
+            <TooltipIconButton>
+              <QuestionMarkCircledIcon aria-hidden="true" />
+            </TooltipIconButton>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
             <p>{t('conditions.standalone.priority.tooltip')}</p>

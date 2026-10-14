@@ -19,6 +19,7 @@ import { RulesRemove } from './rules-remove';
 import { RulesConditionIcon, RulesConditionRightContent } from './rules-template';
 import { useRulesContext } from './rules-context';
 import { RulesContainerWrapper, RulesPopoverTriggerWrapper } from './rules-wrapper';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 export interface RulesUrlPatternProps {
   index: number;
@@ -136,14 +137,15 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <PlusIcon
-                                width={16}
-                                height={16}
-                                className="cursor-pointer"
+                              <TooltipIconButton
+                                label={t('conditions.types.currentPage.addPattern')}
+                                className="cursor-pointer rounded-sm"
                                 onClick={() => {
                                   setIncludesValues([...includesValues, '']);
                                 }}
-                              />
+                              >
+                                <PlusIcon width={16} height={16} aria-hidden="true" />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-foreground text-background">
                               {t('conditions.types.currentPage.addPattern')}
@@ -159,6 +161,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                           <div className="grow">
                             <Input
                               type="text"
+                              aria-label={t('conditions.types.currentPage.urlMatches')}
                               className="py-3 px-4 ps-4 pe-8 block w-full  shadow-sm rounded-lg text-sm "
                               defaultValue={value}
                               placeholder={''}
@@ -172,14 +175,15 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Delete2Icon
-                                    width={16}
-                                    height={16}
+                                  <TooltipIconButton
+                                    label={t('conditions.types.currentPage.removePattern')}
+                                    className="cursor-pointer rounded-sm"
                                     onClick={() => {
                                       deleteIncludeItem(index);
                                     }}
-                                    className="cursor-pointer"
-                                  />
+                                  >
+                                    <Delete2Icon width={16} height={16} aria-hidden="true" />
+                                  </TooltipIconButton>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs bg-foreground text-background">
                                   {t('conditions.types.currentPage.removePattern')}
@@ -198,14 +202,15 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <PlusIcon
-                                width={16}
-                                height={16}
-                                className="cursor-pointer"
+                              <TooltipIconButton
+                                label={t('conditions.types.currentPage.addPattern')}
+                                className="cursor-pointer rounded-sm"
                                 onClick={() => {
                                   setExcludesValues([...excludesValues, '']);
                                 }}
-                              />
+                              >
+                                <PlusIcon width={16} height={16} aria-hidden="true" />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-foreground text-background">
                               {t('conditions.types.currentPage.addPattern')}
@@ -221,6 +226,7 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                           <div className="grow">
                             <Input
                               type="text"
+                              aria-label={t('conditions.types.currentPage.urlNotMatches')}
                               className="py-3 px-4 ps-4 pe-8 block w-full  shadow-sm rounded-lg text-sm "
                               defaultValue={value}
                               onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -234,14 +240,15 @@ export const RulesUrlPattern = (props: RulesUrlPatternProps) => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Delete2Icon
-                                    width={16}
-                                    height={16}
-                                    className="cursor-pointer"
+                                  <TooltipIconButton
+                                    label={t('conditions.types.currentPage.removePattern')}
+                                    className="cursor-pointer rounded-sm"
                                     onClick={() => {
                                       deleteExcludeItem(index);
                                     }}
-                                  />
+                                  >
+                                    <Delete2Icon width={16} height={16} aria-hidden="true" />
+                                  </TooltipIconButton>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs bg-foreground text-background">
                                   {t('conditions.types.currentPage.removePattern')}

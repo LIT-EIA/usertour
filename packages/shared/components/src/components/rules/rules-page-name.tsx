@@ -80,6 +80,7 @@ function useRulesPageNameContext(): RulesPageNameContextValue {
 }
 
 const RulesPageNameInput = () => {
+  const { t } = useTranslation();
   const { inputValue, setInputValue, conditionValue } = useRulesPageNameContext();
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -87,7 +88,13 @@ const RulesPageNameInput = () => {
   return (
     <>
       {conditionValue !== 'empty' && conditionValue !== 'any' && (
-        <Input type="text" value={inputValue} onChange={handleOnChange} placeholder={''} />
+        <Input
+          type="text"
+          aria-label={t('conditions.types.userAttr.valuePlaceholder')}
+          value={inputValue}
+          onChange={handleOnChange}
+          placeholder={''}
+        />
       )}
     </>
   );

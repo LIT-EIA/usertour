@@ -21,10 +21,12 @@ import {
   RulesFrequencyValueAtLeast,
   RulesFrequencyValueEvery,
 } from '@usertour/types';
+import { cn } from '@usertour/helpers';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { HelpTooltip } from '../common/help-tooltip';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 const buildItemsMapping = (t: TFunction) => [
   { key: Frequency.ONCE, value: t('conditions.standalone.frequency.units.once') },
@@ -39,6 +41,10 @@ const timesList = [
 ];
 const getUnitLabel = (t: TFunction, unit: FrequencyUnits) =>
   t(`conditions.standalone.frequency.unit.${unit}`);
+
+// Dropdown triggers must be real buttons so the aria-expanded/aria-haspopup set by Radix are valid
+const dropdownTriggerClassName =
+  'flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default';
 
 interface RulesFrequencyUnitsProps {
   frequency: Frequency;
@@ -60,35 +66,37 @@ const RulesFrequencyUnits = (props: RulesFrequencyUnitsProps) => {
   const [frequency, setFrequency] = useState<Frequency>(_frequency);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild disabled={disabled}>
-        <div className="flex flex-row items-center space-x-2">
-          <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit">
+    <div className="flex flex-row items-center space-x-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild disabled={disabled}>
+          <button type="button" className={cn(dropdownTriggerClassName, 'w-fit')}>
             <span>{itemsMapping.find((item) => item.key === frequency)?.value}</span>
-            <ChevronDownIcon width={16} height={16} />
-          </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <QuestionMarkCircledIcon />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs bg-foreground text-background">
-                {t('conditions.standalone.frequency.unitsTooltip', { contentType })}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <DropdownMenuRadioGroup value={frequency} onValueChange={handleValueChange}>
-          {itemsMapping.map((item) => (
-            <DropdownMenuRadioItem value={item.key} key={item.key}>
-              {item.value}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <ChevronDownIcon width={16} height={16} aria-hidden="true" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuRadioGroup value={frequency} onValueChange={handleValueChange}>
+            {itemsMapping.map((item) => (
+              <DropdownMenuRadioItem value={item.key} key={item.key}>
+                {item.value}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <TooltipIconButton>
+              <QuestionMarkCircledIcon aria-hidden="true" />
+            </TooltipIconButton>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs bg-foreground text-background">
+            {t('conditions.standalone.frequency.unitsTooltip', { contentType })}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
   );
 };
 
@@ -129,10 +137,10 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
-          <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer">
+          <button type="button" className={dropdownTriggerClassName}>
             <span>{getUnitLabel(t, data.unit)}</span>
-            <ChevronDownIcon width={16} height={16} />
-          </div>
+            <ChevronDownIcon width={16} height={16} aria-hidden="true" />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           <DropdownMenuRadioGroup value={data.unit} onValueChange={handleUnitOnChange}>
@@ -156,8 +164,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
       <div className="flex flex-row items-center space-x-2">
         <Input
           type="text"
-          id={'border-width'}
-          name={'Border width'}
+          aria-label={t('conditions.standalone.frequency.timesInputLabel')}
           onChange={handleTimesInputOnChange}
           value={data.times}
           disabled={disabled}
@@ -167,8 +174,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
         <span className="text-sm">{t('conditions.standalone.frequency.timesComma')} </span>
         <Input
           type="text"
-          id={'border-width'}
-          name={'Border width'}
+          aria-label={t('conditions.standalone.frequency.intervalInputLabel')}
           onChange={handleDurationInputOnChange}
           value={data.duration}
           disabled={disabled}
@@ -180,7 +186,9 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <QuestionMarkCircledIcon />
+              <TooltipIconButton>
+                <QuestionMarkCircledIcon aria-hidden="true" />
+              </TooltipIconButton>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs bg-foreground text-background">
               <p>
@@ -202,8 +210,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
       <span className="text-sm">{t('conditions.standalone.frequency.every')} </span>
       <Input
         type="text"
-        id={'border-width'}
-        name={'Border width'}
+        aria-label={t('conditions.standalone.frequency.intervalInputLabel')}
         onChange={handleDurationInputOnChange}
         value={data.duration}
         className="rounded-lg text-sm w-16 h-6 "
@@ -254,8 +261,7 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
       <span className="text-sm">{t('conditions.standalone.frequency.atLeast')}</span>
       <Input
         type="text"
-        id={'border-width'}
-        name={'Border width'}
+        aria-label={t('conditions.standalone.frequency.atLeastInputLabel', { contentType })}
         onChange={handleInputOnChange}
         disabled={disabled}
         value={data.duration}
@@ -264,10 +270,10 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
-          <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer">
+          <button type="button" className={dropdownTriggerClassName}>
             <span>{getUnitLabel(t, data.unit)}</span>
-            <ChevronDownIcon width={16} height={16} />
-          </div>
+            <ChevronDownIcon width={16} height={16} aria-hidden="true" />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           <DropdownMenuRadioGroup value={data.unit} onValueChange={handleUnitOnChange}>
@@ -285,7 +291,9 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <QuestionMarkCircledIcon />
+            <TooltipIconButton>
+              <QuestionMarkCircledIcon aria-hidden="true" />
+            </TooltipIconButton>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
             {t('conditions.standalone.frequency.atLeastTooltip', { contentType })}

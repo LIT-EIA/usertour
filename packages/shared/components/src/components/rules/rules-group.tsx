@@ -302,10 +302,13 @@ export const RulesGroup = (props: RulesGroupProps) => {
                 : rulesItems
             }
           >
-            <div className="h-8 text-primary items-center flex flex-row justify-center rounded-md text-sm font-medium cursor-pointer">
-              <PlusIcon width={16} height={16} />
+            <button
+              type="button"
+              className="h-8 text-primary items-center flex flex-row justify-center rounded-md text-sm font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default"
+            >
+              <PlusIcon width={16} height={16} aria-hidden="true" />
               {addButtonText}
-            </div>
+            </button>
           </RulesAddDropdown>
         </div>
       </div>

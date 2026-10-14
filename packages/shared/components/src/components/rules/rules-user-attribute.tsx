@@ -507,6 +507,7 @@ const RulesUserAttributeInput = () => {
         {listValues.map((value, index) => (
           <div key={index} className="relative">
             <Input
+              aria-label={t('conditions.types.userAttr.valuePlaceholder')}
               value={value || ''}
               onChange={(e) => handleListValueChange(index, e.target.value)}
               onFocus={() => setFocusedIndex(index)}
@@ -521,8 +522,9 @@ const RulesUserAttributeInput = () => {
                 variant={'ghost'}
                 className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0 w-8"
                 onClick={() => handleRemoveListValue(index)}
+                aria-label={t('common.remove')}
               >
-                <CloseIcon className="w-4 h-4" />
+                <CloseIcon className="w-4 h-4" aria-hidden="true" />
               </Button>
             )}
           </div>
@@ -542,6 +544,7 @@ const RulesUserAttributeInput = () => {
           localData?.logic !== 'after' && (
             <Input
               type={inputType}
+              aria-label={t('conditions.types.userAttr.valuePlaceholder')}
               value={localData?.value || ''}
               onChange={(e) => {
                 updateLocalData({ value: e.target.value });
@@ -554,6 +557,7 @@ const RulesUserAttributeInput = () => {
             <span>{t('conditions.operators.and')}</span>
             <Input
               type={inputType}
+              aria-label={t('conditions.types.userAttr.valuePlaceholder')}
               value={localData?.value2 || ''}
               onChange={(e) => {
                 updateLocalData({ value2: e.target.value });
