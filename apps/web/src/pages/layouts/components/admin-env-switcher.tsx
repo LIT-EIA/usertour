@@ -17,6 +17,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@usertour-packages/popover';
 import { cn } from '@usertour/helpers';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export const AdminEnvSwitcher = () => {
@@ -25,6 +26,7 @@ export const AdminEnvSwitcher = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setEnvironment, environment, isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   const { environmentList, refetch } = useEnvironmentListContext();
 
@@ -55,8 +57,13 @@ export const AdminEnvSwitcher = () => {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            aria-label={
+              environment?.name
+                ? `${t('nav.switchEnvironment')} (${environment.name})`
+                : t('nav.switchEnvironment')
+            }
             variant="ghost"
-            className="flex p-0 text-sm rounded-full shadow-none dark:bg-transparent ring-transparent hover:bg-transparent focus:ring-0"
+            className="flex p-0 text-sm rounded-full shadow-none dark:bg-transparent ring-transparent hover:bg-transparent focus:ring-0 focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Avatar className="h-8 w-8">
               {/* <AvatarImage src="https://avatar.vercel.sh/monsters.png" alt={environment?.name} /> */}

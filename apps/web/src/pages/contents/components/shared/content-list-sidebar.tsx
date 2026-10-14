@@ -21,20 +21,27 @@ export function ContentListSidebar() {
   const getItemClassName = (isActive: boolean) =>
     isActive ? 'bg-gray-200/40 dark:bg-secondary/60' : '';
 
+  const titles: Record<string, string> = {
+    flows: t('contents.list.flows.title'),
+    content: t('contents.list.flows.title'),
+    launchers: t('contents.list.launchers.title'),
+    checklists: t('contents.list.checklists.title'),
+    banners: t('contents.list.banners.title'),
+    nps: 'NPS',
+  };
+  const title = (contentType && titles[contentType]) || '';
+
   const handleStatusChange = (published: boolean) => () => {
     setQuery({ published });
     setSearchParams({});
   };
 
   return (
-    <AdminSidebarContainerTemplate>
+    <AdminSidebarContainerTemplate heading={title}>
       <AdminSidebarHeaderTemplate>
-        <h2 className="text-2xl font-semibold">
-          {contentType === 'flows' && t('contents.list.flows.title')}
-          {contentType === 'launchers' && t('contents.list.launchers.title')}
-          {contentType === 'checklists' && t('contents.list.checklists.title')}
-          {contentType === 'nps' && 'NPS'}
-        </h2>
+        <p aria-hidden="true" className="text-2xl font-semibold">
+          {title}
+        </p>
       </AdminSidebarHeaderTemplate>
       <AdminSidebarBodyTemplate>
         <AdminSidebarBodyTitleTemplate>

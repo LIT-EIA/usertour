@@ -4,10 +4,14 @@ import { Link } from 'react-router-dom';
 
 export const AdminSidebarContainerTemplate = (props: {
   children: React.ReactNode;
+  // Page heading, rendered as the page's only <h1>. Screen-reader-only because the panel is hidden below md;
+  // the visible title in AdminSidebarHeaderTemplate must be aria-hidden, not another <h1> (WCAG 1.3.1).
+  heading?: React.ReactNode;
 }) => {
-  const { children } = props;
+  const { children, heading } = props;
   return (
     <div className="group peer text-foreground">
+      {heading && <h1 className="sr-only">{heading}</h1>}
       <div className="duration-200 bg-white border-gray-200/60 dark:bg-card dark:border-border/40 dark:shadow-inner dark:shadow-black/20 inset-y-0 z-10 hidden h-full w-[15rem] transition-[left,right,width] ease-linear md:flex left-0 border-r ">
         <div className="flex h-full w-full flex-col bg-background/10 dark:bg-background/80 ">
           {children}
@@ -67,7 +71,7 @@ export const AdminSidebarFooterLinkItemTemplate = (props: {
   return (
     <Link
       to={href}
-      className="inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none focus:!ring-0 dark:foucs:!ring-0 focus:outline-none dark:shadow-none items-center !text-[13px] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start"
+      className="inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none dark:shadow-none items-center !text-[13px] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start"
       target={target}
     >
       {children}
@@ -109,7 +113,7 @@ export const AdminSidebarBodyItemTemplate = (props: ButtonProps) => {
     <Button
       {...buttonProps}
       className={cn(
-        'inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none focus:!ring-0 dark:foucs:!ring-0 focus:outline-none dark:shadow-none items-center !text-[13px] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start',
+        'inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-offset-0 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none dark:shadow-none items-center !text-[13px] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start',
         className,
       )}
     >

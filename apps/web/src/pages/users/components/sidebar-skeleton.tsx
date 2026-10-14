@@ -1,6 +1,5 @@
 import { Skeleton } from '@usertour-packages/skeleton';
 import {
-  AdminSidebarBodyItemTemplate,
   AdminSidebarBodyTemplate,
   AdminSidebarBodyTitleTemplate,
 } from '@/components/templates/admin-sidebar-template';
@@ -9,10 +8,11 @@ import { useTranslation } from 'react-i18next';
 // Skeleton for individual segment item
 export const UserSegmentItemSkeleton = () => {
   return (
-    <AdminSidebarBodyItemTemplate variant="ghost" className="cursor-default">
+    // Presentational placeholder: a <div>, not a <button>, so it is not an empty focusable control
+    <div aria-hidden="true" className="flex items-center w-full h-8 rounded-md px-2">
       <Skeleton className="h-4 w-4 mr-1" /> {/* Icon skeleton */}
       <Skeleton className="h-4 w-32" /> {/* Segment name skeleton */}
-    </AdminSidebarBodyItemTemplate>
+    </div>
   );
 };
 

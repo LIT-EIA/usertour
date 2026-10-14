@@ -83,8 +83,9 @@ export const AdminUserNav = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label={t('userNav.userMenu')}
           variant="ghost"
-          className="flex p-0 text-sm rounded-full shadow-none dark:bg-transparent ring-transparent hover:bg-transparent focus:ring-0"
+          className="flex p-0 text-sm rounded-full shadow-none dark:bg-transparent ring-transparent hover:bg-transparent focus:ring-0 focus-visible:ring-2 focus-visible:ring-ring"
         >
           <UserAvatar email={user?.email || ''} name={user?.name} size="md" />
         </Button>
