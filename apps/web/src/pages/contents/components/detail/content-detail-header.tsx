@@ -1,8 +1,9 @@
 import { useAppContext } from '@/contexts/app-context';
+import { BackButton } from '@/components/atoms/back-button';
 import { useContentDetailContext } from '@/contexts/content-detail-context';
 import { useContentVersionContext } from '@/contexts/content-version-context';
 import { useContentBuilder } from '@/hooks/useContentBuilder';
-import { ArrowLeftIcon, DotsHorizontalIcon, EnterIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon, EnterIcon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { EditIcon, PlaneIcon, SpinnerIcon } from '@usertour-packages/icons';
 import { buildConfig, cn, isPublishedInAllEnvironments } from '@usertour/helpers';
@@ -115,18 +116,33 @@ export const ContentDetailHeader = () => {
   return (
     <>
       <>
-        <div className="border-b bg-white flex-col md:flex w-full fixed z-10 top-0">
+        <div
+          data-page-header
+          className="border-b bg-white flex-col md:flex w-full fixed z-10 top-0"
+        >
           <div className="flex h-16 items-center px-4">
-            <ArrowLeftIcon className="ml-4 h-6 w-8 cursor-pointer flex-none" onClick={handleBack} />
-            <span className="flex-none max-w-40	truncate ...	">{content?.name}</span>
+            <BackButton className="ml-4" onClick={handleBack} />
+            <h1 className="flex-none max-w-40	truncate ...	">{content?.name}</h1>
             <ContentRenameForm
               data={content}
               onSubmit={() => {
                 refetch();
               }}
             >
-              <Button variant={'ghost'} className="hover:bg-transparent" disabled={isViewOnly}>
-                <EditIcon className="ml-1 cursor-pointer" width={16} height={16} />
+              <Button
+                variant={'ghost'}
+                className="hover:bg-transparent"
+                disabled={isViewOnly}
+                aria-label={t('contents.shared.rename.title', {
+                  type: t(`contents.types.${content.type}`),
+                })}
+              >
+                <EditIcon
+                  className="ml-1 cursor-pointer"
+                  width={16}
+                  height={16}
+                  aria-hidden="true"
+                />
               </Button>
             </ContentRenameForm>
             <MainNav className="mx-6" />

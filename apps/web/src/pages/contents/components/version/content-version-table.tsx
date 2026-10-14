@@ -60,7 +60,9 @@ export const ContentVersionTable = () => {
           <TableHead>{t('contents.versions.columns.version')}</TableHead>
           <TableHead>{t('contents.versions.columns.createdAt')}</TableHead>
           <TableHead>{t('contents.versions.columns.updatedAt')}</TableHead>
-          <TableHead />
+          <TableHead>
+            <span className="sr-only">{t('common.actionsColumn')}</span>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

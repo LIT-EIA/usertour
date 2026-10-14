@@ -8,6 +8,7 @@ import {
   RulesIfCompleted,
   RulesPriority,
   RulesWait,
+  TooltipIconButton,
 } from '@usertour-packages/shared-components';
 import { useContentListQuery } from '@usertour-packages/shared-hooks';
 import { deepClone, getAuthToken } from '@usertour/helpers';
@@ -133,7 +134,9 @@ export const ContentDetailAutoStartRules = (props: ContentDetailAutoStartRulesPr
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                <TooltipIconButton>
+                  <QuestionMarkCircledIcon className="ml-1 cursor-help" aria-hidden="true" />
+                </TooltipIconButton>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm" style={{ whiteSpace: 'pre-line' }}>
                 {type === ContentDetailAutoStartRulesType.START_RULES &&

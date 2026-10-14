@@ -16,8 +16,13 @@ import { cn } from '@usertour/helpers';
 import { forwardRef, useEffect, useState } from 'react';
 import { useMeasure } from 'react-use';
 
+// Previews render real end-user widgets (with their own buttons). They are pictures of the content,
+// so keep them out of the tab order and accessibility tree. React 18 has no typed `inert` prop.
+const inertProps = { inert: '' } as React.HTMLAttributes<HTMLDivElement>;
+
 const EmptyContentPreview = () => {
-  return <img src="/images/empty.png" className="h-[160px]" />;
+  // Decorative placeholder: the card title already identifies the content
+  return <img src="/images/empty.png" alt="" className="h-[160px]" />;
 };
 
 interface ScaledPreviewContainerProps {
@@ -62,6 +67,7 @@ const ScaledPreviewContainer = forwardRef<HTMLDivElement, ScaledPreviewContainer
     return (
       <div
         ref={ref}
+        {...inertProps}
         style={{
           scale: `${scale}`,
         }}
@@ -162,6 +168,7 @@ const ChecklistPreview = (props: {
 };
 
 export {
+  inertProps,
   FlowPreview,
   LauncherPreview,
   ChecklistPreview,

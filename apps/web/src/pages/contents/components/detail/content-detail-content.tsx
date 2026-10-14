@@ -27,6 +27,7 @@ import { ContentEditForm } from '../shared/content-edit-form';
 import {
   ChecklistPreview,
   FlowPreview,
+  inertProps,
   LauncherPreview,
   ScaledPreviewContainer,
 } from '../shared/content-preview';
@@ -132,8 +133,16 @@ const ContentDetailContentStep = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant={'ghost'} size={'icon'} onClick={onEdit} disabled={disabled}>
-                    <EditIcon className="w-4 h-4 cursor-pointer" />
+                  <Button
+                    variant={'ghost'}
+                    size={'icon'}
+                    onClick={onEdit}
+                    disabled={disabled}
+                    aria-label={t('contents.overview.previewCard.editAriaLabel', {
+                      name: `${index + 1}. ${currentStep.name}`,
+                    })}
+                  >
+                    <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
@@ -220,7 +229,7 @@ const LauncherContentPreview = ({
     <>
       <GoogleFontCss settings={currentTheme.settings} />
       <div className="flex flex-row p-4 px-8 shadow bg-white rounded-lg space-x-8">
-        <div className="w-40 h-32 flex  flex-none items-center justify-center">
+        <div className="w-40 h-32 flex  flex-none items-center justify-center" {...inertProps}>
           <LauncherPreview currentTheme={currentTheme} currentVersion={currentVersion} />
         </div>
         <div className="grow flex flex-col relative space-y-1 min-w-80	">
@@ -228,8 +237,16 @@ const LauncherContentPreview = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant={'ghost'} size={'icon'} onClick={onEdit} disabled={disabled}>
-                    <EditIcon className="w-4 h-4 cursor-pointer" />
+                  <Button
+                    variant={'ghost'}
+                    size={'icon'}
+                    onClick={onEdit}
+                    disabled={disabled}
+                    aria-label={t('contents.overview.previewCard.editAriaLabel', {
+                      name: content.name,
+                    })}
+                  >
+                    <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
@@ -334,8 +351,16 @@ const ChecklistContentPreview = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant={'ghost'} size={'icon'} onClick={onEdit} disabled={disabled}>
-                    <EditIcon className="w-4 h-4 cursor-pointer" />
+                  <Button
+                    variant={'ghost'}
+                    size={'icon'}
+                    onClick={onEdit}
+                    disabled={disabled}
+                    aria-label={t('contents.overview.previewCard.editAriaLabel', {
+                      name: content.name,
+                    })}
+                  >
+                    <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
@@ -396,6 +421,7 @@ export const ContentDetailContent = () => {
   });
   const { openBuilder } = useContentBuilder();
   const { isViewOnly } = useAppContext();
+  const { t } = useTranslation();
 
   if (!version || !content || !contentType) return null;
 
@@ -436,8 +462,9 @@ export const ContentDetailContent = () => {
             onClick={() => openBuilder(content, contentType)}
             className="flex py-8 shadow bg-white rounded-lg justify-center cursor-pointer w-auto h-auto hover:bg-white "
             disabled={isViewOnly}
+            aria-label={t('contents.overview.addStep')}
           >
-            <AddIcon width={40} height={40} className="text-primary" />
+            <AddIcon width={40} height={40} className="text-primary" aria-hidden="true" />
           </Button>
         )}
         <ContentEditForm

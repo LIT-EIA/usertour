@@ -121,8 +121,12 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={'outline'} className="rounded-l-none border-l-0	">
-              <ChevronDownIcon className="h-4 w-4 text-foreground" />
+            <Button
+              variant={'outline'}
+              className="rounded-l-none border-l-0	"
+              aria-label={t('contents.detail.moreBuilderOptions')}
+            >
+              <ChevronDownIcon className="h-4 w-4 text-foreground" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[360px]" forceMount>

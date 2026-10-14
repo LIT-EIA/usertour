@@ -21,7 +21,7 @@ import { CircleIcon } from '@usertour-packages/icons';
 import { Content, ContentDataType, ContentVersion, Step, Theme } from '@usertour/types';
 import { formatRelativeTime } from '@/utils/common';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ContentEditDropdownMenu } from '../shared/content-edit-dropmenu';
 import {
   ChecklistPreview,
@@ -36,7 +36,7 @@ import { useAppContext } from '@/contexts/app-context';
 import { useTranslation } from 'react-i18next';
 
 const ContentPreviewFooter = ({ content }: { content: Content }) => {
-  const { refetch } = useContentListContext();
+  const { refetch, contentType } = useContentListContext();
   const { isViewOnly, environment } = useAppContext();
   const { t } = useTranslation();
 
@@ -49,9 +49,14 @@ const ContentPreviewFooter = ({ content }: { content: Content }) => {
   return (
     <div className="grow rounded-b-md py-2.5 px-5 flex flex-col  ">
       <div className="flex-none flex flex-row justify-between items-center space-x-4">
-        <span className="grow text-base font-medium text-gray-900 dark:text-white truncate ...	">
+        {/* Real link so the card can be opened with the keyboard (the card itself is a clickable div) */}
+        <Link
+          to={`/env/${environment?.id}/${contentType}/${content.id}/detail`}
+          onClick={(e) => e.stopPropagation()}
+          className="grow text-base font-medium text-gray-900 dark:text-white truncate ...	rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           {content.name}{' '}
-        </span>
+        </Link>
 
         <ContentEditDropdownMenu
           content={content}
@@ -60,7 +65,13 @@ const ContentPreviewFooter = ({ content }: { content: Content }) => {
           }}
           disabled={isViewOnly}
         >
-          <DotsHorizontalIcon className="h-4 w-4 flex-none" />
+          <button
+            type="button"
+            aria-label={t('contents.listView.card.actionsMenu', { name: content.name })}
+            className="flex-none -m-1 p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <DotsHorizontalIcon className="h-4 w-4" aria-hidden="true" />
+          </button>
         </ContentEditDropdownMenu>
       </div>
       <div className="grow flex flex-row text-sm items-center space-x-1 text-xs">

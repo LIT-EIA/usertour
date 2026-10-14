@@ -1,10 +1,11 @@
+import { BackButton } from '@/components/atoms/back-button';
 import {
   ContentLocalizationListProvider,
   useContentLocalizationListContext,
 } from '@/contexts/content-localization-list-context';
 import { useContentVersionContext } from '@/contexts/content-version-context';
 import { useLocalizationListContext } from '@/contexts/localization-list-context';
-import { ArrowLeftIcon, ArrowRightIcon, KeyboardIcon, ResetIcon } from '@radix-ui/react-icons';
+import { ArrowRightIcon, KeyboardIcon, ResetIcon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import { Badge } from '@usertour-packages/badge';
 import { useAws } from '@usertour-packages/builder/src/hooks/use-aws';
@@ -26,7 +27,7 @@ import type { ContentVersion, Localization, Step } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import Upload from 'rc-upload';
 import { UploadRequestOption } from 'rc-upload/lib/interface';
-import { ChangeEvent, ReactNode, useState } from 'react';
+import { ChangeEvent, ReactNode, useState, useId } from 'react';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -159,6 +160,7 @@ const ContentLocalizationImage = (props: ContentLocalizationImageProps) => {
                 >
                   <div className="flex flex-row space-x-2">
                     <Input
+                      aria-label={t('contents.localization.image.enterUrl')}
                       placeholder={t('contents.localization.image.enterUrl')}
                       value={remoteImageUrl}
                       onChange={(e) => {
@@ -219,6 +221,7 @@ const ContentLocalizationEmbed = (props: ContentLocalizationEmbedProps) => {
       </ContentLocalizationTemplateB1>
       <ContentLocalizationTemplateB2 name={currentLocalization?.name}>
         <Input
+          aria-label={`${t('contents.localization.element.video')} - ${currentLocalization?.name ?? ''}`}
           value={embedUrl}
           onChange={(e) => {
             handleEmbedUrlChange(e.target.value);
@@ -250,6 +253,7 @@ const ContentLocalizationButton = (props: ContentLocalizationButtonProps) => {
       </ContentLocalizationTemplateB1>
       <ContentLocalizationTemplateB2 name={currentLocalization?.name}>
         <Input
+          aria-label={`${t('contents.localization.element.button')} - ${currentLocalization?.name ?? ''}`}
           value={text}
           onChange={(e) => {
             handleTextChange(e.target.value);
@@ -268,14 +272,17 @@ const ContentLocalizationLeaf = (props: ContentLocalizationLeafProps) => {
   const { text } = props;
 
   const [inputValue, setInputValue] = useState<string>('');
+  const sourceId = useId();
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
   return (
     <>
       <div className="flex flex-col space-y-1 grow">
-        <div className="pl-3 bg-secondary p-2 rounded-md">{text}</div>
-        <Input value={inputValue} onChange={handleOnChange} />
+        <div id={sourceId} className="pl-3 bg-secondary p-2 rounded-md">
+          {text}
+        </div>
+        <Input value={inputValue} onChange={handleOnChange} aria-labelledby={sourceId} />
       </div>
     </>
   );
@@ -503,13 +510,13 @@ const ContentLocalizationDetailMain = (props: ContentLocalizationDetailMainProps
     <div className="flex p-14 mt-12 space-x-8 justify-center ">
       <div className="flex flex-col space-y-6 grow  max-w-screen-xl mx-auto">
         <div className="flex flex-row space-x-1 items-center">
-          <ArrowLeftIcon
-            className="h-4 w-6 cursor-pointer flex-none"
+          <BackButton
+            iconClassName="h-4 w-6"
             onClick={() => {
               navigator(location.pathname.replace(`/${localization.locale}`, ''));
             }}
           />
-          <h3 className="text-lg font-medium">{localization.name}</h3>
+          <h2 className="text-lg font-medium">{localization.name}</h2>
           {!contentLocalization.enabled && (
             <Badge variant={'destructive'}>{t('contents.localization.status.disabled')}</Badge>
           )}

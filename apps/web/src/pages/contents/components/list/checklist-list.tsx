@@ -30,9 +30,9 @@ export const ChecklistListContent = () => {
       <div className="flex justify-between">
         <>
           <div className="flex flex-col space-y-1 ">
-            <h3 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight">
               {t('contents.list.checklists.title')}
-            </h3>
+            </h2>
             <div className="flex flex-row space-x-1">
               <p className="text-sm text-muted-foreground">{t('contents.list.checklists.text')}</p>
             </div>
