@@ -11,7 +11,8 @@
     --background-900: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* WCAG AA contrast: >=4.5:1 on --muted and white (was 46.9%) */
+    --muted-foreground: 215.4 16.3% 43%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222.9 84% 4.9%;
@@ -20,7 +21,8 @@
     --card-foreground: 222.9 84% 4.9%;
 
     --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    /* WCAG 1.4.11: >=3:1 for form field borders and switch tracks (was 214.3 31.8% 91.4%) */
+    --input: 215 16.3% 58%;
 
     --primary: 250 100% 60%;
     --primary-foreground: 210 40% 98%;
@@ -34,9 +36,10 @@
     --accent-foreground: 222.2 47.4% 11.2%;
     --accent-hover: 229.7 93.5% 81.8%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* WCAG AA contrast: white text >=4.5:1 (was 0 84.2% 60.2%) */
+    --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 210 40% 98%;
-    --destructive-hover: 0 84.2% 60.2%;
+    --destructive-hover: 0 72.2% 50.6%;
 
     --editor: 210 40% 96.1%;
     --editor-foreground: 240 10% 3.9%;
@@ -44,7 +47,8 @@
     --editor-toolbar: 205.7 46.7% 97.1%;
     --editor-border: 203.3 39.1% 91%;
 
-    --ring: 215 20.2% 65.1%;
+    /* WCAG 1.4.11: focus ring >=3:1 against white (was 215 20.2% 65.1%) */
+    --ring: 215.4 16.3% 46.9%;
 
     --radius: 0.5rem;
 
@@ -114,6 +118,18 @@
 }
 
 @layer base {
+  /* WCAG 2.4.11 Focus Not Obscured: keep elements scrolled into view on focus clear of the
+     fixed 4rem detail-page headers */
+  html {
+    scroll-padding-top: 5rem;
+  }
+
+  /* Skip link landing spot: a non-interactive block focused only to move the Tab start point;
+     like <main>, it needs no outline */
+  [data-skip-target]:focus {
+    outline: none;
+  }
+
   * {
     @apply border-border;
   }

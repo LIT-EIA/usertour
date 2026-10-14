@@ -7,9 +7,17 @@ interface UserAvatarProps {
   name?: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /** Set when the user's name is already shown next to the avatar, to avoid repeating it */
+  decorative?: boolean;
 }
 
-export const UserAvatar = ({ email, name, size = 'md', className }: UserAvatarProps) => {
+export const UserAvatar = ({
+  email,
+  name,
+  size = 'md',
+  className,
+  decorative = false,
+}: UserAvatarProps) => {
   const avatarUrl = email ? getGravatarUrl(email) : '';
 
   // Get initials from name for fallback
@@ -30,8 +38,8 @@ export const UserAvatar = ({ email, name, size = 'md', className }: UserAvatarPr
   };
 
   return (
-    <Avatar className={cn(sizeClasses[size], className)}>
-      <AvatarImage src={avatarUrl} alt={name || 'User avatar'} />
+    <Avatar className={cn(sizeClasses[size], className)} aria-hidden={decorative || undefined}>
+      <AvatarImage src={avatarUrl} alt={decorative ? '' : name || 'User avatar'} />
       <AvatarFallback className={cn(getRandomColor(), 'text-background')}>
         {getInitials(name)}
       </AvatarFallback>

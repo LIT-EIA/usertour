@@ -11,4 +11,5 @@ export { LoadingContainer } from './components/common/loading';
 export { LocateSelect } from './components/common/locate-select';
 export type { LocateItem } from './components/common/locate-select';
 export { HelpTooltip } from './components/common/help-tooltip';
+export { TooltipIconButton } from './components/common/tooltip-icon-button';
 export { defaultRulesItems } from './components/rules';
