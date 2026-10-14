@@ -430,6 +430,7 @@ const translations = {
           'Attributs inclus dans le schéma de données de cet événement. Par ex. « plan_name », « price ».',
         attributesPlaceholder: 'Sélectionner un attribut',
         addAttribute: 'Ajouter un attribut',
+        removeAttribute: 'Retirer {{name}}',
         descriptionTooltip:
           'Ajoutez ici toute information supplémentaire pour votre propre référence.',
       },
@@ -1327,6 +1328,16 @@ const translations = {
   },
   common: {
     appTitle: 'Usertour',
+    skipToContent: 'Passer au contenu principal',
+    moreActions: "Plus d'actions",
+    back: 'Retour',
+    moreInfo: "Plus d'information",
+    actionsColumn: 'Actions',
+    copyToClipboard: 'Copier dans le presse-papiers',
+    remove: 'Retirer',
+    done: 'Terminé',
+    increase: 'Augmenter',
+    decrease: 'Diminuer',
     selectPlaceholder: 'Sélectionner…',
     table: {
       selectAll: 'Tout sélectionner',
@@ -1339,6 +1350,7 @@ const translations = {
       recentlyUsed: 'Récemment utilisées',
       done: 'Terminé',
       colorPicker: 'Sélecteur de couleur',
+      hexLabel: 'Valeur de la couleur (hexadécimale)',
       colorPalette: 'Palette de couleurs',
       auto: 'Auto',
       tailwindSwatchTooltip: 'Tailwind {{name}} {{level}} : {{color}}',
@@ -1395,6 +1407,7 @@ const translations = {
     },
   },
   userNav: {
+    userMenu: 'Menu utilisateur',
     systemAdmin: 'Administrateur système',
     myProjects: 'Mes projets',
     currentProject: 'PROJET ACTUEL',
@@ -1732,6 +1745,7 @@ const translations = {
       autosaved: 'Enregistré automatiquement il y a {{when}}',
       saving: 'Enregistrement en cours…',
       editInBuilder: "Modifier dans l'éditeur",
+      moreBuilderOptions: "Autres façons d'ouvrir l'éditeur",
       editInExtensionBuilder: "Modifier dans l'éditeur d'extension",
       editInWebBuilder: "Modifier dans l'éditeur Web",
       publish: 'Publier',
@@ -2027,6 +2041,7 @@ const translations = {
         updatedAt: 'Mis à jour il y a {{time}}',
         statusLabel: 'Statut :',
         createdAtRelative: 'Créé il y a {{time}}',
+        actionsMenu: 'Actions pour {{name}}',
       },
       loadingMore: 'Chargement en cours…',
       displayTitle: { published: 'Publié : {{title}}', draft: 'Brouillon : {{title}}' },
@@ -2138,7 +2153,12 @@ const translations = {
       statusUntranslated: 'Non traduit',
     },
     overview: {
-      previewCard: { edit: 'Modifier', lastEdited: 'Modifié la dernière fois le {{date}}' },
+      previewCard: {
+        edit: 'Modifier',
+        editAriaLabel: 'Modifier {{name}}',
+        lastEdited: 'Modifié la dernière fois le {{date}}',
+      },
+      addStep: 'Ajouter une étape',
       step: {
         width: 'Largeur : {{value}}',
         height: 'Hauteur : {{value}}',
@@ -2671,6 +2691,8 @@ const translations = {
       addVariation: 'Ajouter une variation',
       variationMenu: 'Menu de variation',
       dragToReorder: 'Glisser pour réordonner',
+      moveUp: 'Déplacer {{name}} vers le haut',
+      moveDown: 'Déplacer {{name}} vers le bas',
       resizeSidebar: 'Redimensionner le panneau latéral',
     },
     dialogs: {
@@ -3107,6 +3129,8 @@ const translations = {
           "Ajoutez des étiquettes sous chaque option pour en clarifier le sens — par exemple, « Mauvais » sous l'option de gauche et « Bon » sous celle de droite.",
         defaultLabel: 'Par défaut',
         scaleRange: "Plage de l'échelle",
+        scaleRangeLow: 'Valeur la plus basse',
+        scaleRangeHigh: 'Valeur la plus haute',
         nameRequired: 'Le nom de la question est requis',
         invalidRange:
           'Plage invalide : la valeur basse doit être ≤ à la valeur haute, et les deux doivent être entre 0 et 100',
@@ -3267,6 +3291,8 @@ const translations = {
       },
       placeholder: 'Écrivez, tapez « / » pour les commandes…',
       placeholderMini: 'Écrivez le texte ici…',
+      contentAriaLabel: 'Éditeur de contenu',
+      addContentBlock: 'Ajouter un bloc de contenu',
       toolbar: {
         formattingOptions: 'Options de mise en forme',
         textFormatting: 'Mise en forme du texte',
@@ -3495,6 +3521,9 @@ const translations = {
         navigateToPage: "Accédez à la page où l'élément apparaît",
         navigateToAnotherPage: 'Accéder à une autre page',
         selectElementHere: "Sélectionner l'élément ici",
+        pinTop: 'Déplacer cette barre en haut',
+        pinBottom: 'Déplacer cette barre en bas',
+        cancel: "Annuler la sélection d'élément",
       },
       cssSelector: 'Sélecteur CSS',
       cssSelectorTooltip:
@@ -4115,6 +4144,7 @@ const translations = {
         before: 'Attendre',
         suffix: 'secondes',
         afterLabel: 'seconde avant de démarrer',
+        inputLabel: "Temps d'attente en secondes avant de démarrer",
         tooltip:
           "Délai entre le moment où les conditions correspondent et le déclenchement. Les conditions doivent continuer de correspondre pendant toute l'attente.",
         error: "Le temps d'attente ne doit pas dépasser {{max}} secondes ({{minutes}} minutes)",
@@ -4137,6 +4167,9 @@ const translations = {
         atLeast: 'Au moins',
         afterAny: 'après tout autre contenu ({{contentType}})',
         atLeastTwo: 'Doit être au moins 2',
+        timesInputLabel: 'Nombre maximal de fois par utilisateur',
+        intervalInputLabel: 'Délai minimal entre les démarrages',
+        atLeastInputLabel: 'Délai minimal après tout autre contenu ({{contentType}})',
         unitsTooltip:
           'Choisissez si ce contenu ({{contentType}}) peut démarrer automatiquement une fois, plusieurs fois, ou sans limite pour le même utilisateur.',
         multipleTooltip:
@@ -4300,6 +4333,22 @@ const translations = {
       active: 'Active',
     },
   },
+  pageTitles: {
+    template: '{{page}} - Usertour',
+    signIn: 'Connexion',
+    signUp: 'Inscription',
+    resetPassword: 'Réinitialiser le mot de passe',
+    invite: "Accepter l'invitation",
+    registration: "Terminer l'inscription",
+    passwordReset: 'Définir un nouveau mot de passe',
+    overview: "Vue d'ensemble",
+    builder: 'Éditeur',
+    localization: 'Localisation',
+    userDetail: "Détails de l'utilisateur",
+    sessionDetail: 'Détails de la session',
+    companyDetail: "Détails de l'entreprise",
+    themeDetail: 'Détails du thème',
+  },
   pagination: {
     rowsPerPage: 'Lignes par page',
     pageOf: 'Page {{current}} sur {{total}}',
@@ -4316,6 +4365,8 @@ const translations = {
     documentation: 'Documentation',
     installToPublish: 'Installer pour publier',
     logoAlt: 'Logo Usertour',
+    mainNavigation: 'Navigation principale',
+    switchEnvironment: 'Changer d’environnement',
   },
   attributes: {
     typeChip: {

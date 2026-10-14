@@ -424,6 +424,7 @@ const translations = {
           'Attributes included in this event\'s payload schema. e.g. "plan_name", "price".',
         attributesPlaceholder: 'Select an attribute',
         addAttribute: 'Add attribute',
+        removeAttribute: 'Remove {{name}}',
         descriptionTooltip: 'Put any additional information for your own reference here.',
       },
       empty: 'No events yet.',
@@ -1289,6 +1290,16 @@ const translations = {
   },
   common: {
     appTitle: 'Usertour App',
+    skipToContent: 'Skip to main content',
+    moreActions: 'More actions',
+    back: 'Back',
+    moreInfo: 'More information',
+    actionsColumn: 'Actions',
+    copyToClipboard: 'Copy to clipboard',
+    remove: 'Remove',
+    done: 'Done',
+    increase: 'Increase',
+    decrease: 'Decrease',
     selectPlaceholder: 'Select…',
     table: {
       selectAll: 'Select all',
@@ -1301,6 +1312,7 @@ const translations = {
       recentlyUsed: 'Recently used',
       done: 'Done',
       colorPicker: 'Color picker',
+      hexLabel: 'Color value (hex)',
       colorPalette: 'Color palette',
       auto: 'Auto',
       tailwindSwatchTooltip: 'Tailwind {{name}} {{level}}: {{color}}',
@@ -1357,6 +1369,7 @@ const translations = {
     },
   },
   userNav: {
+    userMenu: 'User menu',
     systemAdmin: 'System Admin',
     myProjects: 'My Projects',
     currentProject: 'CURRENT PROJECT',
@@ -1688,6 +1701,7 @@ const translations = {
       autosaved: 'Autosaved {{when}} ago',
       saving: 'Saving…',
       editInBuilder: 'Edit In Builder',
+      moreBuilderOptions: 'More ways to open the builder',
       editInExtensionBuilder: 'Edit In Extension Builder',
       editInWebBuilder: 'Edit In Web Builder',
       publish: 'Publish',
@@ -1977,6 +1991,7 @@ const translations = {
         updatedAt: 'Updated {{time}} ago',
         statusLabel: 'Status:',
         createdAtRelative: 'Created {{time}} ago',
+        actionsMenu: 'Actions for {{name}}',
       },
       loadingMore: 'Loading…',
       displayTitle: { published: 'Published {{title}}', draft: 'Draft {{title}}' },
@@ -2086,7 +2101,12 @@ const translations = {
       statusUntranslated: 'Untranslated',
     },
     overview: {
-      previewCard: { edit: 'Edit', lastEdited: 'Last edited {{date}}' },
+      previewCard: {
+        edit: 'Edit',
+        editAriaLabel: 'Edit {{name}}',
+        lastEdited: 'Last edited {{date}}',
+      },
+      addStep: 'Add step',
       step: {
         width: 'Width: {{value}}',
         height: 'Height: {{value}}',
@@ -2599,6 +2619,8 @@ const translations = {
       addVariation: 'Add variation',
       variationMenu: 'Variation menu',
       dragToReorder: 'Drag to reorder',
+      moveUp: 'Move {{name}} up',
+      moveDown: 'Move {{name}} down',
       resizeSidebar: 'Resize sidebar',
     },
     dialogs: {
@@ -3025,6 +3047,8 @@ const translations = {
           'Add labels under each option so their meaning is clear — for example, "Bad" under the left option and "Good" under the right.',
         defaultLabel: 'Default',
         scaleRange: 'Scale range',
+        scaleRangeLow: 'Lowest value',
+        scaleRangeHigh: 'Highest value',
         nameRequired: 'Question name is required',
         invalidRange: 'Invalid range: low must be ≤ high, and both must be between 0-100',
         fixErrors: 'Please fix the errors above',
@@ -3183,6 +3207,8 @@ const translations = {
       },
       placeholder: "Write, type '/' for commands…",
       placeholderMini: 'Write text here…',
+      contentAriaLabel: 'Content editor',
+      addContentBlock: 'Add content block',
       toolbar: {
         formattingOptions: 'Formatting options',
         textFormatting: 'Text formatting',
@@ -3406,6 +3432,9 @@ const translations = {
         navigateToPage: 'Navigate to the page the element appears on',
         navigateToAnotherPage: 'Navigate to another page',
         selectElementHere: 'Select element here',
+        pinTop: 'Move this bar to the top',
+        pinBottom: 'Move this bar to the bottom',
+        cancel: 'Cancel element selection',
       },
       cssSelector: 'CSS selector',
       cssSelectorTooltip:
@@ -4011,6 +4040,7 @@ const translations = {
         before: 'Wait',
         suffix: 'seconds',
         afterLabel: 'second before starting',
+        inputLabel: 'Wait time in seconds before starting',
         tooltip:
           'Delay between the conditions matching and the trigger firing. The conditions must keep matching for the entire wait.',
         error: 'Wait time must not be greater than {{max}} seconds ({{minutes}} minutes)',
@@ -4033,6 +4063,9 @@ const translations = {
         atLeast: 'At least',
         afterAny: 'after any {{contentType}}',
         atLeastTwo: 'Must be at least 2',
+        timesInputLabel: 'Maximum number of times per user',
+        intervalInputLabel: 'Minimum time between starts',
+        atLeastInputLabel: 'Minimum time after any other {{contentType}}',
         unitsTooltip:
           'Choose whether this {{contentType}} can auto-start once, multiple times, or without a limit for the same user.',
         multipleTooltip:
@@ -4193,6 +4226,22 @@ const translations = {
       active: 'Active',
     },
   },
+  pageTitles: {
+    template: '{{page}} - Usertour',
+    signIn: 'Sign in',
+    signUp: 'Sign up',
+    resetPassword: 'Reset password',
+    invite: 'Accept invitation',
+    registration: 'Complete registration',
+    passwordReset: 'Set a new password',
+    overview: 'Overview',
+    builder: 'Builder',
+    localization: 'Localization',
+    userDetail: 'User details',
+    sessionDetail: 'Session details',
+    companyDetail: 'Company details',
+    themeDetail: 'Theme details',
+  },
   pagination: {
     rowsPerPage: 'Rows per page',
     pageOf: 'Page {{current}} of {{total}}',
@@ -4209,6 +4258,8 @@ const translations = {
     documentation: 'Documentation',
     installToPublish: 'Install to publish',
     logoAlt: 'Usertour logo',
+    mainNavigation: 'Main navigation',
+    switchEnvironment: 'Switch environment',
   },
   attributes: {
     typeChip: {
