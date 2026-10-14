@@ -13,10 +13,11 @@ export const LauncherZIndex = () => {
   return (
     <div className="space-y-3">
       <div className="flex items-center">
-        <h1 className="text-sm">{t('contentBuilder.launcher.zIndex')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.launcher.zIndex')}</h2>
       </div>
 
       <Input
+        aria-label={t('contentBuilder.launcher.zIndex')}
         value={localData.zIndex}
         placeholder={!localData.zIndex ? t('contentBuilder.common.default') : undefined}
         onChange={(e) => {

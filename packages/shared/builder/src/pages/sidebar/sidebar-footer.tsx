@@ -24,12 +24,17 @@ export const SidebarFooter = () => {
   return (
     <>
       <div className="flex-none relative mr-8 ml-4">
-        {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
+        {/* Announce save progress to screen readers (WCAG 4.1.3 Status Messages) */}
+        {/* biome-ignore lint/a11y/useSemanticElements: role=status has broader screen reader support than <output> */}
+        <span className="sr-only" role="status">
+          {isLoading ? t('contentBuilder.common.saving') : t('contentBuilder.common.saved')}
+        </span>
+        {isLoading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
         {!isLoading && (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
-                <CheckedIcon className="text-green-500" width={20} height={20} />
+              <TooltipTrigger type="button" aria-label={t('contentBuilder.common.saved')}>
+                <CheckedIcon className="text-green-500" width={20} height={20} aria-hidden="true" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>{t('contentBuilder.common.saved')}</p>
@@ -39,7 +44,7 @@ export const SidebarFooter = () => {
         )}
       </div>
       <Button className="grow w-full h-10" onClick={handleSaveStep} disabled={isLoading}>
-        <ExitIcon className="mr-2" />
+        <ExitIcon className="mr-2" aria-hidden="true" />
         {t('contentBuilder.common.savePreferences')}
       </Button>
     </>

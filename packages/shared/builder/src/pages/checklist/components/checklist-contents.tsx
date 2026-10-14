@@ -116,8 +116,9 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
                     size="sm"
                     className="p-1 h-fit"
                     onClick={() => onClick?.('edit', item)}
+                    aria-label={t('contentBuilder.checklist.edit')}
                   >
-                    <GearIcon className="h-4 w-4" />
+                    <GearIcon className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contentBuilder.checklist.edit')}</TooltipContent>
@@ -125,8 +126,13 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
             </TooltipProvider>
 
             <DeleteDialog onDelete={() => onClick?.('delete', item)}>
-              <Button variant="ghost" size="sm" className="p-1 h-fit">
-                <Delete2Icon className="h-4 w-4 text-foreground" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-fit"
+                aria-label={t('contentBuilder.checklist.delete')}
+              >
+                <Delete2Icon className="h-4 w-4 text-foreground" aria-hidden="true" />
               </Button>
             </DeleteDialog>
           </div>
@@ -208,7 +214,7 @@ export const ChecklistContents = () => {
   return (
     <>
       <div className="flex justify-between items-center space-x-1	">
-        <h1 className="text-sm">{t('contentBuilder.checklist.items')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.checklist.items')}</h2>
       </div>
       <DndContext
         sensors={sensors}

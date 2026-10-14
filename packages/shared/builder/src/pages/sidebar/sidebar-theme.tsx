@@ -19,8 +19,9 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { Theme } from '@usertour/types';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TooltipIconButton } from '@usertour-packages/shared-components';
 
 import { useMutation } from '@apollo/client';
 import { updateContentVersion } from '@usertour-packages/gql';
@@ -31,6 +32,7 @@ import { postProxyMessageToWindow } from '../../utils/post-message';
 
 export const SidebarTheme = () => {
   const { t } = useTranslation();
+  const themeLabelId = useId();
   const { themeList } = useThemeListContext();
   const [updateContentVersionMutation] = useMutation(updateContentVersion);
   const { toast } = useToast();
@@ -99,11 +101,15 @@ export const SidebarTheme = () => {
     <>
       <div className="flex justify-between items-center space-x-1	">
         <div className="flex flex-row justify-between items-center space-x-1 ">
-          <h1 className="text-sm">{t('contentBuilder.shared.theme.label')}</h1>
+          <h2 id={themeLabelId} className="text-sm">
+            {t('contentBuilder.shared.theme.label')}
+          </h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <QuestionMarkCircledIcon />
+                <TooltipIconButton>
+                  <QuestionMarkCircledIcon aria-hidden="true" />
+                </TooltipIconButton>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 {t('contentBuilder.shared.theme.flowTooltip')}
@@ -123,8 +129,11 @@ export const SidebarTheme = () => {
           onValueChange={handleThemeChange}
           value={currentVersion.themeId}
         >
-          <SelectTrigger className="justify-start flex h-8 text-xs	">
-            <CubeIcon className="flex-none mr-2" />
+          <SelectTrigger
+            className="justify-start flex h-8 text-xs	"
+            aria-labelledby={themeLabelId}
+          >
+            <CubeIcon className="flex-none mr-2" aria-hidden="true" />
             <div className="grow text-left">
               <SelectValue placeholder={t('contentBuilder.shared.theme.selectPlaceholder')} />
             </div>

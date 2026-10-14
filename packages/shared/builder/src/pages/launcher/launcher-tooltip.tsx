@@ -33,8 +33,9 @@ const LauncherTooltipHeader = () => {
           size="icon"
           onClick={handleBackToLauncher}
           className="text-foreground w-6 h-8"
+          aria-label={t('common.back')}
         >
-          <ChevronLeftIcon className="h-6 w-6 " />
+          <ChevronLeftIcon className="h-6 w-6 " aria-hidden="true" />
         </Button>
         <span className=" truncate ...">{t('contentBuilder.launcher.tooltipSettings')}</span>
       </CardTitle>

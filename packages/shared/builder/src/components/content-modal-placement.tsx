@@ -4,7 +4,7 @@ import { HelpTooltip } from '@usertour-packages/shared-components';
 import { ModalPosition } from '@usertour/types';
 import { ContentModalPlacementData } from '@usertour/types';
 import { cn } from '@usertour/helpers';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InputNumber } from './shared/input';
 
@@ -15,12 +15,13 @@ const PlacementButton = (props: {
   onPositionChange: (position: ModalPosition) => void;
 }) => {
   const { text, position, onPositionChange, currentPosition } = props;
+  const isSelected = currentPosition === position;
+  // aria-pressed announces which position is selected, not just its colour (WCAG 1.3.1, 4.1.2)
   return (
     <Button
-      className={cn(
-        'h-8 w-24 p-0.5 text-xs bg-background-400',
-        currentPosition === position ? 'bg-primary' : '',
-      )}
+      type="button"
+      aria-pressed={isSelected}
+      className={cn('h-8 w-24 p-0.5 text-xs bg-background-400', isSelected ? 'bg-primary' : '')}
       onClick={() => {
         onPositionChange(position);
       }}
@@ -40,6 +41,7 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
   const { t } = useTranslation();
   const { data: initialValue, onChange, name = 'modal' } = props;
   const [data, setData] = useState<ContentModalPlacementData>(initialValue);
+  const headingId = useId();
 
   const update = (fn: (pre: ContentModalPlacementData) => ContentModalPlacementData) => {
     setData((pre) => {
@@ -62,10 +64,15 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
   return (
     <div className="space-y-3">
       <div className="flex justify-start items-center space-x-1	">
-        <h1 className="text-sm">{t('contentBuilder.shared.placement')}</h1>
+        <h2 id={headingId} className="text-sm">
+          {t('contentBuilder.shared.placement')}
+        </h2>
         <HelpTooltip>{t('contentBuilder.shared.placementTooltip', { name })}</HelpTooltip>
       </div>
-      <div className="flex flex-col bg-background-700 p-3.5 rounded-lg space-y-6 mt-2">
+      <fieldset
+        aria-labelledby={headingId}
+        className="min-w-0 flex flex-col bg-background-700 p-3.5 rounded-lg space-y-6 mt-2"
+      >
         <div className="flex justify-between">
           <PlacementButton
             text={t('contentBuilder.shared.position.leftTop')}
@@ -102,7 +109,7 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
             onPositionChange={handleCurrentPositionChange}
           />
         </div>
-      </div>
+      </fieldset>
       {data.position !== ModalPosition.Center && (
         <>
           <div className="flex flex-col space-y-2">
@@ -117,6 +124,7 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
               </HelpTooltip>
             </div>
             <InputNumber
+              label={t('contentBuilder.shared.horizontalOffset')}
               defaultNumber={data.positionOffsetX || 0}
               onValueChange={handleOffsetXChange}
             />
@@ -131,6 +139,7 @@ export const ContentModalPlacement = (props: ContentModalPlacementProps) => {
               </HelpTooltip>
             </div>
             <InputNumber
+              label={t('contentBuilder.shared.verticalOffset')}
               defaultNumber={data.positionOffsetY || 0}
               onValueChange={handleOffsetYChange}
             />

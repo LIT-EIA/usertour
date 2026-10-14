@@ -99,7 +99,7 @@ const ChecklistCoreBody = () => {
             }
             defaultValue={localData.initialDisplay}
           >
-            <SelectTrigger>
+            <SelectTrigger id="initial-display">
               <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
             </SelectTrigger>
             <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
@@ -130,7 +130,7 @@ const ChecklistCoreBody = () => {
             }
             defaultValue={localData.completionOrder}
           >
-            <SelectTrigger>
+            <SelectTrigger id="completion-order">
               <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
             </SelectTrigger>
             <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>

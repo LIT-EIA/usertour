@@ -30,6 +30,7 @@ import { SidebarMini } from '../sidebar/sidebar-mini';
 import { useListAttributesQuery } from '@usertour-packages/shared-hooks';
 
 const FlowBuilderTriggerHeader = () => {
+  const { t } = useTranslation();
   const { setCurrentMode, currentStep, currentContent, currentIndex } = useBuilderContext();
 
   const handleBackup = () => {
@@ -45,8 +46,9 @@ const FlowBuilderTriggerHeader = () => {
           size="icon"
           onClick={handleBackup}
           className="mr-2 text-foreground w-6 h-8"
+          aria-label={t('common.back')}
         >
-          <ChevronLeftIcon className="h-6 w-6 " />
+          <ChevronLeftIcon className="h-6 w-6 " aria-hidden="true" />
         </Button>
         <div className="grow text-base leading-8 truncate ...">
           {currentIndex + 1}、{currentStep?.name}
@@ -164,7 +166,7 @@ const FlowBuilderTriggerBody = (props: { attributes: Attribute[]; loading: boole
     <CardContent className="bg-background-900 grow p-0 overflow-hidden">
       <ScrollArea className="h-full ">
         <div className="flex-col space-y-3 p-4">
-          <h1 className="text-sm">{t('contentBuilder.flow.triggers')}</h1>
+          <h2 className="text-sm">{t('contentBuilder.flow.triggers')}</h2>
           {loading && (
             <div className="flex justify-center items-center h-full">
               <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />

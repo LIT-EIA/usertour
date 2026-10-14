@@ -81,7 +81,7 @@ export const LauncherSettings = ({ data: initialValue, onChange }: LauncherSetti
 
   return (
     <div className="space-y-3" aria-label={t('contentBuilder.launcher.settingsAriaLabel')}>
-      <h1 className="text-sm">{t('contentBuilder.launcher.settings')}</h1>
+      <h2 className="text-sm">{t('contentBuilder.launcher.settings')}</h2>
       <div className="flex flex-col bg-background-700 p-3.5 rounded-lg space-y-2">
         {settingItems.map((item) => {
           return (

@@ -73,7 +73,7 @@ export const FlowPlacement = () => {
     >
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h1 className="text-sm">{t('contentBuilder.flow.placement')} </h1>
+          <h2 className="text-sm">{t('contentBuilder.flow.placement')} </h2>
           <Button variant="link" onClick={handleAboutPlacement} className="p-0 h-full">
             {t('contentBuilder.flow.aboutPlacement')}
             <OpenInNewWindowIcon className="ml-1" />

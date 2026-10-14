@@ -88,8 +88,14 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-1 h-fit" onClick={handleEdit}>
-                    <GearIcon className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 h-fit"
+                    onClick={handleEdit}
+                    aria-label={t('contentBuilder.flow.edit')}
+                  >
+                    <GearIcon className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contentBuilder.flow.edit')}</TooltipContent>
@@ -103,8 +109,9 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
                     size="sm"
                     className="p-1 h-fit"
                     onClick={handleEditTrigger}
+                    aria-label={t('contentBuilder.flow.trigger')}
                   >
-                    <EventIcon2 className="h-4 w-4" />
+                    <EventIcon2 className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contentBuilder.flow.trigger')}</TooltipContent>
@@ -115,10 +122,16 @@ const SidebarContent = forwardRef<HTMLDivElement, any>(
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="p-1 h-fit">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 h-fit"
+                        aria-label={t('contentBuilder.flow.delete')}
+                      >
                         <Delete2Icon
                           className="h-4 w-4 text-foreground"
                           // onClick={handleDelete}
+                          aria-hidden="true"
                         />
                       </Button>
                     </AlertDialogTrigger>

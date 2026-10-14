@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ChangeEvent } from 'react';
 
 export const InputNumber = (props: {
   defaultNumber: number;
   onValueChange: (num: number) => void;
+  /** Accessible name for the number field (the visible label is rendered by the caller) */
+  label?: string;
 }) => {
-  const { defaultNumber = 0, onValueChange } = props;
+  const { defaultNumber = 0, onValueChange, label } = props;
+  const { t } = useTranslation();
   const [num, setNum] = useState<number>(defaultNumber);
   const handleIncrement = () => {
     const newValue = num + 1;
@@ -31,6 +35,7 @@ export const InputNumber = (props: {
           <input
             className="h-8 w-full rounded-md border-0	 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-transparent"
             type="text"
+            aria-label={label}
             onChange={handleOnChange}
             value={num}
           />
@@ -40,6 +45,7 @@ export const InputNumber = (props: {
             type="button"
             className="w-6 h-6 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-md border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-background-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
             onClick={handleDecrement}
+            aria-label={t('common.decrease')}
           >
             <svg
               className="flex-shrink-0 w-3.5 h-3.5"
@@ -60,6 +66,7 @@ export const InputNumber = (props: {
             type="button"
             className="w-6 h-6 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-md border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-background-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
             onClick={handleIncrement}
+            aria-label={t('common.increase')}
           >
             <svg
               className="flex-shrink-0 w-3.5 h-3.5"

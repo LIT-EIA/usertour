@@ -106,7 +106,7 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
           alignOffset={40}
           sideOffset={2}
         >
-          <h1 className="text-lg mb-3">{t('contentBuilder.flow.stepTypeTitle')}</h1>
+          <h2 className="text-lg mb-3">{t('contentBuilder.flow.stepTypeTitle')}</h2>
           <div className="grid grid-cols-2 gap-4">
             {currentTheme?.settings &&
               contentList.map((content, index) => {

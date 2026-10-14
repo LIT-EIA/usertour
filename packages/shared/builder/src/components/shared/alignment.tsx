@@ -115,6 +115,7 @@ interface CircleProps {
 }
 
 const Circle = ({ side, align, onClick }: CircleProps) => {
+  const { t } = useTranslation();
   const [className, setClassName] = useState('');
   const { type, currentAlign, currentSide } = useContext(AlignmentContext);
 
@@ -123,7 +124,21 @@ const Circle = ({ side, align, onClick }: CircleProps) => {
     setClassName(cn('sdk-alignment', isActive ? circleHoveredClassName : circleClassName));
   }, [type, currentAlign, currentSide, align, side]);
 
-  return <div className={className} onClick={() => onClick(side, align)} />;
+  const isActive = type === 'fixed' && currentAlign === align && currentSide === side;
+
+  // Native button so each position can be chosen with the keyboard; padding + negative margin give
+  // a 24px target without moving the 10px dot (WCAG 2.1.1, 2.5.8)
+  return (
+    <button
+      type="button"
+      aria-label={alwaysShowFrom(t, side, align)}
+      aria-pressed={isActive}
+      className="-m-[7px] p-[7px] rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      onClick={() => onClick(side, align)}
+    >
+      <span className={className} />
+    </button>
+  );
 };
 
 export const Alignment = ({

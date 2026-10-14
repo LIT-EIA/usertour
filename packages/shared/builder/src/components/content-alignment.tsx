@@ -43,7 +43,7 @@ export const ContentAlignment = (props: ContentAlignmentProps) => {
   return (
     <div className="space-y-3">
       <div className="flex justify-start items-center space-x-1	">
-        <h1 className="text-sm">{title}</h1>
+        <h2 className="text-sm">{title}</h2>
         <HelpTooltip>{t('contentBuilder.shared.alignmentTooltip')}</HelpTooltip>
       </div>
       <Tabs defaultValue={data.alignType} onValueChange={handleAlignTypeChange}>
@@ -81,14 +81,22 @@ export const ContentAlignment = (props: ContentAlignmentProps) => {
         <Label htmlFor="button-distance-element">
           {t('contentBuilder.shared.distanceFromElement')}
         </Label>
-        <InputNumber defaultNumber={data.sideOffset} onValueChange={handleSideOffsetChange} />
+        <InputNumber
+          label={t('contentBuilder.shared.distanceFromElement')}
+          defaultNumber={data.sideOffset}
+          onValueChange={handleSideOffsetChange}
+        />
       </div>
       {data.align !== 'center' && (
         <div className="flex flex-col space-y-2">
           <Label htmlFor="button-distance-alignment">
             {t('contentBuilder.shared.offsetFromAlignment')}
           </Label>
-          <InputNumber defaultNumber={data.alignOffset} onValueChange={handleAlignOffsetChange} />
+          <InputNumber
+            label={t('contentBuilder.shared.offsetFromAlignment')}
+            defaultNumber={data.alignOffset}
+            onValueChange={handleAlignOffsetChange}
+          />
         </div>
       )}
     </div>

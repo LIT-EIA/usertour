@@ -38,7 +38,7 @@ export const SequenceSelect = ({ value = '1st', onChange, zIndex }: SequenceSele
         <HelpTooltip>{t('contentBuilder.shared.ifMultipleMatchesTooltip')}</HelpTooltip>
       </div>
       <Select onValueChange={onChange} defaultValue={value}>
-        <SelectTrigger>
+        <SelectTrigger aria-label={t('contentBuilder.shared.ifMultipleMatches')}>
           <SelectValue placeholder={t('contentBuilder.shared.selectSequencePlaceholder')} />
         </SelectTrigger>
         <SelectContent style={{ zIndex }}>

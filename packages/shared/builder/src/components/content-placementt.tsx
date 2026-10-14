@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@usertour-packages/select';
-import { SelectorDialog } from '@usertour-packages/shared-components';
+import { SelectorDialog, TooltipIconButton } from '@usertour-packages/shared-components';
 import { ContentActions } from '@usertour-packages/shared-editor';
 import { Switch } from '@usertour-packages/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@usertour-packages/tabs';
@@ -115,7 +115,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
 
   return (
     <div className="space-y-3">
-      <h1 className="text-sm">{title}</h1>
+      <h2 className="text-sm">{title}</h2>
       <Tabs defaultValue={target?.type ?? 'auto'} onValueChange={handlePlacementTypeChange}>
         <TabsList className="grid w-full grid-cols-2 bg-background-700">
           <TabsTrigger
@@ -137,7 +137,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
               open={isShowError && (!target?.selectors || target?.selectors.length === 0)}
             >
               <div className="flex flex-col space-y-2">
-                <h1 className="text-sm">{subTitle}</h1>
+                <h2 className="text-sm">{subTitle}</h2>
                 {!isWebBuilder && (
                   <div className="rounded-2xl flex-col overflow-hidden" onClick={onChangeElement}>
                     <div className="w-[242px] h-[130px] overflow-hidden">
@@ -179,7 +179,9 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <QuestionMarkCircledIcon />
+                          <TooltipIconButton>
+                            <QuestionMarkCircledIcon aria-hidden="true" />
+                          </TooltipIconButton>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <p>{t('contentBuilder.shared.precision.tooltip')}</p>
@@ -188,7 +190,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     </TooltipProvider>
                   </div>
                   <Select onValueChange={handlePrecisionChange} defaultValue={target?.precision}>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label={t('contentBuilder.shared.precision.label')}>
                       <SelectValue
                         placeholder={t('contentBuilder.shared.precision.selectPlaceholder')}
                       />
@@ -237,7 +239,9 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <QuestionMarkCircledIcon />
+                          <TooltipIconButton>
+                            <QuestionMarkCircledIcon aria-hidden="true" />
+                          </TooltipIconButton>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <p>{t('contentBuilder.shared.dynamicTextTooltip')}</p>
@@ -261,7 +265,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
           <TabsContent value="manual">
             <ContentError open={isShowError && !target?.customSelector}>
               <div className="flex flex-col space-y-2">
-                <h1 className="text-sm">{subTitle}</h1>
+                <h2 className="text-sm">{subTitle}</h2>
                 <div className="flex flex-col space-y-2">
                   <div className="flex justify-start items-center space-x-1	">
                     <Label htmlFor="button-manual-element-text">
@@ -270,7 +274,9 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <QuestionMarkCircledIcon />
+                          <TooltipIconButton>
+                            <QuestionMarkCircledIcon aria-hidden="true" />
+                          </TooltipIconButton>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <p>{t('contentBuilder.shared.elementTextTooltip')}</p>
@@ -292,7 +298,9 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <QuestionMarkCircledIcon />
+                          <TooltipIconButton>
+                            <QuestionMarkCircledIcon aria-hidden="true" />
+                          </TooltipIconButton>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <p>{t('contentBuilder.shared.cssSelectorTooltip')}</p>
@@ -330,7 +338,9 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <QuestionMarkCircledIcon />
+                          <TooltipIconButton>
+                            <QuestionMarkCircledIcon aria-hidden="true" />
+                          </TooltipIconButton>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <p>{t('contentBuilder.shared.ifMultipleMatches')}</p>
@@ -340,7 +350,7 @@ export const ContentPlacement = (props: ContentPlacementProps) => {
                     </TooltipProvider>
                   </div>
                   <Select onValueChange={handleSequenceChange} defaultValue={target?.sequence}>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label={t('contentBuilder.shared.ifMultipleMatches')}>
                       <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
                     </SelectTrigger>
                     <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>

@@ -7,6 +7,7 @@ import {
 import { cn } from '@usertour/helpers';
 import anime from 'animejs/lib/anime.es.js';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useBuilderContext } from '../../contexts';
 
@@ -17,6 +18,7 @@ interface SideBarMiniProps {
 }
 
 export const SidebarMini = (props: SideBarMiniProps) => {
+  const { t } = useTranslation();
   const { position, setPosition } = useBuilderContext();
   const { container, containerWidth = 312 } = props;
   const [isMini, setIsMini] = useState(false);
@@ -55,56 +57,68 @@ export const SidebarMini = (props: SideBarMiniProps) => {
         )}
       >
         {position === 'right' && (
-          <SlideLeftIcon
-            width={20}
-            height={20}
-            className="cursor-pointer"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.common.switchSide')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => {
               setPosition('left');
             }}
-          />
+          >
+            <SlideLeftIcon width={20} height={20} aria-hidden="true" />
+          </button>
         )}
         {position === 'left' && (
-          <SlideRightIcon
-            width={20}
-            height={20}
-            className="cursor-pointer"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.common.switchSide')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => {
               setPosition('right');
             }}
-          />
+          >
+            <SlideRightIcon width={20} height={20} aria-hidden="true" />
+          </button>
         )}
         {position === 'left' && isMini && (
-          <DoubleArrowRightIcon
-            width={20}
-            height={20}
-            className="cursor-pointer"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.common.expandPanel')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={handleHideSideBar}
-          />
+          >
+            <DoubleArrowRightIcon width={20} height={20} aria-hidden="true" />
+          </button>
         )}
         {position === 'left' && !isMini && (
-          <DoubleArrowLeftIcon
-            width={20}
-            className="cursor-pointer"
-            height={20}
+          <button
+            type="button"
+            aria-label={t('contentBuilder.common.collapsePanel')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={handleHideSideBar}
-          />
+          >
+            <DoubleArrowLeftIcon width={20} height={20} aria-hidden="true" />
+          </button>
         )}
         {position === 'right' && isMini && (
-          <DoubleArrowLeftIcon
-            width={20}
-            className="cursor-pointer"
-            height={20}
+          <button
+            type="button"
+            aria-label={t('contentBuilder.common.expandPanel')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={handleHideSideBar}
-          />
+          >
+            <DoubleArrowLeftIcon width={20} height={20} aria-hidden="true" />
+          </button>
         )}
         {position === 'right' && !isMini && (
-          <DoubleArrowRightIcon
-            width={20}
-            height={20}
-            className="cursor-pointer"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.common.collapsePanel')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={handleHideSideBar}
-          />
+          >
+            <DoubleArrowRightIcon width={20} height={20} aria-hidden="true" />
+          </button>
         )}
       </div>
     </>

@@ -40,7 +40,7 @@ export const ContentPlacementAuto = () => {
   return (
     <ContentError open={isShowError && (!target?.selectors || target?.selectors.length === 0)}>
       <div className="flex flex-col space-y-2">
-        <h1 className="text-sm">{subTitle}</h1>
+        <h2 className="text-sm">{subTitle}</h2>
         {!isWebBuilder ? (
           <div
             className="rounded-2xl flex-col overflow-hidden"

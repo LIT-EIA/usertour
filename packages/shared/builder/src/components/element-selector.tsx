@@ -73,24 +73,28 @@ export const ElementSelector = ({
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 flex rounded-l-2xl flex-none items-center space-x-2 px-4 ">
         <CubeIcon className="text-slate-50 opacity-70" width={16} height={16} />{' '}
         {isPinBottom && (
-          <PinTopIcon
-            className="text-slate-50 cursor-pointer"
-            width={16}
-            height={16}
+          <button
+            type="button"
+            aria-label={t('contentBuilder.shared.elementSelector.pinTop')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-50"
             onClick={() => {
               handlePositonChange(false);
             }}
-          />
+          >
+            <PinTopIcon className="text-slate-50" width={16} height={16} aria-hidden="true" />
+          </button>
         )}
         {!isPinBottom && (
-          <PinBottomIcon
-            className="text-slate-50 cursor-pointer"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.shared.elementSelector.pinBottom')}
+            className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-50"
             onClick={() => {
               handlePositonChange(true);
             }}
-            width={16}
-            height={16}
-          />
+          >
+            <PinBottomIcon className="text-slate-50" width={16} height={16} aria-hidden="true" />
+          </button>
         )}
       </div>
       <div className="bg-gradient-to-r from-slate-700 to-slate-800  rounded-r-2xl grow flex">
@@ -98,36 +102,40 @@ export const ElementSelector = ({
           {t('contentBuilder.shared.elementSelector.navigateToPage')}
         </div>
         <div className="flex-none flex py-2">
-          <div
+          <button
+            type="button"
             className={cn(
-              'rounded-l-xl flex items-center space-x-2 px-4 cursor-pointer ',
+              'rounded-l-xl flex items-center space-x-2 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-50',
               navigateClass,
             )}
             ref={navigateRef}
             onClick={handleNavigatePage}
           >
-            <GlobeIcon className="text-slate-50" width={16} height={16} />
+            <GlobeIcon className="text-slate-50" width={16} height={16} aria-hidden="true" />
             <span>{t('contentBuilder.shared.elementSelector.navigateToAnotherPage')}</span>
-          </div>
-          <div
+          </button>
+          <button
+            type="button"
             className={cn(
-              'rounded-r-xl flex items-center space-x-2 px-4 cursor-pointer ',
+              'rounded-r-xl flex items-center space-x-2 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-50',
               selectClass,
             )}
             ref={selectRef}
             onClick={handleElementSelect}
           >
-            <Crosshair2Icon className="text-slate-50" width={16} height={16} />
+            <Crosshair2Icon className="text-slate-50" width={16} height={16} aria-hidden="true" />
             <span>{t('contentBuilder.shared.elementSelector.selectElementHere')}</span>
-          </div>
+          </button>
         </div>
         <div className="flex-none py-2 ml-4 mr-2 inline-flex items-center">
-          <div
-            className="rounded-xl p-2 h-fit bg-background-700 cursor-pointer"
+          <button
+            type="button"
+            aria-label={t('contentBuilder.shared.elementSelector.cancel')}
+            className="rounded-xl p-2 h-fit bg-background-700 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-50"
             onClick={handleCancelAction}
           >
-            <Cross1Icon className="text-slate-50" width={16} height={16} />
-          </div>
+            <Cross1Icon className="text-slate-50" width={16} height={16} aria-hidden="true" />
+          </button>
         </div>
       </div>
     </div>

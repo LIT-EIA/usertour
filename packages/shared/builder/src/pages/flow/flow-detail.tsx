@@ -48,6 +48,7 @@ import {
 } from '@usertour-packages/shared-hooks';
 
 const FlowBuilderDetailHeader = () => {
+  const { t } = useTranslation();
   const { setCurrentMode, currentStep, currentContent, updateCurrentStep } = useBuilderContext();
 
   const handleBackup = () => {
@@ -70,8 +71,9 @@ const FlowBuilderDetailHeader = () => {
           size="icon"
           onClick={handleBackup}
           className="mr-2 text-foreground w-6 h-8"
+          aria-label={t('common.back')}
         >
-          <ChevronLeftIcon className="h-6 w-6 " />
+          <ChevronLeftIcon className="h-6 w-6 " aria-hidden="true" />
         </Button>
         <div className="grow text-base leading-8">
           <OutlineInput

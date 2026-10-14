@@ -34,16 +34,20 @@ interface TriggerDropdownProps {
   label?: string;
 }
 
-const TriggerDropdown = ({ value, options, onChange, zIndex }: TriggerDropdownProps) => {
+const TriggerDropdown = ({ value, options, onChange, zIndex, label }: TriggerDropdownProps) => {
   const selectedLabel = options.find((option) => option.value === value)?.label ?? value;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit">
+        <button
+          type="button"
+          aria-label={label ? `${label}: ${selectedLabel}` : undefined}
+          className="flex flex-row items-center space-x-2 text-sm text-primary cursor-pointer w-fit rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
           <span>{selectedLabel}</span>
-          <ChevronDownIcon width={16} height={16} />
-        </div>
+          <ChevronDownIcon width={16} height={16} aria-hidden="true" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" style={{ zIndex: zIndex + EXTENSION_SELECT }}>
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
@@ -118,7 +122,7 @@ export const LauncherBehavior = () => {
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <h1 className="text-sm">{t('contentBuilder.launcher.behavior')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.launcher.behavior')}</h2>
       </div>
       <div className="flex flex-col bg-background-700 p-3.5 rounded-lg space-y-1">
         <div className="text-sm">{t('contentBuilder.launcher.behaviorEditor.when')}</div>
@@ -160,18 +164,19 @@ export const LauncherBehavior = () => {
             value={LauncherActionType.SHOW_TOOLTIP}
             className="bg-background p-2 rounded-lg "
           >
-            <div
-              className="flex flex-row items-center justify-between cursor-pointer h-8"
+            <button
+              type="button"
+              className="flex w-full flex-row items-center justify-between cursor-pointer h-8 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               onClick={handleSwitchToTooltip}
             >
-              <div className="flex flex-row space-x-1 items-center">
-                <TooltipIcon className="h-4 w-4 mt-1" />
+              <span className="flex flex-row space-x-1 items-center">
+                <TooltipIcon className="h-4 w-4 mt-1" aria-hidden="true" />
                 <span className="text-sm">
                   {t('contentBuilder.launcher.behaviorEditor.tooltipSetting')}
                 </span>
-              </div>
-              <GearIcon className="h-4 w-4" />
-            </div>
+              </span>
+              <GearIcon className="h-4 w-4" aria-hidden="true" />
+            </button>
           </TabsContent>
           <TabsContent
             value={LauncherActionType.PERFORM_ACTION}

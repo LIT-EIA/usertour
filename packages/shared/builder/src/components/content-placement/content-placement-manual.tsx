@@ -44,7 +44,7 @@ export const ContentPlacementManual = () => {
   return (
     <ContentError open={isShowError && !target?.customSelector}>
       <div className="flex flex-col space-y-2">
-        {/* <h1 className="text-sm">{subTitle}</h1> */}
+        {/* <h2 className="text-sm">{subTitle}</h2> */}
         <div className="flex flex-col space-y-2">
           <div className="flex justify-start items-center space-x-1">
             <Label htmlFor="element-text">{t('contentBuilder.shared.elementText')}</Label>

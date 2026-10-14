@@ -83,7 +83,7 @@ export const LauncherPlacement = () => {
       subTitle={t('contentBuilder.launcher.placementSubtitle')}
     >
       <div className="space-y-3">
-        <h1 className="text-sm">{t('contentBuilder.launcher.placement')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.launcher.placement')}</h2>
         {/* <ContentPlacementTabs>
           <ContentPlacementTabsContent value="manual">
             <ContentPlacementManual />
