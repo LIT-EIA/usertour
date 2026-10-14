@@ -1,7 +1,8 @@
 import { Icons } from '@/components/atoms/icons';
+import { BackButton } from '@/components/atoms/back-button';
 import { useThemeDetailContext } from '@/contexts/theme-detail-context';
 import { useMutation } from '@apollo/client';
-import { ArrowLeftIcon, DotsHorizontalIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { updateTheme } from '@usertour-packages/gql';
 import { EditIcon } from '@usertour-packages/icons';
@@ -61,10 +62,10 @@ export const ThemeDetailHeader = () => {
   };
 
   return (
-    <div className="border-b bg-white flex-col md:flex w-full fixed z-[10]">
+    <div data-page-header className="border-b bg-white flex-col md:flex w-full fixed z-[10]">
       <div className="flex h-16 items-center px-4">
-        <ArrowLeftIcon className="ml-4 h-6 w-8 cursor-pointer" onClick={navigateToThemesListPage} />
-        <span>{theme?.name}</span>
+        <BackButton className="ml-4" onClick={navigateToThemesListPage} />
+        <h1>{theme?.name}</h1>
         {theme?.isSystem && (
           <>
             <InfoCircledIcon className="ml-4 mr-0.5 text-muted-foreground" />
@@ -80,8 +81,13 @@ export const ThemeDetailHeader = () => {
               refetch();
             }}
           >
-            <Button variant={'ghost'} className="hover:bg-transparent" disabled={isViewOnly}>
-              <EditIcon className="cursor-pointer" width={16} height={16} />
+            <Button
+              variant={'ghost'}
+              className="hover:bg-transparent"
+              disabled={isViewOnly}
+              aria-label={t('settings.themes.renameTitle')}
+            >
+              <EditIcon className="cursor-pointer" width={16} height={16} aria-hidden="true" />
             </Button>
           </ThemeRenameForm>
         )}

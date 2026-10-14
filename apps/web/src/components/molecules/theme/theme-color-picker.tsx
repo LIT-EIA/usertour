@@ -78,6 +78,7 @@ const Picker = (props: PickerProps) => {
         <div className="flex flex-row items-center space-x-2">
           <div className="w-6 h-6" style={{ backgroundColor: inputColor || color }} />
           <Input
+            aria-label={t('common.colorPicker.hexLabel')}
             value={!isAuto ? inputColor : ''}
             className="w-36 h-8"
             placeholder={isAuto ? color : ''}
@@ -86,12 +87,19 @@ const Picker = (props: PickerProps) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <CheckboxIcon
-                  width={28}
-                  height={28}
+                <button
+                  type="button"
                   onClick={handleSubmit}
-                  className="text-primary cursor-pointer"
-                />
+                  aria-label={t('common.colorPicker.useThisColor')}
+                  className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <CheckboxIcon
+                    width={28}
+                    height={28}
+                    className="text-primary cursor-pointer"
+                    aria-hidden="true"
+                  />
+                </button>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs bg-slate-700">
                 {t('common.colorPicker.useThisColor')}
@@ -102,12 +110,19 @@ const Picker = (props: PickerProps) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <RemoveColorIcon
-                    width={20}
-                    height={20}
+                  <button
+                    type="button"
                     onClick={handleRemoveColor}
-                    className="cursor-pointer"
-                  />
+                    aria-label={t('common.colorPicker.removeColor')}
+                    className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-0.5"
+                  >
+                    <RemoveColorIcon
+                      width={20}
+                      height={20}
+                      className="cursor-pointer"
+                      aria-hidden="true"
+                    />
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs bg-slate-700">
                   {t('common.colorPicker.removeColor')}

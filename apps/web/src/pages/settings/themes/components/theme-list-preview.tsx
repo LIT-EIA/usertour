@@ -8,7 +8,7 @@ import { GoogleFontCss } from '@usertour-packages/shared-components';
 import { ContentEditorSerialize, createValue5 } from '@usertour-packages/shared-editor';
 import { Theme } from '@usertour/types';
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeEditDropdownMenu } from './theme-edit-dropmenu';
 
@@ -45,9 +45,14 @@ export const ThemeListPreview = (props: ThemeListPreviewProps) => {
       >
         <div className="bg-slate-50 dark:bg-gray-800 rounded-t-md py-2.5 px-5 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-row grow space-x-2">
-            <span className="text-base font-medium text-gray-900 dark:text-white max-w-40	truncate ...">
+            {/* Real link so the card can be opened with the keyboard (the card itself is a clickable div) */}
+            <Link
+              to={`/project/${project?.id}/settings/theme/${theme.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-base font-medium text-gray-900 dark:text-white max-w-40	truncate ... rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
               {theme.name}
-            </span>
+            </Link>
             {theme.isDefault && (
               <span className="bg-primary px-1.5 py-0.5 rounded text-sm font-normal text-primary-foreground">
                 {t('settings.themes.defaultBadge')}
@@ -55,10 +60,20 @@ export const ThemeListPreview = (props: ThemeListPreviewProps) => {
             )}
           </div>
           <ThemeEditDropdownMenu theme={theme} onSubmit={handleOnSuccess} disabled={isViewOnly}>
-            <DotsHorizontalIcon className="h-4 w-4" />
+            <button
+              type="button"
+              aria-label={t('themeBuilder.aria.themeActions')}
+              className="-m-1 p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <DotsHorizontalIcon className="h-4 w-4" aria-hidden="true" />
+            </button>
           </ThemeEditDropdownMenu>
         </div>
-        <div className="flex justify-center items-center h-40 flex-col ">
+        {/* Preview of the theme (pictured end-user widget): not interactive */}
+        <div
+          className="flex justify-center items-center h-40 flex-col "
+          {...({ inert: '' } as React.HTMLAttributes<HTMLDivElement>)}
+        >
           <SharedPopper.Popper
             open={true}
             zIndex={1}

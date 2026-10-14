@@ -134,8 +134,9 @@ export const ModalThemeSettingsPanel = ({
                       variant="ghost"
                       size="icon"
                       onClick={onDelete}
+                      aria-label={t('themeBuilder.tooltips.deleteConditionVariation')}
                     >
-                      <Delete2Icon />
+                      <Delete2Icon aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">

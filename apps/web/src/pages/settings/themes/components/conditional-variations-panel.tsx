@@ -1,6 +1,6 @@
 import { Attribute, ThemeVariation } from '@usertour/types';
 import { Button } from '@usertour-packages/button';
-import { PlusIcon } from '@radix-ui/react-icons';
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { SubThemeModal } from './sub-theme-modal';
 import { QuestionTooltip } from '@usertour-packages/tooltip';
@@ -34,11 +34,15 @@ interface ConditionalVariationsPanelProps {
 const SortableVariationItem = ({
   variation,
   index,
+  count,
   onClick,
+  onMove,
 }: {
   variation: ThemeVariation;
   index: number;
+  count: number;
   onClick: () => void;
+  onMove: (from: number, to: number) => void;
 }) => {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -51,17 +55,48 @@ const SortableVariationItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const name = variation.name || t('themeBuilder.chrome.variationWithIndex', { index: index + 1 });
+  const moveButtonClass =
+    'h-6 w-6 p-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100';
+
+  // Drag handle sits beside (not inside) the edit button to avoid nested controls; the move
+  // buttons give a single-pointer/keyboard alternative to dragging (WCAG 2.5.7).
   return (
-    <div ref={setNodeRef} style={style} className="w-full">
+    <div ref={setNodeRef} style={style} className="group w-full flex items-center gap-1">
+      <span
+        {...attributes}
+        {...listeners}
+        aria-label={t('themeBuilder.aria.dragToReorder')}
+        className="flex-none cursor-move rounded-sm p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <DragHandleDots2Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
       <Button
         variant="outline"
-        className="flex items-center gap-2 w-full justify-start h-auto px-1 py-2 border-none hover:text-primary hover:bg-accent/50"
+        className="flex items-center gap-2 grow justify-start h-auto px-1 py-2 border-none hover:text-primary hover:bg-accent/50"
         onClick={onClick}
       >
-        <DragHandleDots2Icon className="h-4 w-4 cursor-move" {...attributes} {...listeners} />
-        <span className="text-sm font-medium">
-          {variation.name || t('themeBuilder.chrome.variationWithIndex', { index: index + 1 })}
-        </span>
+        <span className="text-sm font-medium">{name}</span>
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        className={moveButtonClass}
+        disabled={index === 0}
+        aria-label={t('themeBuilder.aria.moveUp', { name })}
+        onClick={() => onMove(index, index - 1)}
+      >
+        <ArrowUpIcon className="h-4 w-4" aria-hidden="true" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        className={moveButtonClass}
+        disabled={index === count - 1}
+        aria-label={t('themeBuilder.aria.moveDown', { name })}
+        onClick={() => onMove(index, index + 1)}
+      >
+        <ArrowDownIcon className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -123,6 +158,12 @@ export const ConditionalVariationsPanel = ({
     setEditingIndex(-1);
   };
 
+  const handleMoveVariation = (from: number, to: number) => {
+    if (onVariationsChange && to >= 0 && to < variations.length) {
+      onVariationsChange(arrayMove(variations, from, to));
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -172,7 +213,9 @@ export const ConditionalVariationsPanel = ({
                     key={variation.id || index}
                     variation={variation}
                     index={index}
+                    count={variations.length}
                     onClick={() => handleEditVariation(variation, index)}
+                    onMove={handleMoveVariation}
                   />
                 ))}
               </div>
@@ -186,7 +229,7 @@ export const ConditionalVariationsPanel = ({
           onClick={handleAddVariation}
           className="gap-2 hover:no-underline w-fit p-0"
         >
-          <PlusIcon className="h-4 w-4" />
+          <PlusIcon className="h-4 w-4" aria-hidden="true" />
           {t('themeBuilder.actions.addVariation')}
         </Button>
       </div>
