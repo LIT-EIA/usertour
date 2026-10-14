@@ -90,9 +90,9 @@ export const AccountEmailForm = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight">
           {t('settings.account.email.title')}
-        </h3>
+        </h2>
         {/* <p className="text-sm text-muted-foreground">
           Update your login email.
         </p> */}
@@ -107,7 +107,11 @@ export const AccountEmailForm = () => {
               <FormItem>
                 <FormLabel>{t('settings.account.email.emailLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t('settings.account.email.emailPlaceholder')} {...field} />
+                  <Input
+                    placeholder={t('settings.account.email.emailPlaceholder')}
+                    autoComplete="email"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

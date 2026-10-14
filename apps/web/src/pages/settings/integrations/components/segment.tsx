@@ -122,6 +122,7 @@ const ExportEventsForm = ({
           <div className="flex flex-col gap-1">
             <div className="text-sm">{t('settings.integrations.providerCard.segmentKeyLabel')}</div>
             <Input
+              aria-label={t('settings.integrations.providerCard.segmentKeyPlaceholder')}
               type="text"
               placeholder={t('settings.integrations.providerCard.segmentKeyPlaceholder')}
               value={integration?.key || ''}

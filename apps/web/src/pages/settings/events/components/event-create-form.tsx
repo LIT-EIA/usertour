@@ -43,6 +43,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { ScrollArea } from '@usertour-packages/scroll-area';
+import { TooltipIconButton } from '@usertour-packages/shared-components';
 
 interface CreateFormProps {
   isOpen: boolean;
@@ -186,7 +187,12 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                                <TooltipIconButton>
+                                  <QuestionMarkCircledIcon
+                                    className="ml-1 cursor-help"
+                                    aria-hidden="true"
+                                  />
+                                </TooltipIconButton>
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs bg-slate-700">
                                 <p>{t('settings.events.form.displayNameTooltip')}</p>
@@ -216,7 +222,12 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                                <TooltipIconButton>
+                                  <QuestionMarkCircledIcon
+                                    className="ml-1 cursor-help"
+                                    aria-hidden="true"
+                                  />
+                                </TooltipIconButton>
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs bg-slate-700">
                                 <p>{t('settings.events.form.codeNameTooltip')}</p>
@@ -247,7 +258,12 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>{t('settings.events.form.descriptionTooltip')}</p>
@@ -279,7 +295,12 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>{t('settings.events.form.attributesTooltip')}</p>
@@ -297,17 +318,26 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                             style={{ marginTop: '0' }}
                           >
                             <div className="p-2">{eventsOnAttribute.displayName}</div>
-                            <div className="absolute top-1/2 right-2 transform -translate-y-1/2 hidden group-hover:flex items-center justify-center">
-                              <CloseIcon
-                                width={16}
-                                height={16}
-                                className="mr-1 text-gray-600 hover:text-gray-800 hover:bg-red-200 w-6 h-6 p-1 rounded cursor-pointer"
+                            <div className="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-0 group-hover:opacity-100 focus-within:opacity-100 items-center justify-center">
+                              <button
+                                type="button"
+                                aria-label={t('settings.events.form.removeAttribute', {
+                                  name: eventsOnAttribute.displayName,
+                                })}
+                                className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 onClick={() =>
                                   setEventsOnAttributes((prev) =>
                                     prev.filter((_, index) => index !== i),
                                   )
                                 }
-                              />
+                              >
+                                <CloseIcon
+                                  width={16}
+                                  height={16}
+                                  className="mr-1 text-gray-600 hover:text-gray-800 hover:bg-red-200 w-6 h-6 p-1 rounded cursor-pointer"
+                                  aria-hidden="true"
+                                />
+                              </button>
                             </div>
                           </div>
                         );
@@ -352,16 +382,17 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                           </Button>
                         </div>
                       ) : (
-                        <div
-                          className="h-8 text-primary items-center flex flex-row justify-center rounded-md text-sm font-medium cursor-pointer"
+                        <button
+                          type="button"
+                          className="h-8 w-full text-primary items-center flex flex-row justify-center rounded-md text-sm font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           onClick={() => {
                             setSelectedAttributeValue('');
                             setSelectAttributeStatus(true);
                           }}
                         >
-                          <PlusIcon width={16} height={16} />
+                          <PlusIcon width={16} height={16} aria-hidden="true" />
                           {t('settings.events.form.addAttribute')}
-                        </div>
+                        </button>
                       )}
                       <FormMessage />
                     </FormItem>

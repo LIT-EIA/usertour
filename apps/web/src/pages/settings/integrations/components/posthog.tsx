@@ -122,6 +122,7 @@ const ExportEventsForm = ({
           <div className="flex flex-col gap-1">
             <p className="text-sm">{t('settings.integrations.providerCard.posthogKeyLabel')}</p>
             <Input
+              aria-label={t('settings.integrations.providerCard.posthogKeyPlaceholder')}
               type="text"
               placeholder={t('settings.integrations.providerCard.posthogKeyPlaceholder')}
               value={integration?.key || ''}

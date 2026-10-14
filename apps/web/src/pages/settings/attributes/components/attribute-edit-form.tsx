@@ -45,6 +45,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { TooltipIconButton } from '@usertour-packages/shared-components';
 
 interface EditFormProps {
   isOpen: boolean;
@@ -161,7 +162,12 @@ export const AttributeEditForm = (props: EditFormProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>{t('settings.attributes.form.bizTypeTooltip')}</p>
@@ -222,7 +228,12 @@ export const AttributeEditForm = (props: EditFormProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>{t('settings.attributes.form.dataTypeTooltip')}</p>
@@ -272,7 +283,12 @@ export const AttributeEditForm = (props: EditFormProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>{t('settings.attributes.form.displayNameTooltip')}</p>
@@ -301,7 +317,12 @@ export const AttributeEditForm = (props: EditFormProps) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>{t('settings.attributes.form.codeNameTooltip')}</p>
@@ -332,7 +353,12 @@ export const AttributeEditForm = (props: EditFormProps) => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <TooltipIconButton>
+                              <QuestionMarkCircledIcon
+                                className="ml-1 cursor-help"
+                                aria-hidden="true"
+                              />
+                            </TooltipIconButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             <p>{t('settings.attributes.form.descriptionTooltip')}</p>

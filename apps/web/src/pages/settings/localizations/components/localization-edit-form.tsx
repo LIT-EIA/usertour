@@ -22,7 +22,7 @@ import {
 } from '@usertour-packages/form';
 import { updateLocalization } from '@usertour-packages/gql';
 import { Input } from '@usertour-packages/input';
-import { LocateItem, LocateSelect } from '@usertour-packages/shared-components';
+import { LocateItem, LocateSelect, TooltipIconButton } from '@usertour-packages/shared-components';
 import { getErrorMessage } from '@usertour/helpers';
 import {
   Tooltip,
@@ -136,7 +136,12 @@ export const LocalizationEditForm = (props: EditFormProps) => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <TooltipIconButton>
+                              <QuestionMarkCircledIcon
+                                className="ml-1 cursor-help"
+                                aria-hidden="true"
+                              />
+                            </TooltipIconButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             {t('settings.localizations.form.localeTooltip')}
@@ -167,7 +172,12 @@ export const LocalizationEditForm = (props: EditFormProps) => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <TooltipIconButton>
+                              <QuestionMarkCircledIcon
+                                className="ml-1 cursor-help"
+                                aria-hidden="true"
+                              />
+                            </TooltipIconButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             {t('settings.localizations.form.nameTooltip')}
@@ -195,7 +205,12 @@ export const LocalizationEditForm = (props: EditFormProps) => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <TooltipIconButton>
+                              <QuestionMarkCircledIcon
+                                className="ml-1 cursor-help"
+                                aria-hidden="true"
+                              />
+                            </TooltipIconButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             {t('settings.localizations.form.codeTooltip')}

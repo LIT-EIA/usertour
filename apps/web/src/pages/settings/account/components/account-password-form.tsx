@@ -104,9 +104,9 @@ export const AccountPasswordForm = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight">
           {t('settings.account.password.title')}
-        </h3>
+        </h2>
         {/* <p className="text-sm text-muted-foreground">Update your password.</p> */}
       </div>
       <Separator />
@@ -157,7 +157,7 @@ export const AccountPasswordForm = () => {
                 <FormControl>
                   <Input
                     type="password"
-                    autoComplete="confirm-password"
+                    autoComplete="new-password"
                     placeholder={t('settings.account.password.confirmPlaceholder')}
                     {...field}
                   />
