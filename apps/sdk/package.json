@@ -10,8 +10,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:iife": "tsc && vite build -- --iife",
-    "build:dev": "tsc && vite build --mode development",
-    "build:dev:iife": "tsc && vite build --mode development -- --iife",
+    "build:dev": "tsc && vite build --mode development && node scripts/serve-dev.mjs es2020",
+    "build:dev:iife": "tsc && vite build --mode development -- --iife && node scripts/serve-dev.mjs legacy",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
