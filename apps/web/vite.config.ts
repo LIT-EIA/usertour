@@ -1,11 +1,36 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { type Plugin, defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
+import { BOOKMARKLET_OUT, minifyBookmarklet } from './scripts/bookmarklet.mjs';
+
+// Minifies bookmarklet/bookmarklet.js: served fresh in dev, emitted to dist on build
+function bookmarklet(): Plugin {
+  return {
+    name: 'usertour-bookmarklet',
+    configureServer(server) {
+      server.middlewares.use(`/${BOOKMARKLET_OUT}`, async (_req, res, next) => {
+        try {
+          res.setHeader('Content-Type', 'application/javascript');
+          res.end(await minifyBookmarklet());
+        } catch (error) {
+          next(error);
+        }
+      });
+    },
+    async generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: BOOKMARKLET_OUT,
+        source: await minifyBookmarklet(),
+      });
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), mkcert()],
+  plugins: [react(), mkcert(), bookmarklet()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

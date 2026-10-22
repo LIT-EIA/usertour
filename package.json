@@ -7,6 +7,7 @@
   "scripts": {
     "dev:web": "pnpm --filter ./apps/web dev",
     "dev:sdk": "pnpm --filter ./apps/sdk dev",
+    "dev:bookmarklet": "pnpm --filter ./apps/web bookmarklet:watch",
     "dev:server": "pnpm --filter ./apps/server start:dev",
     "build:web": "pnpm --filter ./apps/web build",
     "build:sdk": "pnpm --filter ./apps/sdk build",
