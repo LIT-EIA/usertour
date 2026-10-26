@@ -476,7 +476,7 @@
       <details class="debug-details">
         <summary>Debug namespaces</summary>
         <div class="debug-namespaces"></div>
-        <span class="debug-hint">Reload the page to apply changes.</span>
+        <span class="debug-hint">Changes apply right away.</span>
       </details>
       <div class="page-name-section selector-field-container">
         <label class="selector-field-label">Page Name</label>
@@ -1302,7 +1302,7 @@
     usertour.enableUserTour();
   });
 
-  // Debug mode: the SDK logger reads localStorage "debug" (comma-separated namespaces) on page load.
+  // Debug mode: the SDK logger reads localStorage "debug" (comma-separated namespaces) on every log call.
   // Keep in sync with LoggerNamespace in apps/sdk/src/utils/logger.ts
   const DEBUG_NAMESPACES = [
     { ns: '*', description: 'Everything, including other libraries using "debug"' },
