@@ -3466,6 +3466,15 @@ const translations = {
         selectPlaceholder: 'Select',
       },
     },
+    sortable: {
+      moveUp: 'Move up',
+      moveDown: 'Move down',
+      itemLabel: '{{name}}, position {{position}} of {{total}}',
+      pickedUp: 'Picked up {{name}}. Position {{position}} of {{total}}.',
+      moved: '{{name}} moved to position {{position}} of {{total}}.',
+      dropped: '{{name}} dropped at position {{position}} of {{total}}.',
+      cancelled: 'Reordering cancelled. {{name}} returned to position {{position}}.',
+    },
     flow: {
       untitledStep: 'Untitled',
       saveStepFailed: 'Failed to create step!',

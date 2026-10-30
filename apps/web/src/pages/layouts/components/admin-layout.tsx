@@ -126,8 +126,9 @@ export const AdminLayoutNewContent = (props: AdminLayoutNewContentProps) => {
           className,
         )}
       >
+        {/* Reserves the bar for the language switcher, which AdminNewLayout renders on top of it */}
         <div className="flex justify-end items-center px-3 py-1 border-b flex-shrink-0 dark:border-border/60">
-          <LanguageSwitcher />
+          <div className="h-7" aria-hidden="true" />
         </div>
         <main
           id={MAIN_CONTENT_ID}
@@ -252,7 +253,14 @@ export const AdminNewLayout = (props: AdminLayoutProps) => {
   return (
     <>
       <AdminLayout>
-        <div className="flex h-[100dvh] w-full">{children}</div>
+        <div className="relative flex h-[100dvh] w-full">
+          {/* First in the DOM so it follows the skip link in tab order, but drawn in the content
+              panel's top bar (card offset + border + bar padding) */}
+          <div className="absolute top-[11px] right-[19px] z-10">
+            <LanguageSwitcher />
+          </div>
+          {children}
+        </div>
       </AdminLayout>
     </>
   );

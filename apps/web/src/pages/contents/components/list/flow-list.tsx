@@ -3,7 +3,7 @@ import { useContentListContext } from '@/contexts/content-list-context';
 import { OpenInNewWindowIcon, PlusCircledIcon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { Separator } from '@usertour-packages/separator';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ContentCreateForm } from '../shared/content-create-form';
 import { EmptyPlaceholder } from '../shared/empty-placeholder';
 import { DataTable } from './data-table';
@@ -15,8 +15,19 @@ export const FlowListContent = () => {
   const { isViewOnly } = useAppContext();
   const { t } = useTranslation();
 
-  const openCreateFormHandler = async () => {
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+
+  const openCreateFormHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    openerRef.current = event.currentTarget;
     setOpen(true);
+  };
+
+  // The dialog has no DialogTrigger, so return focus to the button that opened it
+  const handleCloseAutoFocus = (event: Event) => {
+    event.preventDefault();
+    const opener = openerRef.current?.isConnected ? openerRef.current : createButtonRef.current;
+    opener?.focus();
   };
 
   const { contents, refetch, isLoading } = useContentListContext();
@@ -27,8 +38,19 @@ export const FlowListContent = () => {
 
   return (
     <div className="flex flex-col flex-shrink min-w-0 px-4 py-6 lg:px-8 grow">
-      <div className="flex justify-between">
+      {/* Reversed so the New flow button comes before the guide link in tab order but stays on the right */}
+      <div className="flex flex-row-reverse justify-between">
         <>
+          <Button
+            ref={createButtonRef}
+            onClick={openCreateFormHandler}
+            className="flex-none"
+            id="create-flow-button"
+            disabled={isViewOnly}
+          >
+            <PlusCircledIcon className="mr-2 h-4 w-4" />
+            {t('contents.list.newButton', { type: t('contents.types.flow') })}
+          </Button>
           <div className="flex flex-col space-y-1 ">
             <h2 className="text-2xl font-semibold tracking-tight">
               {t('contents.list.flows.title')}
@@ -48,15 +70,6 @@ export const FlowListContent = () => {
               </p>
             </div>
           </div>
-          <Button
-            onClick={openCreateFormHandler}
-            className="flex-none"
-            id="create-flow-button"
-            disabled={isViewOnly}
-          >
-            <PlusCircledIcon className="mr-2 h-4 w-4" />
-            {t('contents.list.newButton', { type: t('contents.types.flow') })}
-          </Button>
         </>
       </div>
       <Separator className="my-6" />
@@ -73,7 +86,11 @@ export const FlowListContent = () => {
         </EmptyPlaceholder>
       )}
       {!isLoading && contents && contents.length > 0 && <DataTable />}
-      <ContentCreateForm isOpen={open} onClose={handleOnClose} />
+      <ContentCreateForm
+        isOpen={open}
+        onClose={handleOnClose}
+        onCloseAutoFocus={handleCloseAutoFocus}
+      />
     </div>
   );
 };

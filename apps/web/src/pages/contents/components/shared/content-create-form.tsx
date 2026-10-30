@@ -35,6 +35,7 @@ import { useTranslation } from 'react-i18next';
 interface ContentCreateFormProps {
   isOpen: boolean;
   onClose: (contentId?: string) => void;
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 const formSchema = z.object({
@@ -62,7 +63,11 @@ const defaultValues: Partial<FormValues> = {
   type: BuilderType.WEB,
 };
 
-export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) => {
+export const ContentCreateForm = ({
+  onClose,
+  isOpen,
+  onCloseAutoFocus,
+}: ContentCreateFormProps) => {
   const [createContentMutation] = useMutation(createContent);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const token = getAuthToken();
@@ -136,7 +141,7 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={(op) => !op && onClose()}>
-      <DialogContent className="max-w-2xl	">
+      <DialogContent className="max-w-2xl	" onCloseAutoFocus={onCloseAutoFocus}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
@@ -153,18 +158,17 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
                     <FormLabel className="w-32 flex-none">
                       {t('contents.create.nameLabel')}
                     </FormLabel>
-                    <FormControl>
-                      <div className="flex flex-col space-x-1 w-full grow">
+                    <div className="flex flex-col space-x-1 w-full grow">
+                      <FormControl>
                         <Input
                           placeholder={t('contents.create.namePlaceholder', {
                             type: t('contents.types.flow'),
                           })}
                           {...field}
-                          id="flow-name-input"
                         />
-                        <FormMessage />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />
@@ -182,15 +186,15 @@ export const ContentCreateForm = ({ onClose, isOpen }: ContentCreateFormProps) =
                       <FormLabel className="w-32 flex-none">
                         {t('contents.shared.edit.buildUrlLabel')}
                       </FormLabel>
-                      <FormControl>
-                        <div className="flex flex-col space-x-1 w-full grow">
+                      <div className="flex flex-col space-x-1 w-full grow">
+                        <FormControl>
                           <Input
                             placeholder={t('contents.shared.edit.buildUrlPlaceholder')}
                             {...field}
                           />
-                          <FormMessage />
-                        </div>
-                      </FormControl>
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />

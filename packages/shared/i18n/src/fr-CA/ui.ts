@@ -3555,6 +3555,15 @@ const translations = {
         selectPlaceholder: 'Sélectionner',
       },
     },
+    sortable: {
+      moveUp: 'Déplacer vers le haut',
+      moveDown: 'Déplacer vers le bas',
+      itemLabel: '{{name}}, position {{position}} sur {{total}}',
+      pickedUp: '{{name}} saisi. Position {{position}} sur {{total}}.',
+      moved: '{{name}} déplacé à la position {{position}} sur {{total}}.',
+      dropped: '{{name}} déposé à la position {{position}} sur {{total}}.',
+      cancelled: 'Réorganisation annulée. {{name}} est revenu à la position {{position}}.',
+    },
     flow: {
       untitledStep: 'Sans titre',
       saveStepFailed: "Échec de la création de l'étape!",
