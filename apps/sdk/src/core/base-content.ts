@@ -22,10 +22,12 @@ import { Config } from './config';
 import { Evented } from './evented';
 import { ExternalStore } from './store';
 import { differenceInHours } from 'date-fns';
-import { logger } from '../utils/logger';
+import { createLogger } from '../utils/logger';
 import { BaseStore } from '../types/store';
 import { getActivedTheme } from '../utils/content-utils';
 import isEqual from 'fast-deep-equal';
+
+const logger = createLogger('content');
 
 export abstract class BaseContent<T extends BaseStore = any> extends Evented {
   private readonly instance: App;
@@ -74,6 +76,14 @@ export abstract class BaseContent<T extends BaseStore = any> extends Evented {
    * @returns {Promise<void>} A promise that resolves when the content is started
    */
   async start(reason?: string, cvid?: string) {
+    logger.info('start', {
+      contentId: this.content.contentId,
+      type: this.content.type,
+      reason,
+      cvid,
+      dismissedLocally: this.isDismissed,
+      latestSessionId: this.content.latestSession?.id,
+    });
     const reusedSessionId = this.getReusedSessionId();
     const sessionId = reusedSessionId || (await this.createSessionId(reason));
     if (!sessionId) {
@@ -488,6 +498,7 @@ export abstract class BaseContent<T extends BaseStore = any> extends Evented {
    * @param contentId - The ID of the content to start
    */
   async startNewTour(contentId: string, cvid?: string) {
+    logger.info('startNewTour from action', { contentId, cvid }, new Error().stack);
     await this.startTour(contentId, contentStartReason.ACTION, cvid);
   }
 

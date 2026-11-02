@@ -29,6 +29,9 @@ import { document, location } from '../utils/globals';
 import { off, on } from './listener';
 import { iframeUtils } from './iframe-utils';
 import { parseSelectorWithCondition } from './selector-parser';
+import { createLogger } from './logger';
+
+const logger = createLogger('conditions');
 
 const isActiveRulesByCurrentPage = (rules: RulesCondition) => {
   const { excludes, includes } = rules.data;
@@ -225,7 +228,7 @@ const findFirstVisibleElement = async (elementData: any): Promise<HTMLElement | 
       }
     }
   } catch (error) {
-    console.error('[Find Visible Element] Error querying main document:', error);
+    logger.critical('[Find Visible Element] Error querying main document:', error);
   }
 
   // If not found in main document, search in iframes
@@ -976,7 +979,7 @@ export const parseUrlParams = (url: string, paramName: string): string | null =>
 
     return null;
   } catch (error) {
-    console.error('Error parsing URL:', error);
+    logger.critical('Error parsing URL:', error);
     return null;
   }
 };

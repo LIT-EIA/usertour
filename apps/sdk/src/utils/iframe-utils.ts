@@ -1,8 +1,10 @@
 import { ElementSelectorPropsData } from '@usertour/types';
 import { finderV2 } from '@usertour-packages/finder';
-import { logger } from './logger';
+import { createLogger } from './logger';
 import { document, window } from './globals';
 import { parseSelectorWithCondition } from './selector-parser';
+
+const logger = createLogger('iframe');
 
 /**
  * Interface for iframe communication messages

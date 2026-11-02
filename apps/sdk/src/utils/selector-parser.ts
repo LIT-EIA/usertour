@@ -3,6 +3,9 @@ import { finderV2 } from '@usertour-packages/finder';
 import { document } from './globals';
 import { iframeUtils } from './iframe-utils';
 import { isVisible } from './conditions';
+import { createLogger } from './logger';
+
+const logger = createLogger('conditions');
 
 /**
  * Parsed selector result containing main selector and optional conditional selector
@@ -116,7 +119,7 @@ export async function checkConditionalSelectorPresent(
     // Check if element is visible
     return await isVisible(el);
   } catch (error) {
-    console.error('[SelectorParser] Error checking conditional selector:', error);
+    logger.critical('Error checking conditional selector:', error);
     return false;
   }
 }

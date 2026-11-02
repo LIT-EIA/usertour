@@ -8,6 +8,9 @@ import { document, window } from '../utils/globals';
 import { BaseContent } from './base-content';
 import { ElementWatcher } from './element-watcher';
 import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('launcher');
 
 export class Launcher extends BaseContent<LauncherStore> {
   private watcher: ElementWatcher | null = null;
@@ -101,7 +104,7 @@ export class Launcher extends BaseContent<LauncherStore> {
           this.setupElementFoundHandler();
 
           this.watcher.findElement().catch((error) => {
-            console.error('[Launcher] Error re-finding element:', error);
+            logger.critical('Error re-finding element:', error);
             // Reset flag on error
             this.isRefindingElement = false;
           });
@@ -201,7 +204,7 @@ export class Launcher extends BaseContent<LauncherStore> {
             // Continue searching after a short delay to avoid immediate re-trigger
             setTimeout(() => {
               this.watcher?.findElement(0).catch((error) => {
-                console.error('[Launcher] Error in findElement retry:', error);
+                logger.critical('Error in findElement retry:', error);
               });
             }, 100);
           }
@@ -288,7 +291,7 @@ export class Launcher extends BaseContent<LauncherStore> {
 
     // Start element search
     this.watcher.findElement().catch((error) => {
-      console.error('[Launcher] Error in findElement:', error);
+      logger.critical('Error in findElement:', error);
     });
   }
 

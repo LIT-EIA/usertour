@@ -112,7 +112,7 @@ class Tour {
 }
 ```
 
-#### 4. Injected Iframe SDK (`src/utils/iframe-sdk.ts`)
+#### 4. Injected Iframe SDK (`getIframeSDKCode()` in `src/utils/iframe-utils.ts`)
 **Minimal SDK injected into same-origin iframes:**
 
 ```typescript

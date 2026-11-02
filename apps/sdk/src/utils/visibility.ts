@@ -1,4 +1,8 @@
 import { window } from './globals';
+import { createLogger } from './logger';
+
+const logger = createLogger('visibility');
+
 interface VisibilityObserverOptions {
   onVisible?: () => void;
   onHidden?: () => void;
@@ -27,7 +31,7 @@ class SharedMutationObserver {
 
         // Skip processing if too many mutations occur in a short time
         if (mutations.length > 100) {
-          console.warn('Too many mutations detected, skipping some updates');
+          logger.warn('Too many mutations detected, skipping some updates');
           return;
         }
 
@@ -262,7 +266,7 @@ export class ElementVisibilityObserver {
       // Final viewport check
       return this.isInViewport(elementRect, rootWindow);
     } catch (error) {
-      console.error('Visibility check error:', error);
+      logger.critical('Visibility check error:', error);
       return false;
     }
   }

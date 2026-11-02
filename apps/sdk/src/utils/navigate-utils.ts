@@ -1,4 +1,6 @@
-import { logger } from './logger';
+import { createLogger } from './logger';
+
+const logger = createLogger('navigation');
 
 interface UserInfo {
   data: Record<string, string>;

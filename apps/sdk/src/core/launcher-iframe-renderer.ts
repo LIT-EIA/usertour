@@ -6,6 +6,9 @@
  */
 
 import { IframeElementInfo } from '../utils/iframe-utils';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('launcher');
 
 export interface IframeLauncherOptions {
   content: string | HTMLElement;
@@ -40,13 +43,13 @@ export class IframeLauncherRenderer {
     const iframeDoc = this.getIframeDocument();
 
     if (!iframeDoc || !targetElement) {
-      console.error('[IframeLauncherRenderer] Cannot access iframe document or target element');
+      logger.critical('[IframeLauncherRenderer] Cannot access iframe document or target element');
       return;
     }
 
     // Ensure element is HTMLElement
     if (!(targetElement instanceof HTMLElement)) {
-      console.error('[IframeLauncherRenderer] Target element is not an HTMLElement');
+      logger.critical('[IframeLauncherRenderer] Target element is not an HTMLElement');
       return;
     }
 
@@ -302,7 +305,7 @@ export class IframeLauncherRenderer {
     try {
       return this.iframeElementInfo.iframe.contentDocument;
     } catch (error) {
-      console.error('[IframeLauncherRenderer] Cannot access iframe document:', error);
+      logger.critical('[IframeLauncherRenderer] Cannot access iframe document:', error);
       return null;
     }
   }
@@ -392,7 +395,7 @@ export function canRenderInIframe(iframe: HTMLIFrameElement): boolean {
     return true;
   } catch (error) {
     // CORS or sandbox restrictions
-    console.error('[IframeLauncherRenderer] Cannot render in iframe:', error);
+    logger.critical('[IframeLauncherRenderer] Cannot render in iframe:', error);
     return false;
   }
 }

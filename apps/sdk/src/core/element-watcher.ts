@@ -12,6 +12,9 @@ import {
   checkConditionalSelectorPresent,
   ParsedSelector,
 } from '../utils/selector-parser';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('element-watcher');
 
 /**
  * Interface to track element visibility state
@@ -344,7 +347,7 @@ export class ElementWatcher extends Evented {
 
     this.timer = setTimeout(() => {
       this.findElement(retryTimes + 1).catch((error) => {
-        console.error('[ElementWatcher] Error in findElement retry:', error);
+        logger.critical('Error in findElement retry:', error);
       });
     }, RETRY_DELAY);
   }
@@ -399,10 +402,7 @@ export class ElementWatcher extends Evented {
           setTimeout(() => {
             if (!this.hasFoundElement) {
               this.findElement(0).catch((error) => {
-                console.error(
-                  '[ElementWatcher] Error in findElement after iframe src change:',
-                  error,
-                );
+                logger.critical('Error in findElement after iframe src change:', error);
               }); // Reset retry count for new search
             }
           }, 500); // Give iframe time to start loading new content
