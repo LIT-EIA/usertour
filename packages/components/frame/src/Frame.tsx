@@ -22,6 +22,11 @@ interface FrameContentValue {
   document: Document;
   window: Window | null;
   setStyle: (style: string) => void;
+  // Iframe or shadow host
+  host: HTMLElement;
+  // Iframe document or shadow root
+  scope: Document | ShadowRoot;
+  container: HTMLElement;
 }
 
 type AssetTagType = 'link' | 'script';
@@ -35,9 +40,11 @@ export interface AssetAttributes
     ScriptHTMLAttributes<HTMLElement> {
   tagName: AssetTagType;
   isCheckLoaded: boolean;
+  // ShadowFrame only: loaded in the host document, e.g. font faces
+  global?: boolean;
 }
 
-const FrameContext = createContext<FrameContentValue | undefined>(undefined);
+export const FrameContext = createContext<FrameContentValue | undefined>(undefined);
 
 /**
  * Hook to access Frame context
@@ -63,6 +70,7 @@ interface FrameProps {
   initialContent?: string; // Initial HTML content for iframe
   className?: string; // CSS class for iframe element
   onLoad?: () => void; // Callback when iframe and assets are fully loaded
+  title?: string; // Accessible name of the iframe; generic "Content Frame" when omitted
 }
 
 /**
@@ -79,6 +87,7 @@ export const Frame = forwardRef<HTMLIFrameElement, FrameProps>((props, ref) => {
     initialContent = '',
     className = '',
     onLoad,
+    title,
   } = props;
 
   // State management for iframe lifecycle
@@ -233,7 +242,7 @@ export const Frame = forwardRef<HTMLIFrameElement, FrameProps>((props, ref) => {
   const renderHeaderAssets = useMemo(() => {
     const nodes: ReactNode[] = [];
     assets.forEach((asset: AssetAttributes, index: number) => {
-      const { tagName: TagName, isCheckLoaded, ...attrs } = asset;
+      const { tagName: TagName, isCheckLoaded, global, ...attrs } = asset;
       nodes.push(
         <TagName
           {...attrs}
@@ -267,9 +276,9 @@ export const Frame = forwardRef<HTMLIFrameElement, FrameProps>((props, ref) => {
         ref={composedRefs}
         onLoad={handleLoad}
         onError={handleIframeError}
-        title="Content Frame"
-        aria-label="Content Frame"
-        role="document"
+        {...(title
+          ? { title }
+          : { title: 'Content Frame', 'aria-label': 'Content Frame', role: 'document' })}
       />
 
       {/* Inject head content into iframe */}
@@ -286,6 +295,9 @@ export const Frame = forwardRef<HTMLIFrameElement, FrameProps>((props, ref) => {
               document: contentDocument!,
               window: contentDocument!.defaultView,
               setStyle,
+              host: nodeRef.current!,
+              scope: contentDocument!,
+              container: container as HTMLElement,
             }}
           >
             {children}

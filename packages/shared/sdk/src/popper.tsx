@@ -1,6 +1,6 @@
 import { CSSProperties, forwardRef, useEffect, useRef, useState, useCallback } from 'react';
 import * as ArrowPrimitive from '@usertour-packages/react-arrow';
-import { AssetAttributes, Frame, useFrame } from '@usertour-packages/frame';
+import { AssetAttributes, Frame, ShadowFrame, useFrame } from '@usertour-packages/frame';
 import { createContext } from '@usertour-packages/react-context';
 import { useSize } from '@usertour-packages/react-use-size';
 import { CloseIcon, UsertourIcon } from '@usertour-packages/icons';
@@ -163,21 +163,85 @@ const PopperContainer = forwardRef<HTMLDivElement, PopperContentProps>(({ childr
   );
 });
 
-const PopperContentFrame = forwardRef<HTMLDivElement, PopperContentProps>(({ children }, _) => {
+type PopperContentReadyInfo = {
+  // Iframe or shadow host
+  host: HTMLElement;
+  // Iframe document or shadow root
+  scope: Document | ShadowRoot;
+  root: HTMLElement;
+};
+
+type PopperDialogProps = {
+  label: string;
+  description?: string;
+  modal?: boolean;
+  // The frame document doesn't inherit the page language
+  lang?: string;
+  onEscape?: () => void;
+};
+
+type PopperFocusHandlers = {
+  onFocus?: React.FocusEventHandler<HTMLElement>;
+  onBlur?: React.FocusEventHandler<HTMLElement>;
+};
+
+type PopperContentFrameProps = PopperContentProps & {
+  frameTitle?: string;
+  // Shadow root: screen readers don't announce each step as a newly loaded page
+  isolation?: 'iframe' | 'shadow';
+  dialog?: PopperDialogProps;
+  onContentReady?: (info: PopperContentReadyInfo, ready: boolean) => void;
+  focusHandlers?: PopperFocusHandlers;
+};
+
+const PopperContentFrame = forwardRef<HTMLDivElement, PopperContentFrameProps>((props, _) => {
+  const {
+    children,
+    frameTitle,
+    dialog,
+    onContentReady,
+    focusHandlers,
+    isolation = 'iframe',
+  } = props;
   const { onOpenChange, assets, globalStyle, setIsIframeLoaded } = usePopperContext(POPPER_NAME);
 
   const handleFrameLoad = useCallback(() => {
     setIsIframeLoaded?.(true);
   }, [setIsIframeLoaded]);
 
+  const content = (
+    <PopperContentInFrame
+      onOpenChange={onOpenChange}
+      globalStyle={globalStyle}
+      dialog={dialog}
+      onContentReady={onContentReady}
+      focusHandlers={focusHandlers}
+    >
+      {children}
+    </PopperContentInFrame>
+  );
+
+  if (isolation === 'shadow') {
+    return (
+      <ShadowFrame
+        assets={assets}
+        className="usertour-widget-popper__frame"
+        onLoad={handleFrameLoad}
+      >
+        {content}
+      </ShadowFrame>
+    );
+  }
+
   return (
-    <>
-      <Frame assets={assets} className="usertour-widget-popper__frame" onLoad={handleFrameLoad}>
-        <PopperContentInFrame onOpenChange={onOpenChange} globalStyle={globalStyle}>
-          {children}
-        </PopperContentInFrame>
-      </Frame>
-    </>
+    <Frame
+      assets={assets}
+      className="usertour-widget-popper__frame"
+      onLoad={handleFrameLoad}
+      title={frameTitle}
+    >
+      {content}
+    </Frame>
   );
 });
 
@@ -372,28 +436,72 @@ const PopperModalContentPotal = forwardRef<HTMLDivElement, ModalContentProps>(
   },
 );
 
-const PopperContentInFrame = forwardRef<HTMLDivElement, PopperContentProps>((props, _) => {
-  const { children, globalStyle } = props;
-  const { setStyle, document } = useFrame();
+type PopperContentInFrameProps = PopperContentProps & {
+  dialog?: PopperDialogProps;
+  onContentReady?: (info: PopperContentReadyInfo, ready: boolean) => void;
+  focusHandlers?: PopperFocusHandlers;
+};
+
+const PopperContentInFrame = forwardRef<HTMLDivElement, PopperContentInFrameProps>((props, _) => {
+  const { children, globalStyle, dialog, onContentReady, focusHandlers } = props;
+  const { setStyle, host, scope, container } = useFrame();
+  const isShadow = scope.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
+  const { shouldShow } = usePopperContext(POPPER_NAME);
+  const [root, setRoot] = useState<HTMLDivElement | null>(null);
+  const onContentReadyRef = useRef(onContentReady);
+  onContentReadyRef.current = onContentReady;
+
   const onSizeChange = (rect: { width: number; height: number }) => {
+    if (isShadow) {
+      return;
+    }
     setStyle(`height: ${rect.height}px !important`);
   };
   useEffect(() => {
     if (globalStyle) {
-      document.body.style.cssText = globalStyle;
-      document.body.className = 'usertour-widget-root';
+      container.style.cssText = globalStyle;
+      container.classList.add('usertour-widget-root');
     }
-  }, [globalStyle]);
+  }, [globalStyle, container]);
+
+  useEffect(() => {
+    if (!shouldShow || !root || !onContentReadyRef.current) {
+      return;
+    }
+    const info = { host, scope, root };
+    onContentReadyRef.current(info, true);
+    return () => {
+      onContentReadyRef.current?.(info, false);
+    };
+  }, [shouldShow, root, host, scope]);
+
   return (
     <>
-      <PopperContent onSizeChange={onSizeChange}>{children}</PopperContent>
+      <PopperContent
+        onSizeChange={onSizeChange}
+        dialog={dialog}
+        focusHandlers={focusHandlers}
+        ref={setRoot}
+      >
+        {children}
+      </PopperContent>
     </>
   );
 });
 
-const PopperContent = forwardRef<HTMLDivElement, PopperContentProps>((props, _) => {
-  const { onSizeChange, children } = props;
+const DIALOG_DESCRIPTION_ID = 'usertour-dialog-description';
+
+const PopperContent = forwardRef<
+  HTMLDivElement,
+  PopperContentProps & {
+    dialog?: PopperDialogProps;
+    focusHandlers?: PopperFocusHandlers;
+  }
+>((props, forwardedRef) => {
+  const { onSizeChange, children, dialog, focusHandlers } = props;
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
+  const handleRef = useCallback((node: HTMLDivElement | null) => setRef(node), []);
+  const composedRefs = useComposedRefs(forwardedRef, handleRef);
   const rect = useSize(ref);
 
   useEffect(() => {
@@ -402,13 +510,51 @@ const PopperContent = forwardRef<HTMLDivElement, PopperContentProps>((props, _) 
     }
   }, [rect]);
 
+  const dialogProps = dialog
+    ? {
+        role: 'dialog',
+        'aria-label': dialog.label,
+        'aria-modal': dialog.modal ? true : undefined,
+        'aria-describedby': dialog.description ? DIALOG_DESCRIPTION_ID : undefined,
+        lang: dialog.lang,
+        tabIndex: -1,
+      }
+    : {};
+
+  const onEscape = dialog?.onEscape;
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onEscape || event.defaultPrevented || (event.key !== 'Escape' && event.key !== 'Esc')) {
+      return;
+    }
+    // Let expanded popups close first
+    const target = event.target as Element;
+    const isPopup =
+      target.tagName === 'SELECT' ||
+      target.getAttribute('role') === 'combobox' ||
+      target.hasAttribute('aria-haspopup');
+    if (isPopup && target.getAttribute('aria-expanded') === 'true') {
+      return;
+    }
+    event.preventDefault();
+    onEscape();
+  };
+
   return (
     <>
       <div
-        ref={setRef}
+        ref={composedRefs}
         className="usertour-root usertour-widget-popper-frame-root usertour-widget-popper-frame-root-iframe text-sdk-foreground"
+        {...dialogProps}
+        {...focusHandlers}
+        onKeyDown={onEscape ? handleKeyDown : undefined}
       >
         {children}
+        {dialog?.description && (
+          // aria-describedby only: in browse mode it would sound like the end of the step
+          <span id={DIALOG_DESCRIPTION_ID} className="usertour-visually-hidden" aria-hidden="true">
+            {dialog.description}
+          </span>
+        )}
       </div>
     </>
   );
@@ -437,7 +583,7 @@ const PopperClose = forwardRef<HTMLButtonElement, PopoverCloseProps>(
       <button
         type="button"
         className={cn(
-          'rounded-full h-[25px] w-[25px] inline-flex items-center justify-center text-sdk-xbutton absolute top-[5px] right-[5px] hover:bg-sdk-primary/40 outline-none cursor-default',
+          'rounded-full h-[25px] w-[25px] inline-flex items-center justify-center text-sdk-xbutton absolute top-[5px] right-[5px] hover:bg-sdk-primary/40 cursor-default',
           className,
         )}
         aria-label="Close"
@@ -730,4 +876,11 @@ export {
   PopperStaticContent,
 };
 
-export type { PopperProps, PopperContentProps, ModalContentProps };
+export type {
+  PopperProps,
+  PopperContentProps,
+  ModalContentProps,
+  PopperContentFrameProps,
+  PopperContentReadyInfo,
+  PopperDialogProps,
+};

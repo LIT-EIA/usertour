@@ -27,6 +27,8 @@ const getAssets = (themeSettings: ThemeTypesSetting): AssetAttributes[] => {
     {
       tagName: 'link',
       isCheckLoaded: false,
+      // Font faces don't register inside shadow roots
+      global: true,
       href: `https://fonts.googleapis.com/css2?family=${fontFamily}`,
       rel: 'stylesheet',
       type: 'text/css',

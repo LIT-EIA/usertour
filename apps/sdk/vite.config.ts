@@ -17,6 +17,19 @@ import mkcert from 'vite-plugin-mkcert';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const pkg = require('./package.json');
+
+// rem to px: in a shadow root, rem follows the page's root font size (often changed, e.g. 62.5%)
+const remToPx = {
+  postcssPlugin: 'usertour-rem-to-px',
+  Declaration(decl: { value: string }) {
+    if (decl.value.includes('rem')) {
+      decl.value = decl.value.replace(
+        /(-?\d*\.?\d+)rem\b/g,
+        (_: string, value: string) => `${Number.parseFloat(value) * 16}px`,
+      );
+    }
+  },
+};
 const banner = ['/*!', pkg.name, pkg.version, '*/\n'].join(' ');
 const env = process.env.DEVELOPMENT ? 'development' : 'production';
 const buildPlugins = [
@@ -32,7 +45,7 @@ const buildPlugins = [
     extensions: ['.ts', '.mts', '.tsx'],
   }),
   postcss({
-    plugins: [tailwindcss, autoprefixer, cssnano],
+    plugins: [tailwindcss, remToPx, autoprefixer, cssnano],
     extract: 'css/usertour.css',
   }),
   viteStaticCopy({
