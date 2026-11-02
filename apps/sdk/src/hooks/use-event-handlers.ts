@@ -7,16 +7,17 @@ import { off, on } from '../utils/listener';
 // Custom hook for event handling
 export const useEventHandlers = (
   data: LauncherData | undefined,
-  launcherRef: React.RefObject<HTMLDivElement>,
+  launcherRef: React.RefObject<HTMLElement>,
   triggerRef: React.RefObject<HTMLElement | undefined>,
   handlers: {
     handleClick: () => void;
     handleMouseEnter: () => void;
     handleMouseLeave: () => void;
   },
+  visible = true,
 ) => {
   useEffect(() => {
-    if (!data) return;
+    if (!data || !visible) return;
     const launcher = launcherRef.current;
     const trigger = triggerRef.current;
     const { triggerElement, triggerEvent } = data.behavior;
@@ -60,5 +61,6 @@ export const useEventHandlers = (
     handlers.handleClick,
     handlers.handleMouseEnter,
     handlers.handleMouseLeave,
+    visible,
   ]);
 };

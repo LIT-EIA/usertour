@@ -31,7 +31,7 @@ export interface LauncherContentProps {
 export const LauncherContentMain = forwardRef<HTMLDivElement, LauncherContentProps>(
   (props: LauncherContentProps, ref) => {
     const { zIndex, triggerRef, theme, data, onValueChange, onCustomUploadRequest } = props;
-    const launcherRef = useRef<HTMLDivElement>(null);
+    const launcherRef = useRef<HTMLButtonElement>(null);
     const { projectId } = useBuilderContext();
     const { contents } = useContentListContext();
 

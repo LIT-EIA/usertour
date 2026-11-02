@@ -1,6 +1,6 @@
 @layer components {
   .usertour-btn {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50;
     font-family: var(--usertour-font-family);
     font-size: var(--usertour-font-size);
     border-radius: var(--usertour-button-border-radius);
@@ -64,4 +64,29 @@
     color: var(--usertour-secondary-foreground-active);
     border-color: var(--usertour-secondary-border-active);
   }
+}
+
+/* Focus indicator (WCAG 2.4.7); !important beats outline-none utilities */
+.usertour-widget-popper-frame-root :focus-visible {
+  outline: 2px solid var(--usertour-main-foreground-color, currentColor) !important;
+  outline-offset: 2px !important;
+}
+/* Drawn inside: the launcher clips its overflow */
+.usertour-checklist-launcher-button:focus-visible {
+  outline: 2px solid var(--usertour-checklist-trigger-font-color, currentColor) !important;
+  outline-offset: -4px !important;
+}
+.usertour-widget-popper-frame-root:focus {
+  outline: none;
+}
+.usertour-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }

@@ -21,9 +21,12 @@ import {
   checklistHasShowAnimationItems,
 } from '../utils/content-utils';
 import { ChecklistStore } from '../types/store';
+import type { ChecklistFocusHandle } from '@usertour-packages/sdk';
+import { announceCompletedTasks } from './checklist-announcer';
 
 export class Checklist extends BaseContent<ChecklistStore> {
   private hasPendingCompletedItems = false; // Track if there are pending completed items to expand
+  readonly focusRef: { current: ChecklistFocusHandle | null } = { current: null };
 
   /**
    * Monitors the checklist state and updates its visibility.
@@ -327,6 +330,7 @@ export class Checklist extends BaseContent<ChecklistStore> {
           items,
         },
       });
+      announceCompletedTasks(items, checklistData.items);
     }
 
     // Expand the checklist if there are new completed items

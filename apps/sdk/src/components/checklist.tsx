@@ -14,8 +14,11 @@ import {
   ContentEditorSerialize,
 } from '@usertour-packages/shared-editor';
 import { BizUserInfo, ChecklistData, ChecklistItemType, ThemeTypesSetting } from '@usertour/types';
-import { useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import type { ChecklistFocusHandle } from '@usertour-packages/sdk';
 import { Checklist } from '../core/checklist';
+import { registerFocusTarget } from '../core/widget-focus';
+import { getTranslations } from '../core/translations';
 
 // Types
 type ChecklistWidgetProps = {
@@ -35,6 +38,8 @@ type ChecklistWidgetCoreProps = {
   removeBranding: boolean;
   zIndex: number;
   expanded: boolean;
+  focusTargetId: string;
+  focusRef: { current: ChecklistFocusHandle | null };
 };
 
 // Components
@@ -52,7 +57,7 @@ const ChecklistContent = ({
   </>
 );
 
-const ChecklistWidgetCore = ({
+export const ChecklistWidgetCore = ({
   data,
   themeSettings,
   userInfo,
@@ -65,30 +70,48 @@ const ChecklistWidgetCore = ({
   removeBranding,
   zIndex,
   expanded,
-}: ChecklistWidgetCoreProps) => (
-  <ChecklistRoot
-    data={data}
-    themeSettings={themeSettings}
-    expanded={expanded}
-    onDismiss={handleDismiss}
-    onExpandedChange={handleExpandedChange}
-    reportExpandedChangeEvent={reportExpandedChangeEvent}
-    zIndex={zIndex}
-  >
-    <ChecklistPopperUseIframe zIndex={zIndex} assets={assets}>
-      <ChecklistDropdown />
-      <ChecklistPopperContentBody>
-        <ChecklistContent
-          data={data}
-          userInfo={userInfo}
-          handleOnClick={handleOnClick}
-          handleItemClick={handleItemClick}
-        />
-      </ChecklistPopperContentBody>
-      {!removeBranding && <PopperMadeWith />}
-    </ChecklistPopperUseIframe>
-  </ChecklistRoot>
-);
+  focusTargetId,
+  focusRef,
+}: ChecklistWidgetCoreProps) => {
+  const strings = useMemo(() => getTranslations().checklist, [data]);
+
+  useEffect(
+    () =>
+      registerFocusTarget(focusTargetId, {
+        priority: 1,
+        focus: () => focusRef.current?.focus() ?? false,
+        returnFocus: (fromWidget) => focusRef.current?.returnFocus(fromWidget) ?? false,
+      }),
+    [focusTargetId, focusRef],
+  );
+
+  return (
+    <ChecklistRoot
+      data={data}
+      themeSettings={themeSettings}
+      expanded={expanded}
+      onDismiss={handleDismiss}
+      onExpandedChange={handleExpandedChange}
+      reportExpandedChangeEvent={reportExpandedChangeEvent}
+      zIndex={zIndex}
+      strings={strings}
+      focusRef={focusRef}
+    >
+      <ChecklistPopperUseIframe zIndex={zIndex} assets={assets} isolation="shadow">
+        <ChecklistDropdown />
+        <ChecklistPopperContentBody>
+          <ChecklistContent
+            data={data}
+            userInfo={userInfo}
+            handleOnClick={handleOnClick}
+            handleItemClick={handleItemClick}
+          />
+        </ChecklistPopperContentBody>
+        {!removeBranding && <PopperMadeWith />}
+      </ChecklistPopperUseIframe>
+    </ChecklistRoot>
+  );
+};
 
 export const ChecklistWidget = ({ checklist }: ChecklistWidgetProps) => {
   const store = useSyncExternalStore(
@@ -121,6 +144,8 @@ export const ChecklistWidget = ({ checklist }: ChecklistWidgetProps) => {
       removeBranding={sdkConfig.removeBranding}
       zIndex={zIndex}
       expanded={expanded}
+      focusTargetId={`checklist:${checklist.getContent().contentId}`}
+      focusRef={checklist.focusRef}
     />
   );
 };

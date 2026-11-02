@@ -29,10 +29,16 @@ import { AppEvents } from '../utils/event';
 import { document } from '../utils/globals';
 import { BaseContent } from './base-content';
 import { ElementWatcher } from './element-watcher';
-import { logger } from '../utils/logger';
+import { createLogger } from '../utils/logger';
 import { getStepByCvid } from '../utils/content-utils';
 import { iframeUtils, IframeElementInfo } from '../utils/iframe-utils';
 import { parseSelectorWithCondition } from '../utils/selector-parser';
+import type { PopperContentReadyInfo } from '@usertour-packages/sdk';
+import { StepFocusManager, isVirtualElement } from './step-focus-manager';
+import { getStepLabel, getTourStrings } from './translations';
+import { registerFocusTarget } from './widget-focus';
+
+const logger = createLogger('tour');
 
 export class Tour extends BaseContent<TourStore> {
   private watcher: ElementWatcher | null = null;
@@ -42,8 +48,11 @@ export class Tour extends BaseContent<TourStore> {
   private isUpdatingStore = false; // Prevent infinite loops
   private isProcessingElementFound = false; // Prevent duplicate element found processing
   private isNavigatingToStep = false; // Track if we're navigating to a step via STEP_GOTO
+  private isClosing = false; // close() is running: monitoring must not reopen the step meanwhile
   private iframePositionUpdateCleanup: (() => void) | null = null; // Cleanup function for iframe position update listeners
   private iframeSDKConfirmedSteps: Set<string> = new Set(); // Track steps confirmed by iframe SDK
+  private focusManager = new StepFocusManager(); // Keyboard focus loop for the shown step
+  private unregisterFocusTarget: (() => void) | null = null; // Bypass block target: the shown step
 
   /**
    * Monitors and updates the tour state
@@ -60,7 +69,8 @@ export class Tour extends BaseContent<TourStore> {
       await this.activeContentConditions();
 
       // Handle active tour monitoring
-      if (this.isActiveTour()) {
+      // Hidden but still active while closing: checkStepVisible would reopen it
+      if (this.isActiveTour() && !this.isClosing) {
         // Check if the current step is visible
         await this.checkStepVisible();
         // Activate any trigger conditions
@@ -313,7 +323,7 @@ export class Tour extends BaseContent<TourStore> {
 
     // Create new watcher
     if (!step.target) {
-      console.log('[Tour] No target for step, closing tour');
+      logger.info('No target for step, closing tour');
       this.close(contentEndReason.TOOLTIP_TARGET_MISSING);
       return;
     }
@@ -327,13 +337,20 @@ export class Tour extends BaseContent<TourStore> {
       }
     });
 
+    this.watcher.on(AppEvents.ELEMENT_CHANGED, (el: unknown) => {
+      const node = el as Node | null;
+      if (node && typeof node === 'object' && node.nodeType === Node.ELEMENT_NODE) {
+        this.handleElementChanged(node as Element, step);
+      }
+    });
+
     // Handle element not found
     this.watcher.once(AppEvents.ELEMENT_FOUND_TIMEOUT, async () => {
       await this.handleElementNotFound(step);
     });
 
     this.watcher.findElement().catch((error) => {
-      console.error('[Tour] Error in findElement:', error);
+      logger.critical('Error in findElement:', error);
     });
   }
 
@@ -372,7 +389,7 @@ export class Tour extends BaseContent<TourStore> {
           // Continue searching after a short delay to avoid immediate re-trigger
           setTimeout(() => {
             this.watcher?.findElement(0).catch((error) => {
-              console.error('[Tour] Error in findElement retry:', error);
+              logger.critical('Error in findElement retry:', error);
             });
           }, 100);
         }
@@ -582,11 +599,11 @@ export class Tour extends BaseContent<TourStore> {
     // NOW activate trigger conditions after element is found and step is fully stabilized
     // This prevents premature navigation from triggers firing before the step is ready
     this.activeTriggerConditions().catch((error) => {
-      console.error('[Tour] Error in activeTriggerConditions:', error);
+      logger.critical('Error in activeTriggerConditions:', error);
     });
   }
 
-  private handleElementChanged(el: Element, step: Step, store: TourStore): void {
+  private handleElementChanged(el: Element, step: Step): void {
     if (this.isUpdatingStore) {
       return;
     }
@@ -607,16 +624,18 @@ export class Tour extends BaseContent<TourStore> {
 
       // Set up scroll/resize listeners to keep position updated
       this.setupIframePositionUpdate(iframeElementInfo);
+    } else {
+      this.cleanupIframePositionUpdate();
     }
 
-    // Update store with guard
     this.isUpdatingStore = true;
-    this.setStore({
-      ...store,
+    this.updateStore({
       triggerRef,
       iframeElementInfo, // Store iframe info for component use
     });
     this.isUpdatingStore = false;
+
+    this.focusManager.retarget(iframeElementInfo?.element ?? el, iframeElementInfo?.iframe ?? null);
   }
 
   /**
@@ -804,12 +823,9 @@ export class Tour extends BaseContent<TourStore> {
                 error instanceof SyntaxError &&
                 (error as any).message?.includes('not a valid selector')
               ) {
-                console.error(
-                  '[Tour] [IFRAME-RETRY] Invalid selector syntax detected:',
-                  error.message,
-                );
-                console.error(
-                  '[Tour] [IFRAME-RETRY] This is likely due to unparsed conditional selector (<<<)',
+                logger.critical('[IFRAME-RETRY] Invalid selector syntax detected:', error.message);
+                logger.critical(
+                  '[IFRAME-RETRY] This is likely due to unparsed conditional selector (<<<)',
                 );
                 // Don't retry on syntax errors - they won't resolve
                 this.iframeRetryTimeouts = this.iframeRetryTimeouts.filter(
@@ -821,8 +837,8 @@ export class Tour extends BaseContent<TourStore> {
               // Circuit breaker: stop retries only after consecutive ERRORS (not element-not-found)
               // This prevents infinite loops on actual errors while still allowing retries during page loads
               if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                console.error(
-                  '[Tour] [IFRAME-RETRY] Circuit breaker triggered after',
+                logger.critical(
+                  '[IFRAME-RETRY] Circuit breaker triggered after',
                   consecutiveErrors,
                   'consecutive errors:',
                   error,
@@ -1362,9 +1378,32 @@ export class Tour extends BaseContent<TourStore> {
    * @param reason - The reason for closing the tour, defaults to USER_CLOSED
    */
   async close(reason: contentEndReason = contentEndReason.USER_CLOSED) {
+    const contentId = this.getContent().contentId;
+    if (this.isClosing) {
+      logger.info('close() ignored, already closing', { contentId, reason });
+      return;
+    }
+    this.isClosing = true;
+    logger.info('close() start', {
+      contentId,
+      reason,
+      step: this.getCurrentStep()?.cvid,
+    });
+    try {
+      await this.closeSteps(reason);
+    } finally {
+      this.isClosing = false;
+      logger.info('close() done', { contentId, reason });
+    }
+  }
+
+  private async closeSteps(reason: contentEndReason) {
     // Clear click cache when flow is closed to reset click condition tracking
     // This ensures that click conditions are properly re-evaluated on the next auto-start
     clearClickCache();
+
+    // Before the tooltip unmounts
+    this.focusManager.destroy(true);
 
     // Hide the tooltip UI first
     this.hide();
@@ -1601,6 +1640,7 @@ export class Tour extends BaseContent<TourStore> {
     // Update visibility state
     if (!isHidden) {
       if (!currentOpenState) {
+        logger.info('monitor reopened hidden tooltip step', { step: currentStep.cvid });
         this.open();
       }
       return;
@@ -1731,6 +1771,8 @@ export class Tour extends BaseContent<TourStore> {
    * Resets the tour
    */
   reset() {
+    this.focusManager.suspend();
+
     // Clean up iframe listeners before reset
     if (this.watcher) {
       const iframeInfo = this.watcher.getIframeElementInfo();
@@ -1788,6 +1830,8 @@ export class Tour extends BaseContent<TourStore> {
    * Destroys the tour
    */
   destroy() {
+    this.focusManager.destroy(true);
+
     // Clear all pending trigger timeouts
     for (const timeoutId of this.triggerTimeouts) {
       clearTimeout(timeoutId);
@@ -1834,6 +1878,82 @@ export class Tour extends BaseContent<TourStore> {
    * Initializes event listeners
    */
   initializeEventListeners() {}
+
+  /** Activates or suspends the focus loop as the step content shows or goes away */
+  handleContentReady(info: PopperContentReadyInfo, ready: boolean) {
+    this.unregisterFocusTarget?.();
+    this.unregisterFocusTarget = null;
+    if (!ready) {
+      this.focusManager.suspend(info.root);
+      return;
+    }
+    if (!this.isFocusManagementEnabled()) {
+      return;
+    }
+    if (this.isClosing) {
+      logger.info('content ready while closing, focus loop not activated');
+      return;
+    }
+
+    const store = this.getStore().getSnapshot();
+    const currentStep = this.getCurrentStep();
+    if (!store?.currentStep || !currentStep || store.currentStep.cvid !== currentStep.cvid) {
+      return;
+    }
+
+    this.unregisterFocusTarget = registerFocusTarget(`tour:${this.getContent().contentId}`, {
+      priority: 2,
+      focus: () => {
+        if (!this.focusManager.isActive() || !info.root.isConnected) {
+          return false;
+        }
+        info.root.focus();
+        return true;
+      },
+    });
+
+    const { setting } = currentStep;
+    const strings = getTourStrings();
+    const common = {
+      tooltipHost: info.host,
+      tooltipScope: info.scope,
+      tooltipRoot: info.root,
+      label: getStepLabel(store.currentStepIndex ?? 0, store.totalSteps ?? 0, strings),
+      targetHint: strings.targetHint,
+      lang: strings.lang,
+      zIndex: store.zIndex,
+      // WCAG 2.1.2
+      onEscape: () => {
+        this.close(contentEndReason.USER_CLOSED).catch((error) => {
+          logger.error('Error closing tour on Escape:', error);
+        });
+      },
+    };
+
+    if (currentStep.type === StepContentType.MODAL) {
+      this.focusManager.activate({
+        ...common,
+        mode: 'modal',
+        inertPage: setting.enabledBackdrop !== false,
+      });
+      return;
+    }
+
+    if (currentStep.type === StepContentType.TOOLTIP) {
+      const iframeElementInfo = store.iframeElementInfo;
+      const triggerRef = store.triggerRef as Element | null | undefined;
+      const target =
+        iframeElementInfo?.element ??
+        (triggerRef && !isVirtualElement(triggerRef) ? triggerRef : null);
+      this.focusManager.activate({
+        ...common,
+        mode: 'tooltip',
+        target,
+        targetIframe: iframeElementInfo?.iframe ?? null,
+        blockTarget: Boolean(setting.enabledBackdrop && setting.enabledBlockTarget),
+      });
+    }
+  }
 
   /**
    * Get detailed information about the current step

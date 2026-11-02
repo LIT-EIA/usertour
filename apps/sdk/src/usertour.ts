@@ -1,5 +1,6 @@
 import { SDKSettingsMode, UserTourTypes } from '@usertour/types';
 import { App } from './core/app';
+import type { LauncherFocusTiming } from './core/launcher-focus';
 import { logger } from './utils/logger';
 import { window } from './utils/globals';
 
@@ -154,6 +155,12 @@ if (w.usertour === undefined || w.usertour?._stubbed) {
         },
         setCustomNavigate: (customNavigate: ((url: string) => void) | null) => {
           app.setCustomNavigate(customNavigate);
+        },
+        setFocusManagement: (enabled: boolean) => {
+          app.setFocusManagement(enabled);
+        },
+        setLauncherFocusTiming: (timing: Partial<LauncherFocusTiming>) => {
+          app.setLauncherFocusTiming(timing);
         },
         // eslint-disable-next-line es5/no-rest-parameters
         on: (

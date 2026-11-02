@@ -396,6 +396,10 @@ export abstract class BaseContent<T extends BaseStore = any> extends Evented {
     return false;
   }
 
+  isFocusManagementEnabled() {
+    return this.getInstance().isFocusManagementEnabled();
+  }
+
   /**
    * Get the target missing seconds
    * @returns {number} The target missing seconds

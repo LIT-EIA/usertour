@@ -235,7 +235,8 @@ const BUTTON_INLINE_STYLES: React.CSSProperties = {
   boxSizing: 'border-box',
 };
 
-const LauncherView = forwardRef<HTMLDivElement, LauncherViewProps>(
+// Mouse only: keyboard and screen readers use the SDK's button next to the target (launcher-focus.ts)
+const LauncherView = forwardRef<HTMLButtonElement, LauncherViewProps>(
   ({ className, style, dir, type, iconType, iconSource, iconUrl, buttonText }, ref) => {
     const { themeSetting } = useLauncherContext();
     const isClick = true;
@@ -258,7 +259,15 @@ const LauncherView = forwardRef<HTMLDivElement, LauncherViewProps>(
       type === LauncherDataType.BUTTON ? { ...BUTTON_INLINE_STYLES, ...style } : style;
 
     return (
-      <div className={cn(classes, className)} ref={ref} style={mergedStyle} dir={dir}>
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        className={cn(classes, className)}
+        ref={ref}
+        style={mergedStyle}
+        dir={dir}
+      >
         {type === LauncherDataType.BUTTON ? (
           buttonText
         ) : (
@@ -271,14 +280,14 @@ const LauncherView = forwardRef<HTMLDivElement, LauncherViewProps>(
             height={themeSetting?.launcherIcon.size}
           />
         )}
-      </div>
+      </button>
     );
   },
 );
 
 LauncherView.displayName = 'LauncherView';
 
-const LauncherContent = forwardRef<HTMLDivElement, LauncherContentProps>((props, forwardedRef) => {
+const LauncherContent = forwardRef<HTMLElement, LauncherContentProps>((props, forwardedRef) => {
   const {
     side = 'bottom',
     sideOffset = 0,
@@ -350,7 +359,7 @@ const LauncherContent = forwardRef<HTMLDivElement, LauncherContentProps>((props,
     ],
   });
 
-  const popperRef = useRef<HTMLDivElement | null>(null);
+  const popperRef = useRef<HTMLElement | null>(null);
   const composedRefs = useComposedRefs(forwardedRef, popperRef, (node: any) =>
     refs.setFloating(node),
   );
@@ -437,7 +446,7 @@ LauncherPopperContentPotal.displayName = 'LauncherPopperContentPotal';
 
 const LauncherPopperContent = PopperContent;
 
-const LauncherContentWrapper = forwardRef<HTMLDivElement, LauncherContentProps>(
+const LauncherContentWrapper = forwardRef<HTMLElement, LauncherContentProps>(
   ({ ...props }, ref) => {
     const { data } = useLauncherContext();
     const {

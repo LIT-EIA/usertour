@@ -207,6 +207,19 @@ _:future,
 .usertour-widget-launcher {
   display: block;
 }
+/* Reset button styles; doubled class beats page rules like [type="button"] */
+.usertour-widget-launcher.usertour-widget-launcher {
+  appearance: none;
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  text-align: center;
+}
 .usertour-widget-launcher--activate-on-click {
   cursor: pointer;
 }
@@ -339,4 +352,17 @@ _:future,
     transform: scale(2);
     opacity: 0;
   }
+}
+
+/* !important: pages often remove outlines on buttons. Transparent outline for high contrast mode. */
+.usertour-widget-launcher[data-usertour-focused] {
+  outline: 2px solid transparent !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #1a1a1a !important;
+}
+.usertour-widget-launcher--icon[data-usertour-focused] {
+  border-radius: 4px;
+}
+.usertour-widget-beacon[data-usertour-focused] {
+  border-radius: 100%;
 }

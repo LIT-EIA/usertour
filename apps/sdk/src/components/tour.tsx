@@ -12,6 +12,7 @@ import {
   ContentEditorClickableElement,
   ContentEditorSerialize,
 } from '@usertour-packages/shared-editor';
+import type { PopperContentReadyInfo } from '@usertour-packages/sdk';
 import {
   Align,
   BizUserInfo,
@@ -27,6 +28,9 @@ import {
 import { useEffect, useSyncExternalStore, useMemo } from 'react';
 import { Tour as TourCore } from '../core/tour';
 import { off, on } from '../utils/listener';
+import { isVirtualElement } from '../core/step-focus-manager';
+import { getStepLabel, getTourStrings } from '../core/translations';
+import { getTargetIntro } from '../core/target-intro';
 import { useSettingsStyles } from '@usertour-packages/sdk';
 
 // Base props that are shared between TourPopper and TourModal
@@ -43,10 +47,13 @@ type TourBaseProps = {
   themeSettings: ThemeTypesSetting;
   handleClose: () => void;
   handleOnClick: (element: ContentEditorClickableElement, value?: any) => Promise<void>;
+  handleContentReady: (info: PopperContentReadyInfo, ready: boolean) => void;
 };
 
 type TourPopperProps = TourBaseProps & {
   triggerRef: Element | null;
+  // Set when triggerRef is a virtual element
+  iframeTarget?: Element | null;
   handleActions: (actions: RulesCondition[]) => Promise<void>;
 };
 
@@ -61,6 +68,9 @@ type PopperContentProps = {
   sdkConfig: SDKConfig;
   handleClose: () => void;
   handleOnClick: (element: ContentEditorClickableElement, value?: any) => Promise<void>;
+  handleContentReady: (info: PopperContentReadyInfo, ready: boolean) => void;
+  isModal?: boolean;
+  targetIntro?: string;
 };
 
 // Custom hook to extract store state
@@ -83,6 +93,7 @@ const useTourStore = (tour: TourCore) => {
     sdkConfig,
     currentStepIndex,
     totalSteps,
+    iframeElementInfo,
   } = store;
 
   if (!userInfo || !currentStep || !openState) {
@@ -101,6 +112,7 @@ const useTourStore = (tour: TourCore) => {
     sdkConfig,
     currentStepIndex: currentStepIndex || 0,
     totalSteps: totalSteps || 0,
+    iframeElementInfo,
   };
 };
 
@@ -115,8 +127,13 @@ const PopperContent = (props: PopperContentProps) => {
     sdkConfig,
     handleClose,
     handleOnClick,
+    handleContentReady,
+    isModal,
+    targetIntro,
   } = props;
   const { themeSetting } = useSettingsStyles(themeSettings);
+  const focusStrings = getTourStrings();
+  const stepLabel = getStepLabel(currentStepIndex, totalSteps, focusStrings);
 
   const progressType = themeSetting.progress.type;
   const progressPosition = themeSetting.progress.position;
@@ -130,10 +147,18 @@ const PopperContent = (props: PopperContentProps) => {
     progressEnabled && !isFullWidthProgress && progressPosition === ProgressBarPosition.BOTTOM;
 
   return (
-    <PopperContentFrame>
-      {currentStep.setting.skippable && (
-        <PopperClose onClick={handleClose} className="cursor-pointer" />
-      )}
+    <PopperContentFrame
+      frameTitle={stepLabel}
+      isolation="shadow"
+      dialog={{
+        label: stepLabel,
+        description: focusStrings.escapeHint,
+        modal: isModal,
+        lang: focusStrings.lang,
+      }}
+      onContentReady={handleContentReady}
+    >
+      {targetIntro && <p className="usertour-visually-hidden">{targetIntro}</p>}
       {showTopProgress && (
         <PopperProgress
           type={progressType}
@@ -155,6 +180,10 @@ const PopperContent = (props: PopperContentProps) => {
           totalSteps={totalSteps}
           position={progressPosition}
         />
+      )}
+      {/* Last in DOM order so focus reaches the step content first */}
+      {currentStep.setting.skippable && (
+        <PopperClose onClick={handleClose} className="cursor-pointer" />
       )}
     </PopperContentFrame>
   );
@@ -200,8 +229,13 @@ const TourPopper = (props: TourPopperProps) => {
     handleClose,
     handleOnClick,
     handleActions,
+    handleContentReady,
+    iframeTarget,
   } = props;
   const { themeSetting } = useSettingsStyles(themeSettings);
+
+  const target = triggerRef && isVirtualElement(triggerRef) ? iframeTarget : triggerRef;
+  const targetIntro = target ? getTargetIntro(target) : undefined;
 
   // Create a responsive React.RefObject that updates when triggerRef changes
   const responsiveRef = useMemo(() => {
@@ -259,6 +293,8 @@ const TourPopper = (props: TourPopperProps) => {
           sdkConfig={sdkConfig}
           handleClose={handleClose}
           handleOnClick={handleOnClick}
+          handleContentReady={handleContentReady}
+          targetIntro={targetIntro}
         />
       </PopperContentPotal>
     </Popper>
@@ -279,6 +315,7 @@ const TourModal = (props: TourModalProps) => {
     sdkConfig,
     handleClose,
     handleOnClick,
+    handleContentReady,
   } = props;
 
   return (
@@ -305,6 +342,8 @@ const TourModal = (props: TourModalProps) => {
           sdkConfig={sdkConfig}
           handleClose={handleClose}
           handleOnClick={handleOnClick}
+          handleContentReady={handleContentReady}
+          isModal={currentStep.setting.enabledBackdrop !== false}
         />
       </PopperModalContentPotal>
     </Popper>
@@ -319,18 +358,26 @@ export const TourWidget = (props: { tour: TourCore }) => {
     return <></>;
   }
 
-  const { handleClose, handleOnClick, handleActions } = tour;
+  const { handleClose, handleOnClick, handleActions, handleContentReady } = tour;
 
   const commonProps: TourBaseProps = {
     ...storeData,
     handleClose,
     handleOnClick,
+    handleContentReady,
   };
   const stepType = storeData.currentStep.type;
   const triggerRef = storeData.triggerRef;
 
   if (stepType === StepContentType.TOOLTIP && triggerRef) {
-    return <TourPopper {...commonProps} triggerRef={triggerRef} handleActions={handleActions} />;
+    return (
+      <TourPopper
+        {...commonProps}
+        triggerRef={triggerRef}
+        iframeTarget={storeData.iframeElementInfo?.element}
+        handleActions={handleActions}
+      />
+    );
   }
 
   if (stepType === StepContentType.MODAL) {

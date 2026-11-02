@@ -57,6 +57,9 @@ import { Socket } from './socket';
 import { ExternalStore } from './store';
 import { Tour } from './tour';
 import { checklistIsSeen, flowIsSeen } from '../utils/conditions';
+import { BypassBlock } from './bypass-block';
+import { LauncherFocusTiming, setLauncherFocusTiming } from './launcher-focus';
+import { mountLiveRegion, unmountLiveRegion } from './live-region';
 
 interface AppStartOptions {
   environmentId?: string;
@@ -70,6 +73,7 @@ export class App extends Evented {
   socket = new Socket({ wsUri: getWsUri() });
   activeTour: Tour | undefined;
   activeChecklist: Checklist | undefined;
+  bypassBlock = new BypassBlock();
   startOptions: AppStartOptions = {
     environmentId: '',
     token: '',
@@ -101,6 +105,7 @@ export class App extends Evented {
   private sessionTimeoutHours = SESSION_TIMEOUT_HOURS;
   private targetMissingSeconds = DEFAULT_TARGET_MISSING_SECONDS;
   private customNavigate: ((url: string) => void) | null = null;
+  private focusManagement = true;
 
   constructor() {
     super();
@@ -170,6 +175,20 @@ export class App extends Evented {
    */
   setCustomNavigate(customNavigate: ((url: string) => void) | null) {
     this.customNavigate = customNavigate;
+  }
+
+  /** Enables keyboard focus management for tour steps (on by default) */
+  setFocusManagement(enabled: boolean) {
+    this.focusManagement = enabled;
+  }
+
+  /** Timing for host page focus traps that skip a launcher */
+  setLauncherFocusTiming(timing: Partial<LauncherFocusTiming>) {
+    setLauncherFocusTiming(timing);
+  }
+
+  isFocusManagementEnabled(): boolean {
+    return this.focusManagement;
   }
 
   /**
@@ -635,6 +654,9 @@ export class App extends Evented {
     }
 
     this.container = container;
+    this.bypassBlock.mount();
+    // Must exist before the first message, or screen readers miss it
+    mountLiveRegion();
     this.trigger(SDK_CONTAINER_CREATED);
   }
 
@@ -645,6 +667,8 @@ export class App extends Evented {
     if (this.container) {
       this.container.parentNode?.removeChild(this.container);
     }
+    this.bypassBlock.unmount();
+    unmountLiveRegion();
   }
 
   /**

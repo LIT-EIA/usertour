@@ -69,6 +69,16 @@ export interface Usertour {
 
   setBaseZIndex(baseZIndex: number): void;
 
+  // Keyboard focus management for tour steps. Enabled by default.
+  setFocusManagement(enabled: boolean): void;
+
+  // Timing for host page focus traps that skip a launcher
+  setLauncherFocusTiming(timing: {
+    tabWindowMs?: number;
+    holdFocusMs?: number;
+    maxHoldCount?: number;
+  }): void;
+
   // setServerEndpoint(serverEndpoint: string | null | undefined): void;
 
   // disableEvalJs(): void;
