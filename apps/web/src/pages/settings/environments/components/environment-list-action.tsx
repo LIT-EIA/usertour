@@ -1,5 +1,5 @@
 import { useEnvironmentListContext } from '@/contexts/environment-list-context';
-import { Environment } from '@usertour/types';
+import { Environment, TeamMemberRole } from '@usertour/types';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import {
@@ -9,11 +9,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@usertour-packages/dropdown-menu';
-import { Delete2Icon, EditIcon } from '@usertour-packages/icons';
+import { Delete2Icon, EditIcon, SettingsIcon } from '@usertour-packages/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EnvironmentDeleteForm } from './environment-delete-form';
 import { EnvironmentEditForm } from './environment-edit-form';
+import { EnvironmentLauncherFocusForm } from './environment-launcher-focus-form';
 import { useAppContext } from '@/contexts/app-context';
 type EnvironmentListActionProps = {
   environment: Environment;
@@ -22,14 +23,21 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
   const { environment } = props;
   const [open, setOpen] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openLauncherFocus, setOpenLauncherFocus] = useState(false);
   const { refetch } = useEnvironmentListContext();
-  const { isViewOnly } = useAppContext();
+  const { isViewOnly, project } = useAppContext();
+  // Owner only, like the server mutation
+  const isOwner = project?.role === TeamMemberRole.OWNER;
   const { t } = useTranslation();
   const handleOpen = () => {
     setOpen(true);
   };
   const handleOnClose = () => {
     setOpen(false);
+    refetch();
+  };
+  const handleLauncherFocusClose = () => {
+    setOpenLauncherFocus(false);
     refetch();
   };
   const handleDeleteOpen = () => {
@@ -56,6 +64,12 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
             <EditIcon className="w-6" width={12} height={12} />
             {t('settings.environments.renameMenuItem')}
           </DropdownMenuItem>
+          {isOwner && (
+            <DropdownMenuItem onClick={() => setOpenLauncherFocus(true)}>
+              <SettingsIcon className="w-6" width={12} height={12} />
+              {t('settings.environments.launcherFocus.menuItem')}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleDeleteOpen}
@@ -67,6 +81,13 @@ export const EnvironmentListAction = (props: EnvironmentListActionProps) => {
         </DropdownMenuContent>
       </DropdownMenu>
       <EnvironmentEditForm environment={environment} isOpen={open} onClose={handleOnClose} />
+      {isOwner && (
+        <EnvironmentLauncherFocusForm
+          environment={environment}
+          isOpen={openLauncherFocus}
+          onClose={handleLauncherFocusClose}
+        />
+      )}
       <EnvironmentDeleteForm
         data={environment}
         open={openDeleteDialog}

@@ -124,6 +124,10 @@ Table Environment {
   contentOnEnvironments ContentOnEnvironment [not null]
   bizSessions BizSession [not null]
   integrations Integration [not null]
+  launcherFocusTrap String [not null, default: 'auto']
+  launcherTabWindowMs Int
+  launcherHoldFocusMs Int
+  launcherMaxHoldCount Int
 }
 
 Table AccessToken {

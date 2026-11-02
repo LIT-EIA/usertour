@@ -472,6 +472,45 @@ const translations = {
       upgrade: 'Mettre à niveau',
       upgradeLink: 'Mettre à niveau votre forfait',
       empty: 'Aucun environnement pour le moment.',
+      launcherFocus: {
+        menuItem: 'Réglages du focus des lanceurs',
+        title: 'Réglages du focus des lanceurs',
+        description:
+          "Comment les lanceurs dans les fenêtres modales de l'application hôte sont atteints au clavier.",
+        trapLabel: "Piège à focus des fenêtres modales de l'application hôte",
+        traps: {
+          auto: 'Automatique (par défaut)',
+          'focus-trap': 'Bibliothèque focus-trap',
+          radix: 'Radix FocusScope',
+          mui: 'MUI FocusTrap',
+          dojo: 'Boîtes de dialogue Dojo, ou un piège qui liste ses contrôles à chaque Tab',
+          cached: "Un piège qui liste ses contrôles à l'ouverture de la fenêtre",
+          carbon: 'Fenêtres modales Carbon',
+          slow: 'Fenêtres modales lentes ou animées',
+          'custom-adapter': "Adaptateur personnalisé dans l'application hôte",
+        },
+        trapHints: {
+          auto: 'Remet le focus sur le lanceur quand une fenêtre modale le saute. Fonctionne avec tous les pièges pris en charge.',
+          'focus-trap':
+            'Ce piège inclut le lanceur de lui-même\u00a0: aucune correction nécessaire.',
+          radix: 'Ce piège inclut le lanceur de lui-même\u00a0: aucune correction nécessaire.',
+          mui: 'Ce piège inclut le lanceur de lui-même\u00a0: aucune correction nécessaire.',
+          dojo: 'Ce piège inclut le lanceur de lui-même\u00a0: aucune correction nécessaire.',
+          cached: 'Remet le focus sur le lanceur une fois, juste après Tab.',
+          carbon:
+            'Remet le focus sur le lanceur, aussi quand la fenêtre modale déplace le focus de nouveau un instant plus tard.',
+          slow: 'Attend plus longtemps après Tab que la fenêtre modale déplace le focus.',
+          'custom-adapter':
+            "L'application hôte rend son piège à focus conscient du lanceur. Le SDK ne déplace pas le focus.",
+        },
+        timingTitle: 'Délais (facultatif)',
+        timingDescription: 'Laissez vide pour utiliser la valeur du piège choisi.',
+        tabWindowLabel: 'Fenêtre après Tab (ms)',
+        holdFocusLabel: 'Maintien du focus (ms)',
+        maxHoldCountLabel: 'Remettre au plus (fois)',
+        saveButton: 'Enregistrer les réglages',
+        saveFailure: "Échec de l'enregistrement des réglages du focus des lanceurs",
+      },
     },
     localizations: {
       title: 'Localisation',

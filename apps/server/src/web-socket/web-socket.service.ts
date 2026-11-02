@@ -1638,7 +1638,15 @@ export class WebSocketService {
       ]);
 
       return {
-        config,
+        config: {
+          ...config,
+          launcherFocus: {
+            trap: environment.launcherFocusTrap,
+            tabWindowMs: environment.launcherTabWindowMs,
+            holdFocusMs: environment.launcherHoldFocusMs,
+            maxHoldCount: environment.launcherMaxHoldCount,
+          },
+        },
         themes,
       };
     } catch (error) {

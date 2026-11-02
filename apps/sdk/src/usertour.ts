@@ -1,6 +1,6 @@
 import { SDKSettingsMode, UserTourTypes } from '@usertour/types';
 import { App } from './core/app';
-import type { LauncherFocusTiming } from './core/launcher-focus';
+import type { LauncherFocusTiming } from '@usertour/types';
 import { logger } from './utils/logger';
 import { window } from './utils/globals';
 

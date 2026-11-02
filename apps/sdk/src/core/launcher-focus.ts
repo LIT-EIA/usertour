@@ -1,5 +1,11 @@
 import { Side } from '@usertour/types';
 import { document } from '../utils/globals';
+import {
+  LAUNCHER_FOCUS_PRESETS,
+  LauncherFocusPreset,
+  LauncherFocusSettings,
+  LauncherFocusTiming,
+} from '@usertour/types';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('launcher');
@@ -20,36 +26,50 @@ export type LauncherFocusOptions = {
   onEscape: () => void;
 };
 
-// Timing of the fix for page scripts that skip the launcher (see handleDocumentFocusIn)
-export type LauncherFocusTiming = {
-  tabWindowMs: number;
-  holdFocusMs: number;
-  maxHoldCount: number;
+// Precedence: environment preset < environment timing < host app setLauncherFocusTiming()
+let environmentSettings: LauncherFocusSettings = { trap: 'auto' };
+let hostTiming: Partial<LauncherFocusTiming> = {};
+
+const TIMING_KEYS: (keyof LauncherFocusTiming)[] = ['tabWindowMs', 'holdFocusMs', 'maxHoldCount'];
+
+const isValidTiming = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
+export const getLauncherFocusPreset = (): LauncherFocusPreset => {
+  const preset = {
+    ...(LAUNCHER_FOCUS_PRESETS[environmentSettings.trap] ?? LAUNCHER_FOCUS_PRESETS.auto),
+  };
+  for (const key of TIMING_KEYS) {
+    const value = hostTiming[key] ?? environmentSettings[key];
+    if (isValidTiming(value)) {
+      preset[key] = value;
+    }
+  }
+  return preset;
 };
 
-export const DEFAULT_LAUNCHER_FOCUS_TIMING: Readonly<LauncherFocusTiming> = {
-  tabWindowMs: 100,
-  holdFocusMs: 500,
-  maxHoldCount: 3,
+export const setEnvironmentLauncherFocus = (settings?: LauncherFocusSettings | null): void => {
+  if (settings && !(settings.trap in LAUNCHER_FOCUS_PRESETS)) {
+    logger.warn('unknown focus trap setting, using auto', settings.trap);
+  }
+  environmentSettings =
+    settings && settings.trap in LAUNCHER_FOCUS_PRESETS ? settings : { trap: 'auto' };
+  logger.info('environment focus trap setting', environmentSettings, getLauncherFocusPreset());
 };
 
-let timing: LauncherFocusTiming = { ...DEFAULT_LAUNCHER_FOCUS_TIMING };
-
-/** For pages whose focus scripts are slower than the defaults; invalid values are ignored */
+/** Host app timing overrides; invalid values are ignored */
 export const setLauncherFocusTiming = (value: Partial<LauncherFocusTiming>): void => {
-  const next = { ...timing };
-  for (const key of Object.keys(DEFAULT_LAUNCHER_FOCUS_TIMING) as (keyof LauncherFocusTiming)[]) {
+  const next = { ...hostTiming };
+  for (const key of TIMING_KEYS) {
     const number = value[key];
-    if (typeof number === 'number' && Number.isFinite(number) && number >= 0) {
+    if (isValidTiming(number)) {
       next[key] = number;
     } else if (number !== undefined) {
       logger.warn('setLauncherFocusTiming: ignored invalid', key, number);
     }
   }
-  timing = next;
+  hostTiming = next;
 };
-
-export const getLauncherFocusTiming = (): LauncherFocusTiming => ({ ...timing });
 
 // Skips this late after Tab are only logged, to help tune the Tab window
 const LATE_SKIP_LOG_MS = 1000;
@@ -261,7 +281,7 @@ export class LauncherFocusProxy {
           shiftKey: event.shiftKey,
           timer: view.setTimeout(() => {
             this.pendingTab = null;
-          }, timing.tabWindowMs),
+          }, getLauncherFocusPreset().tabWindowMs),
         };
       }
     }
@@ -284,11 +304,11 @@ export class LauncherFocusProxy {
       // Never fight a page that keeps taking focus back
       if (performance.now() > hold.until || !this.isTabStop()) {
         this.holdFocus = null;
-      } else if (hold.count >= timing.maxHoldCount) {
+      } else if (hold.count >= getLauncherFocusPreset().maxHoldCount) {
         this.holdFocus = null;
         logger.warn('page script keeps moving focus off the launcher: stopped putting it back', {
           movedTo: to,
-          maxHoldCount: timing.maxHoldCount,
+          maxHoldCount: hold.count,
         });
       } else {
         hold.count++;
@@ -318,6 +338,14 @@ export class LauncherFocusProxy {
     }
     this.clearPendingTab();
     this.lastTab = null;
+    const preset = getLauncherFocusPreset();
+    if (!preset.fix) {
+      logger.warn(
+        `page script skipped the launcher: not fixed, the environment's focus trap setting is "${environmentSettings.trap}". Choose another focus trap in the environment settings if this repeats.`,
+        { from, to, shiftKey },
+      );
+      return;
+    }
     logger.info('page script skipped the launcher: focus moved to it', { from, to, shiftKey });
     const { target } = this.options;
     // After the page script's handler returns
@@ -325,7 +353,7 @@ export class LauncherFocusProxy {
       const active = target.ownerDocument.activeElement;
       if (active === to || this.inTarget(active)) {
         if (this.focus()) {
-          this.holdFocus = { until: performance.now() + timing.holdFocusMs, count: 0 };
+          this.holdFocus = { until: performance.now() + preset.holdFocusMs, count: 0 };
         }
       }
     });
@@ -347,7 +375,7 @@ export class LauncherFocusProxy {
 
   private logLateSkip(to: Element) {
     const tab = this.lastTab;
-    if (!tab || tab.from === this.button) {
+    if (!tab || tab.from === this.button || !getLauncherFocusPreset().fix) {
       return;
     }
     const elapsed = Math.round(performance.now() - tab.time);
@@ -356,7 +384,7 @@ export class LauncherFocusProxy {
     }
     this.lastTab = null;
     logger.warn(
-      `page script skipped the launcher ${elapsed} ms after Tab, after the ${timing.tabWindowMs} ms window: not fixed. Raise tabWindowMs with usertour.setLauncherFocusTiming() if this repeats.`,
+      `page script skipped the launcher ${elapsed} ms after Tab, after the ${getLauncherFocusPreset().tabWindowMs} ms window: not fixed. Raise the Tab window in the environment's launcher focus settings if this repeats.`,
       { from: tab.from, to, shiftKey: tab.shiftKey },
     );
   }

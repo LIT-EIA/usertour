@@ -3,6 +3,11 @@ export type Environment = {
   name: string;
   token: string;
   createdAt: string;
+  // Owner only
+  launcherFocusTrap?: string;
+  launcherTabWindowMs?: number | null;
+  launcherHoldFocusMs?: number | null;
+  launcherMaxHoldCount?: number | null;
 };
 
 export type Project = {

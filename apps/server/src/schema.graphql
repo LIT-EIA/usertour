@@ -521,6 +521,10 @@ type Environment {
   """Identifies the date and time when the object was created."""
   createdAt: DateTime!
   id: ID!
+  launcherFocusTrap: String!
+  launcherHoldFocusMs: Int
+  launcherMaxHoldCount: Int
+  launcherTabWindowMs: Int
   name: String!
   projectId: String!
   token: String!
@@ -742,6 +746,7 @@ type Mutation {
   updateContent(data: ContentUpdateInput!): Content!
   updateContentStep(data: UpdateStepInput!, stepId: String!): Common!
   updateContentVersion(data: VersionUpdateInput!): Version!
+  updateEnvironmentLauncherFocus(data: UpdateEnvironmentLauncherFocusInput!): Environment!
   updateEnvironments(data: UpdateEnvironmentInput!): Environment!
   updateEvent(data: UpdateEventInput!): Events!
   updateIntegration(environmentId: String!, input: UpdateIntegrationInput!, provider: String!): Integration!
@@ -1051,6 +1056,14 @@ input UpdateContentInput {
 input UpdateEnvironmentInput {
   id: String!
   name: String!
+}
+
+input UpdateEnvironmentLauncherFocusInput {
+  holdFocusMs: Int
+  id: String!
+  maxHoldCount: Int
+  tabWindowMs: Int
+  trap: String!
 }
 
 input UpdateEventInput {

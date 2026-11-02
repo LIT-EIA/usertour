@@ -65,9 +65,73 @@ export const flowReasonTitleMap = {
 export interface SDKConfig {
   planType: PlanType;
   removeBranding: boolean;
+  // Missing on older servers
+  launcherFocus?: LauncherFocusSettings;
 }
 
 export interface GetProjectSettingsResponse {
   config: SDKConfig;
   themes: Theme[];
+}
+
+// Host page focus trap a launcher may sit in (see apps/sdk/LAUNCHER_FOCUS_TRAPS.md)
+export type LauncherFocusTrap =
+  | 'auto'
+  | 'focus-trap'
+  | 'radix'
+  | 'mui'
+  | 'dojo'
+  | 'cached'
+  | 'carbon'
+  | 'slow'
+  | 'custom-adapter';
+
+export interface LauncherFocusTiming {
+  tabWindowMs: number;
+  holdFocusMs: number;
+  maxHoldCount: number;
+}
+
+export interface LauncherFocusPreset extends LauncherFocusTiming {
+  fix: boolean;
+}
+
+export const LAUNCHER_FOCUS_TRAPS: LauncherFocusTrap[] = [
+  'auto',
+  'focus-trap',
+  'radix',
+  'mui',
+  'dojo',
+  'cached',
+  'carbon',
+  'slow',
+  'custom-adapter',
+];
+
+const DEFAULT_LAUNCHER_FOCUS_PRESET: LauncherFocusPreset = {
+  fix: true,
+  tabWindowMs: 100,
+  holdFocusMs: 500,
+  maxHoldCount: 3,
+};
+
+// Traps that list their controls on each Tab already include the launcher
+export const LAUNCHER_FOCUS_PRESETS: Record<LauncherFocusTrap, LauncherFocusPreset> = {
+  auto: DEFAULT_LAUNCHER_FOCUS_PRESET,
+  'focus-trap': { ...DEFAULT_LAUNCHER_FOCUS_PRESET, fix: false },
+  radix: { ...DEFAULT_LAUNCHER_FOCUS_PRESET, fix: false },
+  mui: { ...DEFAULT_LAUNCHER_FOCUS_PRESET, fix: false },
+  dojo: { ...DEFAULT_LAUNCHER_FOCUS_PRESET, fix: false },
+  cached: { ...DEFAULT_LAUNCHER_FOCUS_PRESET, holdFocusMs: 0, maxHoldCount: 0 },
+  carbon: DEFAULT_LAUNCHER_FOCUS_PRESET,
+  slow: { ...DEFAULT_LAUNCHER_FOCUS_PRESET, tabWindowMs: 400, holdFocusMs: 1000 },
+  'custom-adapter': { ...DEFAULT_LAUNCHER_FOCUS_PRESET, fix: false },
+};
+
+// Empty timing values use the trap's preset
+export interface LauncherFocusSettings {
+  trap: LauncherFocusTrap;
+  tabWindowMs?: number | null;
+  holdFocusMs?: number | null;
+  maxHoldCount?: number | null;
 }

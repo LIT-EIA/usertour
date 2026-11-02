@@ -58,7 +58,8 @@ import { ExternalStore } from './store';
 import { Tour } from './tour';
 import { checklistIsSeen, flowIsSeen } from '../utils/conditions';
 import { BypassBlock } from './bypass-block';
-import { LauncherFocusTiming, setLauncherFocusTiming } from './launcher-focus';
+import type { LauncherFocusTiming } from '@usertour/types';
+import { setEnvironmentLauncherFocus, setLauncherFocusTiming } from './launcher-focus';
 import { mountLiveRegion, unmountLiveRegion } from './live-region';
 
 interface AppStartOptions {
@@ -182,7 +183,7 @@ export class App extends Evented {
     this.focusManagement = enabled;
   }
 
-  /** Timing for host page focus traps that skip a launcher */
+  /** Overrides the environment's launcher focus timing */
   setLauncherFocusTiming(timing: Partial<LauncherFocusTiming>) {
     setLauncherFocusTiming(timing);
   }
@@ -1139,6 +1140,7 @@ export class App extends Evented {
     if (data) {
       this.sdkConfig = data.config;
       this.themes = data.themes;
+      setEnvironmentLauncherFocus(data.config.launcherFocus);
     } else {
       logger.error('Failed to fetch project settings!');
     }

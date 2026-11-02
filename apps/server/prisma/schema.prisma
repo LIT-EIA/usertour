@@ -148,6 +148,11 @@ model Environment {
   contentOnEnvironments ContentOnEnvironment[]
   bizSessions           BizSession[]
   integrations          Integration[]
+  // Launcher focus settings; null timing uses the trap preset
+  launcherFocusTrap     String                 @default("auto")
+  launcherTabWindowMs   Int?
+  launcherHoldFocusMs   Int?
+  launcherMaxHoldCount  Int?
 }
 
 model AccessToken {

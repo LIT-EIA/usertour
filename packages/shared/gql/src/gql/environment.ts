@@ -7,6 +7,10 @@ export const getUserEnvironments = gql`
       name
       token
       createdAt
+      launcherFocusTrap
+      launcherTabWindowMs
+      launcherHoldFocusMs
+      launcherMaxHoldCount
     }
   }
 `;
@@ -27,6 +31,32 @@ export const updateEnvironments = gql`
       id
       name
       token
+    }
+  }
+`;
+
+export const updateEnvironmentLauncherFocus = gql`
+  mutation updateEnvironmentLauncherFocus(
+    $id: String!
+    $trap: String!
+    $tabWindowMs: Int
+    $holdFocusMs: Int
+    $maxHoldCount: Int
+  ) {
+    updateEnvironmentLauncherFocus(
+      data: {
+        id: $id
+        trap: $trap
+        tabWindowMs: $tabWindowMs
+        holdFocusMs: $holdFocusMs
+        maxHoldCount: $maxHoldCount
+      }
+    ) {
+      id
+      launcherFocusTrap
+      launcherTabWindowMs
+      launcherHoldFocusMs
+      launcherMaxHoldCount
     }
   }
 `;

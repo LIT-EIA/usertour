@@ -1,7 +1,11 @@
 import { SegmentBizType, SegmentDataType } from '@/biz/models/segment.model';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { CreateEnvironmentInput, UpdateEnvironmentInput } from './dto/environment.input';
+import {
+  CreateEnvironmentInput,
+  UpdateEnvironmentInput,
+  UpdateEnvironmentLauncherFocusInput,
+} from './dto/environment.input';
 import { ParamsError } from '@/common/errors';
 import { CreateAccessTokenInput } from './dto/access-token.dto';
 
@@ -43,6 +47,24 @@ export class EnvironmentsService {
     return await this.prisma.environment.update({
       where: { id: env.id },
       data: { name: input.name },
+    });
+  }
+
+  async updateLauncherFocus(input: UpdateEnvironmentLauncherFocusInput) {
+    const env = await this.prisma.environment.findUnique({
+      where: { id: input.id },
+    });
+    if (!env) {
+      throw new ParamsError();
+    }
+    return await this.prisma.environment.update({
+      where: { id: env.id },
+      data: {
+        launcherFocusTrap: input.trap,
+        launcherTabWindowMs: input.tabWindowMs ?? null,
+        launcherHoldFocusMs: input.holdFocusMs ?? null,
+        launcherMaxHoldCount: input.maxHoldCount ?? null,
+      },
     });
   }
 

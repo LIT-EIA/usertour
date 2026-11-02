@@ -6,6 +6,7 @@ import {
   CreateEnvironmentInput,
   DeleteEnvironmentInput,
   UpdateEnvironmentInput,
+  UpdateEnvironmentLauncherFocusInput,
 } from './dto/environment.input';
 import { EnvironmentsGuard } from './environments.guard';
 import { EnvironmentsService } from './environments.service';
@@ -28,6 +29,12 @@ export class EnvironmentsResolver {
   @Roles([RolesScopeEnum.ADMIN, RolesScopeEnum.OWNER])
   async updateEnvironments(@Args('data') input: UpdateEnvironmentInput) {
     return this.environmentsService.update(input);
+  }
+
+  @Mutation(() => Environment)
+  @Roles([RolesScopeEnum.OWNER])
+  async updateEnvironmentLauncherFocus(@Args('data') input: UpdateEnvironmentLauncherFocusInput) {
+    return this.environmentsService.updateLauncherFocus(input);
   }
 
   @Mutation(() => Environment)

@@ -22,6 +22,12 @@ export interface ConfigRequest extends BaseRequest {}
 export interface ConfigResponse {
   removeBranding: boolean;
   planType: string;
+  launcherFocus?: {
+    trap: string;
+    tabWindowMs: number | null;
+    holdFocusMs: number | null;
+    maxHoldCount: number | null;
+  };
 }
 
 // List contents request
