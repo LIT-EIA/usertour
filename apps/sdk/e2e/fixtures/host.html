@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Host page</title>
+    <style>
+      *:focus {
+        outline: none;
+      }
+      iframe {
+        display: block;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="before">Before</button>
+    <input id="outside-input" aria-label="Outside input" />
+    <button id="target" aria-describedby="host-help">Target button</button>
+    <span id="host-help">Existing help text</span>
+    <div id="target-div">Plain target</div>
+    <div id="target-role" role="button">Role button</div>
+    <div id="target-wrap"><span>Wrapped</span> <input id="wrap-input" aria-label="Wrapped input" /></div>
+    <div id="already-inert" inert>Already inert</div>
+    <button id="after">After</button>
+    <iframe id="host-frame" src="/frame.html" title="Host frame" style="width: 400px; height: 60px"></iframe>
+    <div id="usertour-widget"></div>
+    <script src="/harness.js"></script>
+    <script>
+      window.events = { escape: 0, targetClicks: 0, targetEnter: 0 };
+      document.getElementById('target').addEventListener('click', () => {
+        window.events.targetClicks++;
+      });
+      document.getElementById('target').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') window.events.targetEnter++;
+      });
+
+      const frameLoaded = (frame) =>
+        new Promise((resolve) => {
+          if (frame.contentDocument?.readyState === 'complete' && frame.contentDocument.URL !== 'about:blank') {
+            resolve();
+          } else {
+            frame.addEventListener('load', () => resolve(), { once: true });
+          }
+        });
+
+      // ?isolation=shadow renders in a shadow root instead of an iframe
+      const isShadow = new URLSearchParams(location.search).get('isolation') === 'shadow';
+
+      window.addTooltipFrame = async (id) => {
+        if (isShadow) {
+          const html = await (await fetch('/tooltip.html')).text();
+          const parsed = new DOMParser().parseFromString(html, 'text/html');
+          const host = document.createElement('div');
+          host.id = id;
+          host.attachShadow({ mode: 'open' }).innerHTML = parsed.body.innerHTML;
+          document.getElementById('usertour-widget').appendChild(host);
+          return;
+        }
+        const frame = document.createElement('iframe');
+        frame.id = id;
+        frame.src = '/tooltip.html';
+        frame.title = 'Step 2 of 5';
+        frame.style.cssText = 'width: 400px; height: 360px';
+        document.getElementById('usertour-widget').appendChild(frame);
+        await frameLoaded(frame);
+      };
+
+      window.ready = Promise.all([
+        frameLoaded(document.getElementById('host-frame')),
+        window.addTooltipFrame('tooltip-frame'),
+      ]);
+
+      window.activate = (opts = {}) => {
+        const host = document.getElementById(opts.frameId || 'tooltip-frame');
+        const scope = isShadow ? host.shadowRoot : host.contentDocument;
+        let target = null;
+        let targetIframe = null;
+        if (opts.target === 'iframe') {
+          targetIframe = document.getElementById('host-frame');
+          target = targetIframe.contentDocument.getElementById('iframe-target');
+        } else if (opts.target) {
+          target = document.querySelector(opts.target);
+        }
+        const { StepFocusManager, getTourStrings, getStepLabel } = window.UsertourFocusTest;
+        const strings = getTourStrings(document);
+        window.manager = window.manager || new StepFocusManager();
+        window.manager.activate({
+          mode: opts.mode || 'tooltip',
+          tooltipHost: host,
+          tooltipScope: scope,
+          tooltipRoot: scope.getElementById('root'),
+          target,
+          targetIframe,
+          blockTarget: Boolean(opts.blockTarget),
+          inertPage: Boolean(opts.inertPage),
+          label: getStepLabel(1, 5, strings),
+          targetHint: strings.targetHint,
+          lang: strings.lang,
+          zIndex: 1000,
+          onEscape: () => {
+            window.events.escape++;
+            window.manager.destroy(true);
+          },
+        });
+      };
+
+      window.focusPath = () => {
+        let el = document.activeElement;
+        const path = [];
+        while (el && ((el.tagName === 'IFRAME' && el.contentDocument) || el.shadowRoot)) {
+          path.push(el.id);
+          el = el.shadowRoot ? el.shadowRoot.activeElement : el.contentDocument.activeElement;
+        }
+        const id = el ? el.id || el.tagName.toLowerCase() : 'none';
+        return path.length ? `${path.join('>')}#${id}` : `#${id}`;
+      };
+    </script>
+  </body>
+</html>

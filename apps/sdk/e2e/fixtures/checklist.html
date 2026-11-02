@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Checklist host page</title>
+    <script>
+      document.documentElement.lang = new URLSearchParams(location.search).get('lang') || 'en';
+    </script>
+  </head>
+  <body>
+    <button id="page-first">First page button</button>
+    <button id="page-last">Last page button</button>
+    <div id="usertour-widget"></div>
+    <script src="/checklist-harness.js"></script>
+  </body>
+</html>

@@ -24,3 +24,7 @@ example
 *.sln
 *.sw?
 stats.html
+
+# Playwright
+test-results
+playwright-report

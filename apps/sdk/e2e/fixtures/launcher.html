@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Launcher host page</title>
+    <script>
+      document.documentElement.lang = new URLSearchParams(location.search).get('lang') || 'en';
+    </script>
+  </head>
+  <body>
+    <button id="before">Before</button>
+    <button id="target">Save</button>
+    <button id="after">After</button>
+    <h2 id="heading">Billing settings</h2>
+    <p id="fading" style="opacity: 0">Fading text</p>
+    <button id="last">Last page button</button>
+    <p id="hidden-text" style="visibility: hidden">Hidden text</p>
+    <div style="height: 3000px"></div>
+    <p id="far">Far text</p>
+    <button id="end">End of page</button>
+    <!-- No dialog role: tests look up the tooltip by role -->
+    <div id="modal">
+      <button id="modal-first">Modal first</button>
+      <button id="modal-target">Save in modal</button>
+      <button id="modal-last">Modal last</button>
+    </div>
+    <script>
+      const modal = document.getElementById('modal');
+      const tabbable =
+        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const findItems = () =>
+        [...modal.querySelectorAll(tabbable)].filter(
+          (el) => getComputedStyle(el).display !== 'none',
+        );
+      // ?trap=cached: lists controls once, when the modal opens
+      // ?trap=cached-capture: same, in the document capture phase
+      const trap = new URLSearchParams(location.search).get('trap');
+      // ?trap=sentinel: like Carbon, an end marker that wraps focus a moment later
+      if (trap === 'sentinel') {
+        const items = findItems();
+        const [first, last] = [items[0], items[items.length - 1]];
+        const end = document.createElement('span');
+        end.id = 'modal-end';
+        end.tabIndex = 0;
+        modal.append(end);
+        end.addEventListener('focus', (event) => {
+          const next = event.relatedTarget === last ? first : last;
+          setTimeout(() => next.focus(), 10);
+        });
+        modal.addEventListener('keydown', (event) => {
+          if (event.key === 'Tab' && event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            end.focus();
+          }
+        });
+      }
+      // ?trap=focus-trap: like the focus-trap library
+      if (trap === 'focus-trap') {
+        document.addEventListener(
+          'keydown',
+          (event) => {
+            if (event.key !== 'Tab' || !modal.contains(document.activeElement)) return;
+            const items = findItems();
+            const [first, last] = [items[0], items[items.length - 1]];
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          },
+          true,
+        );
+        document.addEventListener('focusin', (event) => {
+          if (!modal.contains(event.target)) findItems()[0].focus();
+        });
+      }
+      // ?trap=radix: like Radix FocusScope
+      if (trap === 'radix') {
+        const candidates = () => {
+          const nodes = [];
+          const walker = document.createTreeWalker(modal, NodeFilter.SHOW_ELEMENT, {
+            acceptNode: (node) =>
+              node.disabled || node.hidden || node.tabIndex < 0
+                ? NodeFilter.FILTER_SKIP
+                : NodeFilter.FILTER_ACCEPT,
+          });
+          while (walker.nextNode()) nodes.push(walker.currentNode);
+          return nodes.filter((node) => getComputedStyle(node).visibility !== 'hidden');
+        };
+        modal.addEventListener('keydown', (event) => {
+          if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
+          const items = candidates();
+          const [first, last] = [items[0], items[items.length - 1]];
+          if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus({ preventScroll: true });
+          } else if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus({ preventScroll: true });
+          }
+        });
+      }
+      // ?trap=mui: like the MUI FocusTrap
+      if (trap === 'mui') {
+        const marker = (id) => {
+          const element = document.createElement('div');
+          element.id = id;
+          element.tabIndex = 0;
+          return element;
+        };
+        const start = marker('modal-sentinel-start');
+        const end = marker('modal-sentinel-end');
+        modal.prepend(start);
+        modal.append(end);
+        const controls = () => findItems().filter((el) => el !== start && el !== end);
+        start.addEventListener('focus', () => controls().at(-1).focus());
+        end.addEventListener('focus', () => controls()[0].focus());
+      }
+      // ?trap=slow: like cached, but moves focus 200 ms after Tab
+      if (trap === 'slow') {
+        const items = findItems();
+        const [first, last] = [items[0], items[items.length - 1]];
+        modal.addEventListener('keydown', (event) => {
+          if (event.key !== 'Tab') return;
+          const next =
+            event.shiftKey && document.activeElement === first
+              ? last
+              : !event.shiftKey && document.activeElement === last
+                ? first
+                : null;
+          if (next) {
+            event.preventDefault();
+            setTimeout(() => next.focus(), 200);
+          }
+        });
+      }
+      const cached = trap === 'cached' || trap === 'cached-capture' ? findItems() : null;
+      const trapRoot = trap === 'cached-capture' ? document : modal;
+      trapRoot.addEventListener('keydown', (event) => {
+        if ((trap && !cached) || !modal.contains(document.activeElement)) return;
+        if (event.key !== 'Tab') return;
+        if (cached) {
+          const first = cached[0];
+          const last = cached[cached.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+          return;
+        }
+        const items = findItems();
+        const index = items.indexOf(document.activeElement);
+        const next = event.shiftKey
+          ? items[(index - 1 + items.length) % items.length]
+          : items[(index + 1) % items.length];
+        event.preventDefault();
+        next.focus();
+      }, trap === 'cached-capture');
+    </script>
+    <div id="usertour-widget"></div>
+    <script src="/launcher-harness.js"></script>
+  </body>
+</html>

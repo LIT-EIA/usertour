@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tooltip targets</title>
+    <script>
+      document.documentElement.lang = new URLSearchParams(location.search).get('lang') || 'en';
+    </script>
+  </head>
+  <body>
+    <button id="button">Save   changes</button>
+    <button id="icon-button" aria-label="Close panel"><svg aria-hidden="true"></svg></button>
+    <button id="empty-button"></button>
+    <a id="link" href="#x">Pricing</a>
+    <label for="email">Email address</label> <input id="email" type="email" />
+    <label><input id="agree" type="checkbox" /> I agree</label>
+    <input id="search" type="search" aria-label="Search the docs" />
+    <input id="unlabelled" type="text" placeholder="Type here" />
+    <span id="name-label">Full name</span> <input id="labelledby" aria-labelledby="name-label" />
+    <select id="country"><option>Canada</option><option>France</option></select>
+    <img id="logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Company logo" />
+    <img id="no-alt" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" />
+    <h3 id="heading">Monthly reports</h3>
+    <div id="role-tab" role="tab">Settings</div>
+    <p id="paragraph">Your data is updated every night.</p>
+    <p id="long">
+      This paragraph is very long so that the intro has to cut it before it reaches the end, because
+      reading the whole thing twice would only repeat what is already on the page around the tooltip.
+    </p>
+    <div id="empty-div"></div>
+    <div id="wrap">Pick a plan <input aria-label="Plan" /></div>
+    <button id="disabled" disabled>Upgrade</button>
+    <nav id="nav" aria-label="Main"><a href="#a">Home</a></nav>
+    <script src="/harness.js"></script>
+  </body>
+</html>

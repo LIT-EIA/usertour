@@ -13,6 +13,7 @@
     "build:dev": "tsc && vite build --mode development && node scripts/serve-dev.mjs es2020",
     "build:dev:iife": "tsc && vite build --mode development -- --iife && node scripts/serve-dev.mjs legacy",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -44,6 +45,7 @@
     "ws": "8.13.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.1",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^25.0.2",
     "@rollup/plugin-node-resolve": "^13.0.6",

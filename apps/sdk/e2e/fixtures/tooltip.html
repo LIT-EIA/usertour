@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tooltip content</title>
+  </head>
+  <body>
+    <!-- Mirrors what PopperContent renders inside the SDK frame -->
+    <div
+      id="root"
+      class="usertour-widget-popper-frame-root"
+      role="dialog"
+      aria-label="Step 2 of 5"
+      aria-describedby="hint"
+      tabindex="-1"
+    >
+      <h2 id="heading">Welcome to reports</h2>
+      <p>Some step text.</p>
+      <button id="next">Next</button>
+      <button id="back">Back</button>
+      <a id="link" href="#more">Learn more</a>
+      <button id="disabled" disabled>Disabled</button>
+      <button id="skipped" tabindex="-1">Not a tab stop</button>
+      <button id="hidden" style="display: none">Hidden</button>
+      <div role="radiogroup" aria-label="Rating">
+        <label><input type="radio" name="rating" id="r1" value="1" checked />1</label>
+        <label><input type="radio" name="rating" id="r2" value="2" />2</label>
+        <label><input type="radio" name="rating" id="r3" value="3" />3</label>
+      </div>
+      <input id="text" aria-label="Answer" />
+      <button id="close" aria-label="Close">x</button>
+      <span id="hint" class="usertour-visually-hidden" aria-hidden="true">Press Escape to close the tour.</span>
+    </div>
+  </body>
+</html>
