@@ -4,9 +4,18 @@ import { CSS } from '@dnd-kit/utilities';
 import { DragHandleDots2Icon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { cn } from '@usertour/helpers';
-import { ReactNode, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  FocusEvent,
+  ReactNode,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
+import { isFocusLeaving } from '../../lib/focus';
 import {
   ContentEditorElement,
   ContentEditorElementInsertDirection,
@@ -141,8 +150,10 @@ export const ContentEditorGroup = (props: ContentEditorGroupProps) => {
     setIsGroupHover(true);
   }, [activeId, id]);
 
-  const handleBlur = useCallback(() => {
-    setIsGroupHover(false);
+  const handleBlur = useCallback((event: FocusEvent<HTMLDivElement>) => {
+    if (isFocusLeaving(event)) {
+      setIsGroupHover(false);
+    }
   }, []);
 
   // DnD monitor

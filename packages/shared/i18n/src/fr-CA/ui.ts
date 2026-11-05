@@ -1672,6 +1672,8 @@ const translations = {
       nameLabel: 'Nom',
       namePlaceholder: 'Entrez le nom du {{type}}',
       namePlaceholder_feminine: 'Entrez le nom de la {{type}}',
+      nameRequired: 'Erreur : entrez un nom.',
+      nameTooLong: 'Erreur : le nom doit comporter au plus {{max}} caractères.',
       submit: 'Créer {{type}}',
       failure: 'Échec de la création de {{type}}.',
       extensionBuilderHint:
@@ -2771,6 +2773,7 @@ const translations = {
       round: 'Rond',
       selectWidget: 'Sélectionner un widget…',
       variationTitle: 'Entrez le titre de la variation...',
+      variationTitleLabel: 'Titre de la variation',
     },
     validation: {
       toleranceMax: 'La valeur maximale est {{max}}',
@@ -3105,6 +3108,7 @@ const translations = {
         disableIf: 'Désactiver le bouton si...',
         hideIf: 'Masquer le bouton si...',
         actionRequired: 'Veuillez sélectionner au moins une action',
+        textRequired: 'Erreur : entrez le texte du bouton.',
       },
       textInput: {
         placeholder: 'Espace réservé',
@@ -3566,7 +3570,10 @@ const translations = {
     },
     flow: {
       untitledStep: 'Sans titre',
+      stepNameLabel: "Nom de l'étape",
       saveStepFailed: "Échec de la création de l'étape!",
+      fixErrorsBeforeSave:
+        "L'étape n'a pas été enregistrée. Corrigez les erreurs signalées et réessayez.",
       create: 'Créer',
       trigger: 'Déclencheur',
       triggers: 'Déclencheurs',

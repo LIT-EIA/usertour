@@ -5,6 +5,7 @@ import { Label } from '@usertour-packages/label';
 import { SelectorDialog } from '@usertour-packages/shared-components';
 import { HelpTooltip } from '@usertour-packages/shared-components';
 import { Switch } from '@usertour-packages/switch';
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ContentError, ContentErrorAnchor, ContentErrorContent } from '../content-error';
 import { useContentPlacement } from './content-placement-context';
@@ -25,6 +26,8 @@ export const ContentPlacementAuto = () => {
     subTitle,
   } = useContentPlacement();
   const { t } = useTranslation();
+  const errorId = useId();
+  const hasError = Boolean(isShowError && (!target?.selectors || target.selectors.length === 0));
 
   const handleElementSelectSuccess = (output: any) => {
     onTargetChange({
@@ -38,7 +41,7 @@ export const ContentPlacementAuto = () => {
   };
 
   return (
-    <ContentError open={isShowError && (!target?.selectors || target?.selectors.length === 0)}>
+    <ContentError open={hasError}>
       <div className="flex flex-col space-y-2">
         <h2 className="text-sm">{subTitle}</h2>
         {!isWebBuilder ? (
@@ -51,7 +54,11 @@ export const ContentPlacementAuto = () => {
             </div>
 
             <ContentErrorAnchor>
-              <Button className="w-full rounded-none">
+              <Button
+                className="w-full rounded-none"
+                aria-invalid={hasError || undefined}
+                aria-describedby={hasError ? errorId : undefined}
+              >
                 <Crosshair2Icon className="mr-2" />
                 {t('contentBuilder.shared.selectAnotherElement')}
               </Button>
@@ -69,7 +76,11 @@ export const ContentPlacementAuto = () => {
                 <img src={screenshot?.mini} alt="" />
               </div>
               <ContentErrorAnchor>
-                <Button className="w-full rounded-none">
+                <Button
+                  className="w-full rounded-none"
+                  aria-invalid={hasError || undefined}
+                  aria-describedby={hasError ? errorId : undefined}
+                >
                   <Crosshair2Icon className="mr-2" />
                   {!target
                     ? t('contentBuilder.shared.selectElementButton')
@@ -98,7 +109,7 @@ export const ContentPlacementAuto = () => {
           />
         </div>
       </div>
-      <ContentErrorContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
+      <ContentErrorContent id={errorId} style={{ zIndex: zIndex + EXTENSION_SELECT }}>
         {t('contentBuilder.shared.selectElementError')}
       </ContentErrorContent>
     </ContentError>

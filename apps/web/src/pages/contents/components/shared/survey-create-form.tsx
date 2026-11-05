@@ -31,6 +31,7 @@ import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { contentNameErrorMap } from './content-name-error-map';
 import { z } from 'zod';
 
 interface SurveyCreateFormProps {
@@ -88,7 +89,7 @@ export const SurveyCreateForm = ({ onClose, isOpen }: SurveyCreateFormProps) => 
   };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema, { errorMap: contentNameErrorMap(t) }),
     defaultValues,
     mode: 'onChange',
   });
@@ -153,17 +154,17 @@ export const SurveyCreateForm = ({ onClose, isOpen }: SurveyCreateFormProps) => 
                     <FormLabel className="w-32 flex-none">
                       {t('contents.create.nameLabel')}
                     </FormLabel>
-                    <FormControl>
-                      <div className="flex flex-col space-x-1 w-full grow">
+                    <div className="flex flex-col space-x-1 w-full grow">
+                      <FormControl>
                         <Input
                           placeholder={t('contents.create.namePlaceholder', {
                             type: translatedType,
                           })}
                           {...field}
                         />
-                        <FormMessage />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />
@@ -216,15 +217,15 @@ export const SurveyCreateForm = ({ onClose, isOpen }: SurveyCreateFormProps) => 
                       <FormLabel className="w-32 flex-none">
                         {t('contents.shared.edit.buildUrlLabel')}
                       </FormLabel>
-                      <FormControl>
-                        <div className="flex flex-col space-x-1 w-full grow">
+                      <div className="flex flex-col space-x-1 w-full grow">
+                        <FormControl>
                           <Input
                             placeholder={t('contents.shared.edit.buildUrlPlaceholder')}
                             {...field}
                           />
-                          <FormMessage />
-                        </div>
-                      </FormControl>
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />

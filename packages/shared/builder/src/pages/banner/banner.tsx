@@ -31,7 +31,7 @@ const BannerBuilderHeader = () => {
   const { currentContent } = useBuilderContext();
   return (
     <CardHeader className="flex-none p-4 space-y-3">
-      <CardTitle className="flex h-8	">
+      <CardTitle as="h2" className="flex h-8	">
         <SidebarHeader title={currentContent?.name ?? ''} />
       </CardTitle>
     </CardHeader>

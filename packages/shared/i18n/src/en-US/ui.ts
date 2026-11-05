@@ -1632,6 +1632,9 @@ const translations = {
       title: 'New {{type}}',
       nameLabel: 'Name',
       namePlaceholder: 'Enter {{type}} name',
+      // Validation messages for the Name field (WCAG 3.3.1/3.3.3: say it is an error and how to fix it)
+      nameRequired: 'Error: Enter a name.',
+      nameTooLong: 'Error: The name must be {{max}} characters or fewer.',
       submit: 'Create {{type}}',
       failure: 'Failed to create {{type}}.',
       extensionBuilderHint: 'Open the builder in new tab for WYSIWYG editing experience',
@@ -2692,6 +2695,7 @@ const translations = {
       round: 'Round',
       selectWidget: 'Select widget…',
       variationTitle: 'Enter variation title...',
+      variationTitleLabel: 'Variation title',
     },
     validation: {
       toleranceMax: 'Maximum value is {{max}}',
@@ -3024,6 +3028,7 @@ const translations = {
         disableIf: 'Disable button if...',
         hideIf: 'Hide button if...',
         actionRequired: 'Please select at least one action',
+        textRequired: 'Error: Enter the button text.',
       },
       textInput: {
         placeholder: 'Placeholder',
@@ -3477,7 +3482,9 @@ const translations = {
     },
     flow: {
       untitledStep: 'Untitled',
+      stepNameLabel: 'Step name',
       saveStepFailed: 'Failed to create step!',
+      fixErrorsBeforeSave: 'The step was not saved. Fix the highlighted errors and try again.',
       create: 'Create',
       trigger: 'Trigger',
       triggers: 'Triggers',

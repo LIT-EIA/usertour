@@ -3,7 +3,7 @@ import { useContentListContext } from '@/contexts/content-list-context';
 import { PlusCircledIcon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { Separator } from '@usertour-packages/separator';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EmptyPlaceholder } from '../shared/empty-placeholder';
 import { LauncherCreateForm } from '../shared/launcher-create-form';
 import { DataTable } from './data-table';
@@ -15,8 +15,19 @@ export const LauncherListContent = () => {
   const { isViewOnly } = useAppContext();
   const { t } = useTranslation();
 
-  const openCreateFormHandler = async () => {
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+
+  const openCreateFormHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    openerRef.current = event.currentTarget;
     setOpen(true);
+  };
+
+  // The dialog has no DialogTrigger, so return focus to the button that opened it
+  const handleCloseAutoFocus = (event: Event) => {
+    event.preventDefault();
+    const opener = openerRef.current?.isConnected ? openerRef.current : createButtonRef.current;
+    opener?.focus();
   };
 
   const { contents, refetch, isLoading } = useContentListContext();
@@ -38,7 +49,12 @@ export const LauncherListContent = () => {
               <p className="text-sm text-muted-foreground">{t('contents.list.launchers.text')}</p>
             </div>
           </div>
-          <Button onClick={openCreateFormHandler} className="flex-none" disabled={isViewOnly}>
+          <Button
+            ref={createButtonRef}
+            onClick={openCreateFormHandler}
+            className="flex-none"
+            disabled={isViewOnly}
+          >
             <PlusCircledIcon className="mr-2 h-4 w-4" />
             {t('contents.list.newButton', { type: t('contents.types.launcher') })}
           </Button>
@@ -58,7 +74,11 @@ export const LauncherListContent = () => {
         </EmptyPlaceholder>
       )}
       {!isLoading && contents && contents.length > 0 && <DataTable />}
-      <LauncherCreateForm isOpen={open} onClose={handleOnClose} />
+      <LauncherCreateForm
+        isOpen={open}
+        onClose={handleOnClose}
+        onCloseAutoFocus={handleCloseAutoFocus}
+      />
     </div>
   );
 };

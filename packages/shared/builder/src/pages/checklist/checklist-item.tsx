@@ -27,7 +27,7 @@ const ChecklistItemHeader = () => {
   const { t } = useTranslation();
   return (
     <CardHeader className="flex-none p-4 space-y-2">
-      <CardTitle className="flex flex-row space-x-1 text-base items-center">
+      <CardTitle as="h2" className="flex flex-row space-x-1 text-base items-center">
         <Button
           variant="link"
           size="icon"

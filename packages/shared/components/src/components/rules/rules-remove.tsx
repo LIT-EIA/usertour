@@ -30,7 +30,8 @@ export const RulesRemove = (props: RulesRemoveProps) => {
             <TooltipIconButton
               label={t('conditions.actions.removeCondition')}
               onClick={handleOnClick}
-              className="absolute top-1 right-1 cursor-pointer rounded-sm"
+              // 24px target with the 18px icon where it was (WCAG 2.5.8)
+              className="absolute top-0 right-0 h-6 w-6 cursor-pointer rounded-sm"
             >
               <CloseIcon width={18} height={18} aria-hidden="true" />
             </TooltipIconButton>

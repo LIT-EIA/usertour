@@ -26,6 +26,7 @@ import { useEvent } from 'react-use';
 import { Editor, Element as SlateElement, Node, Path, Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
 import { updateNodeStatus } from '../../lib/editorHelper';
+import { isFocusLeaving } from '../../lib/focus';
 import { ColumnElementType } from '../../types/slate';
 import { usePopperEditorContext } from '../editor';
 
@@ -219,7 +220,7 @@ export const ColumnElement = (props: RenderElementProps & { className?: string }
         onMouseOver={() => setIsHover(true)}
         onMouseOut={() => setIsHover(false)}
         onFocus={() => setIsHover(true)}
-        onBlur={() => setIsHover(false)}
+        onBlur={(e) => isFocusLeaving(e) && setIsHover(false)}
         onClick={handleOnClick}
       >
         <Popover.Anchor asChild>

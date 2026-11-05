@@ -14,6 +14,7 @@ import {
   inertGroupBlock,
   inertImageBlock,
 } from '../lib/editorHelper';
+import { isFocusLeaving } from '../lib/focus';
 import { toggleTextProps } from '../lib/text';
 import { withButton } from '../lib/withButton';
 import { withEmbed } from '../lib/withEmbed';
@@ -217,7 +218,7 @@ export const PopperEditor = (props: PopperEditorProps) => {
       onFocus={() => {
         setIsEditorHover(true);
       }}
-      onBlur={() => setIsEditorHover(false)}
+      onBlur={(e) => isFocusLeaving(e) && setIsEditorHover(false)}
       // onClick={}
     >
       <PopperEditorContext.Provider value={value}>

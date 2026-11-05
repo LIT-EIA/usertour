@@ -317,6 +317,28 @@ const buildAlignItem = (t: TFunction) => [
   </ToggleItemBlockButton>,
 ];
 
+// Radix Toolbar keeps its root at tabindex=0 and, on Shift+Tab from an item, flips it to -1 through
+// React state so the browser skips it. Firefox resolves the next focus target before that update
+// reaches the DOM, lands on the root, and the root's focus handler sends focus straight back to the
+// item: Shift+Tab can never leave the toolbar. Set the attribute synchronously before the browser
+// moves focus. In Firefox Radix's "tabbing out" and "blurred" updates batch into no change, so React
+// never writes the attribute back: restore it ourselves once focus has actually left the toolbar
+// (if focus stayed inside, Radix still wants -1 and will reset it on blur).
+const letShiftTabLeaveToolbar = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  if (event.key !== 'Tab' || !event.shiftKey) {
+    return;
+  }
+  const root = event.currentTarget;
+  const previous = root.getAttribute('tabindex');
+  root.setAttribute('tabindex', '-1');
+  // The browser moves focus as the keydown's default action, before this timeout runs
+  setTimeout(() => {
+    if (previous !== null && !root.contains(document.activeElement)) {
+      root.setAttribute('tabindex', previous);
+    }
+  });
+};
+
 export const EditorToolbar = () => {
   const { t } = useTranslation();
   const ref = useRef<HTMLElement | null>(null);
@@ -373,6 +395,7 @@ export const EditorToolbar = () => {
         // style={{ zIndex: zIndex + EDITOR_RICH_TOOLBAR }}
         aria-label={t('contentBuilder.editor.toolbar.formattingOptions')}
         className="flex flex-row"
+        onKeyDownCapture={letShiftTabLeaveToolbar}
       >
         <Toolbar.ToggleGroup
           type="multiple"
@@ -401,8 +424,9 @@ export const EditorToolbar = () => {
             className={cn(
               'flex-shrink-0 flex-grow-0 basis-auto text-mauve11 h-[25px] px-[5px] rounded inline-flex text-[13px] leading-none items-center justify-center ml-0.5 outline-none hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 first:ml-0 data-[state=on]:bg-violet5 data-[state=on]:text-violet11',
             )}
+            aria-label={t('contentBuilder.editor.toolbar.additionalFormattingOptions')}
           >
-            <MoreIcon className="fill-black" />
+            <MoreIcon className="fill-black" aria-hidden="true" />
           </Popover.Trigger>
         )}
         {/* <DropdownMenu>
@@ -484,7 +508,8 @@ export const EditorToolbar = () => {
               )}
               // ref={ref}
               style={{ zIndex: zIndex + EDITOR_RICH_TOOLBAR }}
-              aria-label={t('contentBuilder.editor.toolbar.formattingOptions')}
+              aria-label={t('contentBuilder.editor.toolbar.additionalFormatting')}
+              onKeyDownCapture={letShiftTabLeaveToolbar}
             >
               {miniItem.length > 0 && (
                 <>

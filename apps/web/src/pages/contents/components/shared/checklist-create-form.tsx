@@ -30,10 +30,12 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { contentNameErrorMap } from './content-name-error-map';
 
 interface ChecklistCreateFormProps {
   isOpen: boolean;
   onClose: (contentId?: string) => void;
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 const formSchema = z.object({
@@ -51,7 +53,11 @@ const defaultValues: Partial<FormValues> = {
   name: '',
 };
 
-export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProps) => {
+export const ChecklistCreateForm = ({
+  onClose,
+  isOpen,
+  onCloseAutoFocus,
+}: ChecklistCreateFormProps) => {
   const [createContentMutation] = useMutation(createContent);
   const [updateContentVersionMutation] = useMutation(updateContentVersion);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -68,7 +74,7 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
   };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema, { errorMap: contentNameErrorMap(t) }),
     defaultValues,
     mode: 'onChange',
   });
@@ -111,7 +117,7 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(op) => !op && onClose()}>
-      <DialogContent>
+      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleOnSubmit)}>
             <DialogHeader>
@@ -131,8 +137,8 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
                     <FormLabel className="w-32 flex-none">
                       {t('contents.create.nameLabel')}
                     </FormLabel>
-                    <FormControl>
-                      <div className="flex flex-col space-x-1 w-full grow">
+                    <div className="flex flex-col space-x-1 w-full grow">
+                      <FormControl>
                         <Input
                           placeholder={t('contents.create.namePlaceholder', {
                             type: t('contents.types.checklist'),
@@ -140,9 +146,9 @@ export const ChecklistCreateForm = ({ onClose, isOpen }: ChecklistCreateFormProp
                           })}
                           {...field}
                         />
-                        <FormMessage />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />

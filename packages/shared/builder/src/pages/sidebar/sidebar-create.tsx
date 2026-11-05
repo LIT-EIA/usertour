@@ -6,7 +6,7 @@ import { PopperPreview } from '@usertour-packages/shared-components';
 import { getDefaultDataForType } from '@usertour-packages/shared-editor';
 import { defaultStep } from '@usertour/helpers';
 import { TFunction } from 'i18next';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BuilderMode, useBuilderContext } from '../../contexts';
 
@@ -88,6 +88,8 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
     [currentVersion],
   );
 
+  const titleId = useId();
+
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
@@ -105,8 +107,12 @@ export const SidebarCreate = (props: SidebarCreateProps) => {
           style={{ zIndex: zIndex + EXTENSION_SIDEBAR_POPPER }}
           alignOffset={40}
           sideOffset={2}
+          // Name the popover (role="dialog") after its heading
+          aria-labelledby={titleId}
         >
-          <h2 className="text-lg mb-3">{t('contentBuilder.flow.stepTypeTitle')}</h2>
+          <h2 id={titleId} className="text-lg mb-3">
+            {t('contentBuilder.flow.stepTypeTitle')}
+          </h2>
           <div className="grid grid-cols-2 gap-4">
             {currentTheme?.settings &&
               contentList.map((content, index) => {

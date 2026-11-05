@@ -2,7 +2,7 @@ import { EXTENSION_SELECT } from '@usertour-packages/constants';
 import { Input } from '@usertour-packages/input';
 import { Label } from '@usertour-packages/label';
 import { HelpTooltip } from '@usertour-packages/shared-components';
-import { ChangeEvent, useCallback } from 'react';
+import { ChangeEvent, useCallback, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ContentError, ContentErrorAnchor, ContentErrorContent } from '../content-error';
 import { useContentPlacement } from './content-placement-context';
@@ -12,6 +12,8 @@ import { SequenceSelect } from './sequence-select';
 export const ContentPlacementManual = () => {
   const { target, onTargetChange, zIndex, isShowError } = useContentPlacement();
   const { t } = useTranslation();
+  const errorId = useId();
+  const hasError = Boolean(isShowError && !target?.customSelector);
 
   const handleContentChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +44,7 @@ export const ContentPlacementManual = () => {
   );
 
   return (
-    <ContentError open={isShowError && !target?.customSelector}>
+    <ContentError open={hasError}>
       <div className="flex flex-col space-y-2">
         {/* <h2 className="text-sm">{subTitle}</h2> */}
         <div className="flex flex-col space-y-2">
@@ -61,6 +63,8 @@ export const ContentPlacementManual = () => {
               id="css-selector"
               value={target?.customSelector ?? ''}
               onChange={handleSelectorChange}
+              aria-invalid={hasError || undefined}
+              aria-describedby={hasError ? errorId : undefined}
             />
           </ContentErrorAnchor>
 
@@ -73,7 +77,7 @@ export const ContentPlacementManual = () => {
           />
         </div>
       </div>
-      <ContentErrorContent style={{ zIndex: zIndex + EXTENSION_SELECT }}>
+      <ContentErrorContent id={errorId} style={{ zIndex: zIndex + EXTENSION_SELECT }}>
         {t('contentBuilder.shared.cssSelectorRequired')}
       </ContentErrorContent>
     </ContentError>

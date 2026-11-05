@@ -9,7 +9,7 @@ import { useContentListContext } from '@usertour-packages/contexts';
 import { updateContentStep } from '@usertour-packages/gql';
 import { SpinnerIcon } from '@usertour-packages/icons';
 import { ScrollArea } from '@usertour-packages/scroll-area';
-import { createValue1 } from '@usertour-packages/shared-editor';
+import { createValue1, focusFirstValidationError } from '@usertour-packages/shared-editor';
 import { defaultStep, getErrorMessage, hasActionError, hasError } from '@usertour/helpers';
 import {
   AttributeBizTypes,
@@ -39,7 +39,9 @@ const FlowBuilderTriggerHeader = () => {
 
   return (
     <CardHeader className="flex-none p-5 space-y-2">
-      <CardTitle className="text-base truncate ...">{currentContent?.name}</CardTitle>
+      <CardTitle as="h2" className="text-base truncate ...">
+        {currentContent?.name}
+      </CardTitle>
       <div className="flex">
         <Button
           variant="link"
@@ -230,6 +232,17 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
   const { setShowError } = useTriggerContext();
   const { t } = useTranslation();
 
+  // A refused Save must not be silent: take focus to the first field with an error (its bubble is
+  // then read as the field's description), or say why if none is on screen (WCAG 3.3.1, 4.1.3).
+  // Deferred a frame so bubbles opened by this click have rendered.
+  const reportInvalid = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (!focusFirstValidationError()) {
+        toast({ variant: 'destructive', title: t('contentBuilder.flow.fixErrorsBeforeSave') });
+      }
+    });
+  }, [toast, t]);
+
   const handleSave = useCallback(async () => {
     setShowError(false);
     if (!currentStep || !currentStep.trigger || !attributes) {
@@ -238,10 +251,12 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
     for (let index = 0; index < currentStep.trigger.length; index++) {
       const { actions, conditions } = currentStep.trigger[index];
       if (hasError(conditions, attributes) || hasActionError(actions)) {
+        reportInvalid();
         return;
       }
       if (conditions.length === 0 || actions.length === 0) {
         setShowError(true);
+        reportInvalid();
         return;
       }
     }
@@ -265,7 +280,7 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
     }
     setIsLoading(false);
     setCurrentMode({ mode: BuilderMode.FLOW });
-  }, [currentStep, attributes]);
+  }, [currentStep, attributes, reportInvalid]);
 
   return (
     <CardFooter className="flex-none p-5">

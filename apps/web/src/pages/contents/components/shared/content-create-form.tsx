@@ -31,6 +31,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { contentNameErrorMap } from './content-name-error-map';
 
 interface ContentCreateFormProps {
   isOpen: boolean;
@@ -91,7 +92,7 @@ export const ContentCreateForm = ({
   };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema, { errorMap: contentNameErrorMap(t) }),
     defaultValues,
     mode: 'onChange',
   });

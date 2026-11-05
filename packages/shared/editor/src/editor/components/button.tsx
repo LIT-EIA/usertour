@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { RulesCondition } from '@usertour/types';
+import { isEmptyString } from '@usertour/helpers';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
@@ -301,11 +302,13 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
     [element, id, updateElement],
   );
 
-  // Error state effect
+  // Error state effect. Empty text blocks Save too (isMissingRequiredData), so it needs a
+  // visible message like empty actions do, or Save fails with nothing to point at.
+  const isEmptyText = isEmptyString(element?.data?.text);
+  const isEmptyActions = !element?.data?.actions || element?.data?.actions.length === 0;
   useEffect(() => {
-    const isEmptyActions = !element?.data?.actions || element?.data?.actions.length === 0;
-    setIsShowError(isEmptyActions && !isOpen);
-  }, [element?.data?.actions, isOpen]);
+    setIsShowError((isEmptyText || isEmptyActions) && !isOpen);
+  }, [isEmptyText, isEmptyActions, isOpen]);
 
   return (
     <EditorError open={isShowError}>
@@ -318,6 +321,8 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
               contentEditable={false}
               className="h-fit"
               style={buttonStyle}
+              // keep a name while the text is empty (the error bubble then describes it)
+              aria-label={isEmptyText ? t('contentBuilder.editor.button.text') : undefined}
             >
               <span>{element.data.text}</span>
             </Button>
@@ -390,7 +395,9 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent style={{ zIndex: zIndex }}>
-        {t('contentBuilder.editor.button.actionRequired')}
+        {isEmptyText
+          ? t('contentBuilder.editor.button.textRequired')
+          : t('contentBuilder.editor.button.actionRequired')}
       </EditorErrorContent>
     </EditorError>
   );

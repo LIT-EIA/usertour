@@ -268,10 +268,15 @@ export const ContentActionsGroup = () => {
             zIndex={zIndex + EDITOR_RICH_ACTION}
             items={dropdownItems}
           >
-            <div className="h-8 text-primary items-center flex flex-row justify-center rounded-md text-sm font-medium cursor-pointer">
-              <PlusIcon width={16} height={16} />
+            {/* A real button so the aria-haspopup/aria-expanded set by the dropdown trigger are valid
+                and it is reachable with the keyboard */}
+            <button
+              type="button"
+              className="h-8 text-primary items-center flex flex-row justify-center rounded-md text-sm font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <PlusIcon width={16} height={16} aria-hidden="true" />
               {addButtonText}
-            </div>
+            </button>
           </ContentActionsAddDropdown>
         </div>
       </div>

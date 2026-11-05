@@ -202,7 +202,8 @@ export const Alignment = ({
           <Circle side={POSITIONS.BOTTOM} align={ALIGNMENTS.END} onClick={handleAlignmentChange} />
         </div>
         <div className="items-center flex justify-between">
-          <div className="items-center flex-col flex h-20 justify-between px-0 py-3">
+          {/* py-2.5 keeps the 24px targets of the dots in this column from overlapping (WCAG 2.5.8) */}
+          <div className="items-center flex-col flex h-20 justify-between px-0 py-2.5">
             <Circle
               side={POSITIONS.RIGHT}
               align={ALIGNMENTS.START}
@@ -221,7 +222,7 @@ export const Alignment = ({
               className={cn('absolute border-transparent border-solid border-[6px]', arrowCls)}
             />
           </div>
-          <div className="items-center flex-col flex h-20 justify-between px-0 py-3">
+          <div className="items-center flex-col flex h-20 justify-between px-0 py-2.5">
             <Circle
               side={POSITIONS.LEFT}
               align={ALIGNMENTS.START}

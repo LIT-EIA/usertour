@@ -27,6 +27,7 @@ import { ReactNode, forwardRef, useCallback, useMemo, useRef, useState } from 'r
 import { useEvent } from 'react-use';
 import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
+import { isFocusLeaving } from '../../lib/focus';
 import {
   ContentEditorColumnElement,
   ContentEditorElement,
@@ -316,7 +317,7 @@ export const ContentEditorColumn = (props: ContentEditorColumnProps) => {
         onMouseOut={() => setIsHover(false)}
         onMouseDown={() => setIsActive(true)}
         onFocus={() => setIsHover(true)}
-        onBlur={() => setIsHover(false)}
+        onBlur={(e) => isFocusLeaving(e) && setIsHover(false)}
       >
         {!isDragging && isActive && (
           <div className="absolute -top-4 -left-[1px] h-4 px-1 rounded-none rounded-t bg-primary flex flex-row text-primary-foreground items-center justify-center">

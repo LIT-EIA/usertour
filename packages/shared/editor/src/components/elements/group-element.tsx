@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Node, Path } from 'slate';
 import { ReactEditor, RenderElementProps, useSlateStatic } from 'slate-react';
 import { inertColumnBlock, inertGroupBlockV2, updateNodeStatus } from '../../lib/editorHelper';
+import { isFocusLeaving } from '../../lib/focus';
 import { ColumnElementType, CustomElement, GroupElementType } from '../../types/slate';
 import { usePopperEditorContext } from '../editor';
 
@@ -333,7 +334,7 @@ export const GroupElement = (props: RenderElementProps & { className?: string })
         }}
         onMouseOut={() => setIsGroupHover(false)}
         onFocus={() => setIsGroupHover(true)}
-        onBlur={() => setIsGroupHover(false)}
+        onBlur={(e) => isFocusLeaving(e) && setIsGroupHover(false)}
       >
         <SideBar type={SideBarType.RIGHT} element={element} onClick={insertBlockAtRight} />
         <SideBar type={SideBarType.BOTTOM} element={element} onClick={insertBlockAtBottom} />

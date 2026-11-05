@@ -36,7 +36,11 @@ import {
   useThemeListContext,
 } from '@usertour-packages/contexts';
 import { postProxyMessageToWindow } from '../../utils/post-message';
-import { ContentEditorRoot, hasMissingRequiredData } from '@usertour-packages/shared-editor';
+import {
+  ContentEditorRoot,
+  focusFirstValidationError,
+  hasMissingRequiredData,
+} from '@usertour-packages/shared-editor';
 import { getErrorMessage } from '@usertour/helpers';
 import { PlusIcon, SpinnerIcon } from '@usertour-packages/icons';
 import { useToast } from '@usertour-packages/use-toast';
@@ -64,7 +68,9 @@ const FlowBuilderDetailHeader = () => {
 
   return (
     <CardHeader className="flex-none p-5 space-y-2">
-      <CardTitle className="text-base truncate ...">{currentContent?.name}</CardTitle>
+      <CardTitle as="h2" className="text-base truncate ...">
+        {currentContent?.name}
+      </CardTitle>
       <div className="flex">
         <Button
           variant="link"
@@ -78,6 +84,7 @@ const FlowBuilderDetailHeader = () => {
         <div className="grow text-base leading-8">
           <OutlineInput
             value={currentStep?.name}
+            aria-label={t('contentBuilder.flow.stepNameLabel')}
             className="h-8 focus-visible:ring-0"
             onChange={handleStepNameChange}
           />
@@ -243,11 +250,23 @@ const FlowBuilderDetailFooter = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
 
+  // A refused Save must not be silent: take focus to the first field with an error (its bubble is
+  // then read as the field's description), or say why if none is on screen (WCAG 3.3.1, 4.1.3).
+  // Deferred a frame so bubbles opened by this click have rendered.
+  const reportInvalid = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (!focusFirstValidationError()) {
+        toast({ variant: 'destructive', title: t('contentBuilder.flow.fixErrorsBeforeSave') });
+      }
+    });
+  }, [toast, t]);
+
   const handleSave = useCallback(async () => {
     if (!currentStep || !backupStepData) {
       return;
     }
     if (currentStep.type !== 'hidden' && hasMissingRequiredData(currentStep.data)) {
+      reportInvalid();
       return;
     }
     if (
@@ -256,6 +275,7 @@ const FlowBuilderDetailFooter = () => {
         (currentStep.target?.type === 'manual' && !currentStep.target?.customSelector))
     ) {
       setIsShowError(true);
+      reportInvalid();
       return;
     }
     try {
@@ -310,7 +330,7 @@ const FlowBuilderDetailFooter = () => {
     }
     setIsLoading(false);
     setCurrentMode({ mode: BuilderMode.FLOW });
-  }, [currentStep, currentIndex, backupStepData, contentRef]);
+  }, [currentStep, currentIndex, backupStepData, contentRef, reportInvalid]);
 
   return (
     <CardFooter className="flex-none p-5">

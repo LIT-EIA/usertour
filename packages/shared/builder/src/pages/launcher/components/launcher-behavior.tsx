@@ -162,6 +162,8 @@ export const LauncherBehavior = () => {
           </TabsList>
           <TabsContent
             value={LauncherActionType.SHOW_TOOLTIP}
+            // Both panels start with their own controls, so the panel itself need not be a tab stop
+            tabIndex={-1}
             className="bg-background p-2 rounded-lg "
           >
             <button
@@ -180,6 +182,7 @@ export const LauncherBehavior = () => {
           </TabsContent>
           <TabsContent
             value={LauncherActionType.PERFORM_ACTION}
+            tabIndex={-1}
             className="bg-background p-2 rounded-lg"
           >
             <ContentActions
