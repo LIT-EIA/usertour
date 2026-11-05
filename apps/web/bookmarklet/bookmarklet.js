@@ -67,6 +67,7 @@
       display: flex; align-items: center; justify-content: center;
       z-index: 2147483647;
       animation: fadeIn 0.3s ease-out;
+      pointer-events: auto;
     }
 
     .custom-modal {
@@ -424,6 +425,85 @@
       color: #666 !important;
       margin-top: 4px;
     }
+
+    .trap-result {
+      font-size: 11.9px !important;
+      line-height: 1.45;
+      margin-top: 6px;
+      overflow-wrap: anywhere;
+      min-width: 0;
+    }
+
+    .trap-result li,
+    .trap-result .debug-hint {
+      overflow-wrap: anywhere;
+    }
+
+    .trap-modal-overlay .custom-modal {
+      width: 400px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .trap-result ul {
+      margin: 4px 0;
+      padding-left: 16px;
+    }
+
+    .trap-result strong {
+      color: #5533FF !important;
+    }
+
+    .trap-verdict {
+      border: 1px solid #5533FF;
+      border-left-width: 4px;
+      background: rgba(85, 51, 255, 0.06);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin: 8px 0 12px;
+    }
+
+    .trap-verdict-title {
+      display: block;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      color: #1a1a1a !important;
+      margin-bottom: 4px;
+    }
+
+    .trap-verdict-text {
+      display: block;
+      font-size: 12px !important;
+      color: #333 !important;
+    }
+
+    .trap-verdict-warning {
+      border-color: #b45309;
+      background: rgba(180, 83, 9, 0.06);
+    }
+
+    .trap-highlight {
+      position: fixed;
+      border: 2px solid #5533FF;
+      background: rgba(85, 51, 255, 0.08);
+      pointer-events: none;
+      z-index: 2147483646;
+      display: none;
+    }
+
+    .trap-toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      color: #fff !important;
+      font-size: 12px !important;
+      padding: 8px 12px;
+      border-radius: 6px;
+      z-index: 2147483647;
+      pointer-events: none;
+    }
   `;
   shadowRoot.appendChild(style);
 
@@ -457,6 +537,10 @@
         <button class="custom-button reset-completions">
           <i class="fa fa-undo"></i>
           <span>Reset Completions</span>
+        </button>
+        <button class="custom-button detect-trap" title="Then click the app's modal. Hold the mouse button to click normally (e.g. to open the modal), Esc to cancel.">
+          <i class="fa fa-keyboard-o"></i>
+          <span>Detect focus trap</span>
         </button>
       </div>
            <div class="toggle-container">
@@ -1392,6 +1476,388 @@
   renderDebugNamespaces();
   debugToggle.addEventListener('change', (e) => {
     setDebugNamespaces(e.target.checked ? ['*'] : []);
+  });
+
+  // Focus trap detection. Keep labels in sync with LAUNCHER_FOCUS_TRAPS in
+  // packages/shared/types/src/types/sdk.ts
+  const TRAP_SETTINGS = {
+    auto: 'Automatic (default)',
+    radix: 'Radix FocusScope',
+    mui: 'MUI FocusTrap',
+    dojo: 'Dojo dialogs, or a trap that lists its controls on every Tab',
+    cached: 'A trap that lists its controls when the modal opens',
+    carbon: 'Carbon modals',
+    slow: 'Slow or animated modals',
+  };
+  // SDK default Tab window
+  const TAB_WINDOW_MS = 100;
+  const MODAL_SELECTOR = 'dialog, [role="dialog"], [role="alertdialog"], [aria-modal="true"], .cds--modal, .bx--modal, .dijitDialog, .MuiModal-root';
+  const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, iframe, summary, [contenteditable]:not([contenteditable="false"]), [tabindex]';
+
+  const trapHighlight = document.createElement('div');
+  trapHighlight.className = 'trap-highlight';
+  shadowRoot.appendChild(trapHighlight);
+
+  // Radix and MUI close their dialog on a press outside it
+  ['pointerdown', 'mousedown', 'touchstart'].forEach((type) => {
+    shadowHost.addEventListener(type, (e) => e.stopPropagation());
+  });
+
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Same-origin frames at any depth; cross-origin ones are only counted
+  function getFrameDocuments(doc = document, found = { docs: [], crossOrigin: 0 }) {
+    found.docs.push(doc);
+    doc.querySelectorAll('iframe, frame').forEach((frame) => {
+      let child = null;
+      try {
+        child = frame.contentDocument;
+      } catch (e) {
+        child = null;
+      }
+      if (child && child.documentElement) {
+        getFrameDocuments(child, found);
+      } else {
+        found.crossOrigin++;
+      }
+    });
+    return found;
+  }
+
+  function getFrameOffset(doc) {
+    let left = 0;
+    let top = 0;
+    let view = doc.defaultView;
+    while (view && view.frameElement) {
+      const frame = view.frameElement;
+      const rect = frame.getBoundingClientRect();
+      const style = view.parent.getComputedStyle(frame);
+      left += rect.left + frame.clientLeft + parseFloat(style.paddingLeft);
+      top += rect.top + frame.clientTop + parseFloat(style.paddingTop);
+      view = view.parent;
+    }
+    return { left, top };
+  }
+
+  function describeFrames(doc) {
+    const path = [];
+    let view = doc.defaultView;
+    while (view && view.frameElement) {
+      path.unshift(describe(view.frameElement));
+      view = view.parent;
+    }
+    return path.join(' > ');
+  }
+
+  function isShown(el) {
+    const view = el.ownerDocument.defaultView;
+    return el.getClientRects().length > 0 && view.getComputedStyle(el).visibility !== 'hidden';
+  }
+
+  function tabbables(root) {
+    return [...root.querySelectorAll(TABBABLE_SELECTOR)].filter(
+      (el) => el.tabIndex >= 0 && !el.disabled && !el.closest('[inert]') && isShown(el),
+    );
+  }
+
+  function describe(el) {
+    if (!el) return 'nothing';
+    if (el.hasAttribute && el.hasAttribute('data-usertour-trap-probe')) return 'the test button added before the first control';
+    const id = el.id ? `#${el.id}` : '';
+    const text = el.tagName === 'IFRAME' || el.tagName === 'FRAME' ? '' : (el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 30);
+    return `${el.tagName.toLowerCase()}${id}${text ? ` "${text}"` : ''}`;
+  }
+
+  function fingerprint(container) {
+    const doc = container.ownerDocument;
+    if (container.closest('.cds--modal, .bx--modal') || container.querySelector('.cds--modal, .bx--modal, [id^="modal-end"]')) return 'carbon';
+    if (doc.querySelector('[data-radix-focus-guard]') || /^radix-/.test(container.id)) return 'radix';
+    if (container.closest('.MuiModal-root, .MuiDialog-root') || container.querySelector('[data-testid="sentinelStart"]')) return 'mui';
+    if (container.closest('.dijitDialog') || doc.defaultView.dijit) return 'dojo';
+    if (doc.querySelector('[data-focus-lock-disabled], [data-focus-guard]')) return 'react-focus-lock';
+    return null;
+  }
+
+  // Firefox only focuses the iframe, not the element, unless the iframe's window has focus
+  function focusElement(el) {
+    const view = el.ownerDocument.defaultView;
+    if (view !== window) view.focus();
+    el.focus();
+  }
+
+  // Sends a synthetic Tab and records focus moves for 1.5 s; mimics the browser if nothing moves it
+  async function probeTab(from, shiftKey) {
+    const doc = from.ownerDocument;
+    const view = doc.defaultView;
+    focusElement(from);
+    const start = performance.now();
+    const moves = [];
+    const onFocusIn = (e) => {
+      moves.push({ el: e.composedPath()[0], ms: Math.round(performance.now() - start) });
+    };
+    doc.addEventListener('focusin', onFocusIn, true);
+    // Frame's own KeyboardEvent, for instanceof checks
+    const event = new view.KeyboardEvent('keydown', {
+      key: 'Tab', code: 'Tab', keyCode: 9, which: 9, shiftKey, bubbles: true, cancelable: true, composed: true,
+    });
+    from.dispatchEvent(event);
+    let browserMove = null;
+    if (!event.defaultPrevented && doc.activeElement === from) {
+      const order = tabbables(doc.body).filter((el) => !shadowHost.contains(el));
+      browserMove = order[order.indexOf(from) + (shiftKey ? -1 : 1)] || null;
+      if (browserMove) browserMove.focus();
+    }
+    await wait(1500);
+    doc.removeEventListener('focusin', onFocusIn, true);
+    const scriptMoves = moves.filter((move) => move.el !== from && move.el !== browserMove);
+    return { prevented: event.defaultPrevented, browserMove, scriptMoves };
+  }
+
+  async function detectFocusTrap(container) {
+    if (container.tagName === 'IFRAME' || container.tagName === 'FRAME') {
+      return { error: 'This modal is in a cross-origin iframe: a bookmarklet can\'t test it. Check it with the keyboard, or run the test where the iframe\'s page is opened on its own.' };
+    }
+    const controls = tabbables(container).filter((el) => !el.hasAttribute('data-usertour-launcher-focus'));
+    if (controls.length < 2) {
+      return { error: 'This element has fewer than 2 controls: select the whole modal.' };
+    }
+    const doc = container.ownerDocument;
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    const previousFocus = doc.activeElement;
+    const probe = doc.createElement('button');
+    probe.type = 'button';
+    probe.textContent = 'Usertour test';
+    probe.setAttribute('data-usertour-trap-probe', '');
+    probe.style.cssText = 'position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;border:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important';
+    (tabbables(container)[0] || first).before(probe);
+    const steps = [];
+    let pattern = 'none';
+    let delay = 0;
+    let movesAgain = false;
+    try {
+      const forward = await probeTab(last, false);
+      const wrap = forward.scriptMoves.find((move) => container.contains(move.el) && move.el !== forward.browserMove);
+      if (wrap) {
+        pattern = wrap.el === probe ? 'live' : 'cached';
+        delay = wrap.ms;
+        steps.push(`Tab from the last control: ${forward.prevented ? 'cancelled by the page, ' : ''}${forward.browserMove ? `focus went to ${describe(forward.browserMove)}, then ` : ''}the page moved focus to ${describe(wrap.el)} after ${wrap.ms} ms.`);
+      } else {
+        steps.push(`Tab from the last control: focus went to ${describe(doc.activeElement)}; no page script wrapped it.`);
+      }
+      // Does focus move twice?
+      if (pattern === 'cached') {
+        const backward = await probeTab(first, true);
+        const into = backward.scriptMoves.filter((move) => container.contains(move.el));
+        movesAgain = into.length > 1 || (!!backward.browserMove && into.length > 0);
+        const end = into[into.length - 1];
+        steps.push(`Shift+Tab from the first control: ${into.map((move) => `${describe(move.el)} after ${move.ms} ms`).join(', then ') || 'no page script moved focus'}.`);
+        if (end) delay = Math.max(delay, end.ms);
+      }
+    } finally {
+      probe.remove();
+      if (previousFocus && previousFocus.focus) previousFocus.focus();
+    }
+    const library = fingerprint(container);
+    let setting = 'auto';
+    if (pattern === 'live') {
+      setting = library === 'radix' || library === 'mui' || library === 'dojo' ? library : 'dojo';
+    } else if (pattern === 'cached') {
+      setting = delay > TAB_WINDOW_MS ? 'slow' : library === 'carbon' || movesAgain ? 'carbon' : 'cached';
+    }
+    return {
+      steps,
+      library,
+      pattern,
+      delay,
+      setting,
+      frames: describeFrames(doc),
+      tabWindow: setting === 'slow' ? Math.ceil((delay + 100) / 100) * 100 : null,
+    };
+  }
+
+  function showTrapModal() {
+    const existing = shadowRoot.querySelector('.trap-modal-overlay');
+    if (existing) existing.remove();
+    const trapOverlay = document.createElement('div');
+    trapOverlay.className = 'custom-modal-overlay trap-modal-overlay';
+    trapOverlay.innerHTML = `
+      <div class="custom-modal">
+        <div class="modal-header">
+          ${overlay.querySelector('.usertour-logo').outerHTML}<h2 class="modal-title">Usertour Helper</h2>
+          <button class="close-button" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-content">
+          <h3>Focus Trap Details</h3>
+          <div class="trap-result" aria-live="polite">Testing the focus trap…</div>
+        </div>
+      </div>
+    `;
+    trapOverlay.querySelector('.close-button').onclick = () => shadowHost.remove();
+    shadowRoot.appendChild(trapOverlay);
+    return trapOverlay.querySelector('.trap-result');
+  }
+
+  function trapField(label, value) {
+    const container = document.createElement('div');
+    container.className = 'selector-field-container';
+    container.innerHTML = `
+      <label class="selector-field-label"></label>
+      <div class="selector-field-wrapper">
+        <input type="text" class="selector-field" readonly>
+        <button class="copy-button"><i class="fa fa-clone"></i><span>Copy</span></button>
+      </div>
+    `;
+    container.querySelector('.selector-field-label').textContent = label;
+    container.querySelector('.selector-field').value = value;
+    const copySpan = container.querySelector('.copy-button span');
+    container.querySelector('.copy-button').onclick = () => {
+      navigator.clipboard.writeText(value).then(() => {
+        copySpan.textContent = 'Copied';
+        setTimeout(() => { copySpan.textContent = 'Copy'; }, 2000);
+      });
+    };
+    return container;
+  }
+
+  function showTrapResult(trapResult, container, result) {
+    trapResult.innerHTML = '';
+    const verdict = (title, text, warning) => {
+      const box = document.createElement('div');
+      box.className = `trap-verdict${warning ? ' trap-verdict-warning' : ''}`;
+      box.setAttribute('role', 'status');
+      const strong = document.createElement('strong');
+      strong.className = 'trap-verdict-title';
+      strong.textContent = title;
+      box.appendChild(strong);
+      if (text) {
+        const span = document.createElement('span');
+        span.className = 'trap-verdict-text';
+        span.textContent = text;
+        box.appendChild(span);
+      }
+      trapResult.appendChild(box);
+    };
+    if (result.error) {
+      verdict("Can't test this modal", result.error, true);
+      return;
+    }
+    verdict(
+      {
+        none: 'No focus trap wrap found: the SDK needs nothing special.',
+        live: 'The trap lists its controls on every Tab: it includes the launcher by itself.',
+        cached: 'The trap lists its controls when the modal opens: the SDK moves focus to skipped launchers.',
+      }[result.pattern],
+      `Choose "${TRAP_SETTINGS[result.setting]}" in the environment's launcher focus settings${result.tabWindow ? `, or a Tab window of ${result.tabWindow} ms` : ''}.`,
+    );
+    trapResult.appendChild(trapField('Recommended focus trap setting', TRAP_SETTINGS[result.setting]));
+    if (result.tabWindow) {
+      trapResult.appendChild(trapField('Tab window (ms)', String(result.tabWindow)));
+    }
+    if (result.frames) {
+      trapResult.appendChild(trapField('In iframe', result.frames));
+    }
+    trapResult.appendChild(trapField('Library marks', result.library || 'none found'));
+    const list = document.createElement('ul');
+    const item = (text) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      list.appendChild(li);
+    };
+    result.steps.forEach((step) => item(step));
+    trapResult.appendChild(list);
+    const hint = document.createElement('span');
+    hint.className = 'debug-hint';
+    hint.textContent = 'Synthetic key presses: a trap that ignores them looks like no trap. Check with the keyboard.';
+    trapResult.appendChild(hint);
+    console.log('[usertour] focus trap detection', { modal: container, ...result });
+  }
+
+  // Short click selects, long press clicks normally, Esc cancels
+  function pickModal() {
+    return new Promise((resolve) => {
+      let hovered = null;
+      let downAt = 0;
+      const toast = document.createElement('div');
+      toast.className = 'trap-toast';
+      shadowRoot.appendChild(toast);
+      const resolveTarget = (el) => (el && el.closest ? el.closest(MODAL_SELECTOR) || el : null);
+      const onMove = (e) => {
+        const el = resolveTarget(e.target);
+        if (!el || shadowHost.contains(el)) return;
+        hovered = el;
+        const rect = el.getBoundingClientRect();
+        const offset = getFrameOffset(el.ownerDocument);
+        Object.assign(trapHighlight.style, {
+          display: 'block',
+          left: `${rect.left + offset.left}px`,
+          top: `${rect.top + offset.top}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+        });
+      };
+      const onDown = () => {
+        downAt = Date.now();
+      };
+      const isPick = () => Date.now() - downAt < 300;
+      const onClick = (e) => {
+        if (!isPick() || shadowHost.contains(e.target)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        done(hovered);
+      };
+      const onUp = (e) => {
+        if (isPick() && !shadowHost.contains(e.target)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          done(null);
+        }
+      };
+      const listeners = [['mousemove', onMove], ['mousedown', onDown], ['mouseup', onUp], ['click', onClick], ['keydown', onKey]];
+      // Iframe events stay in the iframe: listen in every same-origin frame, including new ones
+      const watched = new Set();
+      const watchFrames = () => {
+        const { docs, crossOrigin } = getFrameDocuments();
+        docs.forEach((doc) => {
+          if (watched.has(doc)) return;
+          watched.add(doc);
+          listeners.forEach(([type, fn]) => doc.defaultView.addEventListener(type, fn, true));
+        });
+        toast.textContent = `Click the modal. Hold the mouse button to click normally. Esc to cancel.${crossOrigin ? ` ${crossOrigin} cross-origin iframe${crossOrigin > 1 ? 's' : ''} can't be tested.` : ''}`;
+      };
+      watchFrames();
+      const rescan = setInterval(watchFrames, 500);
+      function done(el) {
+        clearInterval(rescan);
+        watched.forEach((doc) => {
+          try {
+            listeners.forEach(([type, fn]) => doc.defaultView.removeEventListener(type, fn, true));
+          } catch (e) {
+          }
+        });
+        trapHighlight.style.display = 'none';
+        toast.remove();
+        resolve(el);
+      }
+    });
+  }
+
+  const detectTrapButton = modal.querySelector('.detect-trap');
+  attachButtonAction(detectTrapButton, async () => {
+    overlay.remove();
+    const container = await pickModal();
+    if (!container) {
+      shadowRoot.appendChild(overlay);
+      return;
+    }
+    const trapResult = showTrapModal();
+    showTrapResult(trapResult, container, await detectFocusTrap(container));
   });
 
   // Option buttons example
