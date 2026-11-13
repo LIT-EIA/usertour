@@ -2108,6 +2108,7 @@ const translations = {
         edit: 'Edit',
         editAriaLabel: 'Edit {{name}}',
         lastEdited: 'Last edited {{date}}',
+        previewAriaLabel: 'Preview (not interactive)',
       },
       addStep: 'Add step',
       step: {

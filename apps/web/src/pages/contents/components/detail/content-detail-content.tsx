@@ -26,8 +26,8 @@ import { useEffect, useState } from 'react';
 import { ContentEditForm } from '../shared/content-edit-form';
 import {
   ChecklistPreview,
+  DisabledPreview,
   FlowPreview,
-  inertProps,
   LauncherPreview,
   ScaledPreviewContainer,
 } from '../shared/content-preview';
@@ -54,6 +54,59 @@ const ContentBadge = ({
     <Badge variant={'secondary'} className={className}>
       <span className="first-letter:uppercase">{children}</span>
     </Badge>
+  );
+};
+
+// Cards are laid out visually as [preview | details] with Edit pinned top-right and "Last edited"
+// bottom-right, but the DOM follows the logical reading order so screen-reader arrow navigation
+// and Tab order match (WCAG 1.3.2, 2.4.3): name (heading) → Edit → details → preview → last edited.
+// Edit sits right after the heading so a keyboard user who Tabs to it and then continues with the
+// arrow keys reads that same card's details next (not the following card's).
+// The preview is moved back to the left with `order-first`; Edit/last-edited are absolutely
+// positioned against the card (offsets match the card padding: p-4 px-8).
+const cardClassName = 'relative flex flex-row gap-8 p-4 px-8 shadow bg-white rounded-lg';
+const cardDetailsClassName = 'grow flex flex-col space-y-1 min-w-80';
+
+const CardLastEdited = ({ date }: { date?: string | Date }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="text-xs absolute right-8 bottom-4 text-muted-foreground">
+      {t('contents.overview.previewCard.lastEdited', {
+        date: date ? formatDate(new Date(date), 'PPpp') : '',
+      })}
+    </div>
+  );
+};
+
+const CardEditButton = ({
+  name,
+  onEdit,
+  disabled,
+}: {
+  name: string;
+  onEdit: () => void;
+  disabled: boolean;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-row space-x-1 items-center absolute top-4 right-8 !mt-0">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={'ghost'}
+              size={'icon'}
+              onClick={onEdit}
+              disabled={disabled}
+              aria-label={t('contents.overview.previewCard.editAriaLabel', { name })}
+            >
+              <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
   );
 };
 
@@ -98,110 +151,83 @@ const ContentDetailContentStep = ({
   if (!currentStep || !currentTheme) return null;
 
   const isHidddenStep = currentStep.type === 'hidden';
+  const stepName = `${index + 1}. ${currentStep.name}`;
 
   return (
-    <>
+    <li className={cardClassName}>
       <GoogleFontCss settings={currentTheme.settings} />
-      <div className="flex flex-row p-4 px-8 shadow bg-white rounded-lg space-x-8" key={index}>
+      <div className={cardDetailsClassName}>
+        <h2 className="font-bold pr-10">{stepName}</h2>
+        <CardEditButton name={stepName} onEdit={onEdit} disabled={disabled} />
+        <div className="text-sm space-x-1">
+          <ContentBadge>
+            {t(`contentBuilder.flow.stepType.${currentStep.type}`, currentStep.type)}
+          </ContentBadge>
+          {!isHidddenStep && (
+            <>
+              <ContentBadge>
+                {t('contents.overview.step.width', { value: `${currentStep.setting.width}px` })}
+              </ContentBadge>
+              <ContentBadge>
+                {t('contents.overview.step.height', {
+                  value: `${Math.floor(currentStep.setting.height)}px`,
+                })}
+              </ContentBadge>
+              <ContentBadge>
+                {t('contents.overview.step.theme', { name: currentTheme.name })}
+              </ContentBadge>
+            </>
+          )}
+        </div>
         {!isHidddenStep && (
-          <div
-            className="w-40 h-32 flex flex-none items-center [&_*]:pointer-events-none pointer-events-none"
-            style={{
-              height: height ? `${height}px` : undefined,
-            }}
-          >
-            <ScaledPreviewContainer
-              className="origin-[left_center]"
-              maxWidth={160}
-              maxHeight={600}
-              onContentRectChange={(contentRect, scale) => {
-                setContentRect(contentRect);
-                setScale(scale);
-              }}
-            >
-              <FlowPreview currentTheme={currentTheme} currentStep={currentStep} />
-            </ScaledPreviewContainer>
-          </div>
-        )}
-        {isHidddenStep && (
-          <div className="w-40 h-32 flex  flex-none items-center justify-center">
-            <EyeNoneIcon className="w-8 h-8" />
-          </div>
-        )}
-        <div className="grow flex flex-col relative space-y-1 min-w-80	">
-          <div className="flex flex-row space-x-1 items-center right-0 top-0 absolute">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={'ghost'}
-                    size={'icon'}
-                    onClick={onEdit}
-                    disabled={disabled}
-                    aria-label={t('contents.overview.previewCard.editAriaLabel', {
-                      name: `${index + 1}. ${currentStep.name}`,
-                    })}
-                  >
-                    <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="font-bold flex flex-row space-x-1 items-center	">
-            {index + 1}. {currentStep.name}
-          </div>
-          <div className="text-sm space-x-1">
+          <div className="flex flex-row space-x-1">
             <ContentBadge>
-              {t(`contentBuilder.flow.stepType.${currentStep.type}`, currentStep.type)}
+              {!currentStep.setting.skippable && t('contents.overview.step.notSkippable')}
+              {currentStep.setting.skippable && t('contents.overview.step.skippable')}
             </ContentBadge>
-            {!isHidddenStep && (
-              <>
-                <ContentBadge>
-                  {t('contents.overview.step.width', { value: `${currentStep.setting.width}px` })}
-                </ContentBadge>
-                <ContentBadge>
-                  {t('contents.overview.step.height', {
-                    value: `${Math.floor(currentStep.setting.height)}px`,
-                  })}
-                </ContentBadge>
-                <ContentBadge>
-                  {t('contents.overview.step.theme', { name: currentTheme.name })}
-                </ContentBadge>
-              </>
+            {currentStep.setting.enabledBackdrop && (
+              <ContentBadge>{t('contents.overview.step.backdropEnabled')}</ContentBadge>
+            )}
+            {!currentStep.setting.enabledBackdrop && (
+              <ContentBadge>{t('contents.overview.step.backdropDisabled')}</ContentBadge>
             )}
           </div>
-          {!isHidddenStep && (
-            <div className="flex flex-row space-x-1">
-              <ContentBadge>
-                {!currentStep.setting.skippable && t('contents.overview.step.notSkippable')}
-                {currentStep.setting.skippable && t('contents.overview.step.skippable')}
-              </ContentBadge>
-              {currentStep.setting.enabledBackdrop && (
-                <ContentBadge>{t('contents.overview.step.backdropEnabled')}</ContentBadge>
-              )}
-              {!currentStep.setting.enabledBackdrop && (
-                <ContentBadge>{t('contents.overview.step.backdropDisabled')}</ContentBadge>
-              )}
-            </div>
-          )}
-          {!stepIsReachable(currentVersion.steps as Step[], currentStep) && (
-            <div className="text-xs flex flex-row items-center text-warning space-x-1 pt-2">
-              <ExclamationTriangleIcon className="h-3 w-3" />
-              <span>{t('contents.overview.step.unreachableWarning')}</span>
-            </div>
-          )}
-          <div className="text-xs	 absolute right-0 bottom-0 text-muted-foreground">
-            {t('contents.overview.previewCard.lastEdited', {
-              date: currentStep.updatedAt
-                ? formatDate(new Date(currentStep.updatedAt), 'PPpp')
-                : '',
-            })}
+        )}
+        {!stepIsReachable(currentVersion.steps as Step[], currentStep) && (
+          <div className="text-xs flex flex-row items-center text-warning space-x-1 pt-2">
+            <ExclamationTriangleIcon className="h-3 w-3" />
+            <span>{t('contents.overview.step.unreachableWarning')}</span>
           </div>
-        </div>
+        )}
       </div>
-    </>
+      {!isHidddenStep && (
+        <div
+          className="order-first w-40 h-32 flex flex-none items-center [&_*]:pointer-events-none pointer-events-none"
+          style={{
+            height: height ? `${height}px` : undefined,
+          }}
+        >
+          <ScaledPreviewContainer
+            className="origin-[left_center]"
+            maxWidth={160}
+            maxHeight={600}
+            onContentRectChange={(contentRect, scale) => {
+              setContentRect(contentRect);
+              setScale(scale);
+            }}
+          >
+            <FlowPreview currentTheme={currentTheme} currentStep={currentStep} />
+          </ScaledPreviewContainer>
+        </div>
+      )}
+      {isHidddenStep && (
+        // Decorative: the "hidden" step-type badge already conveys this
+        <div className="order-first w-40 h-32 flex flex-none items-center justify-center">
+          <EyeNoneIcon className="w-8 h-8" aria-hidden="true" />
+        </div>
+      )}
+      <CardLastEdited date={currentStep.updatedAt} />
+    </li>
   );
 };
 
@@ -226,75 +252,47 @@ const LauncherContentPreview = ({
   if (!currentVersion || !currentTheme) return null;
 
   return (
-    <>
+    <div className={cardClassName}>
       <GoogleFontCss settings={currentTheme.settings} />
-      <div className="flex flex-row p-4 px-8 shadow bg-white rounded-lg space-x-8">
-        <div className="w-40 h-32 flex  flex-none items-center justify-center" {...inertProps}>
-          <LauncherPreview currentTheme={currentTheme} currentVersion={currentVersion} />
-        </div>
-        <div className="grow flex flex-col relative space-y-1 min-w-80	">
-          <div className="flex flex-row space-x-1 items-center right-0 top-0 absolute">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={'ghost'}
-                    size={'icon'}
-                    onClick={onEdit}
-                    disabled={disabled}
-                    aria-label={t('contents.overview.previewCard.editAriaLabel', {
-                      name: content.name,
-                    })}
-                  >
-                    <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="font-bold flex flex-row space-x-1 items-center	max-w-4/5	truncate ...">
-            {content.name}
-          </div>
-          <div className="text-sm space-x-1">
-            <ContentBadge>{t(`contentBuilder.launcher.type.${data.type}`, data.type)}</ContentBadge>
-            <ContentBadge>
-              {t('contents.overview.launcher.targetElement', {
-                value:
-                  data.target.element?.customSelector ?? t('contents.overview.launcher.notSet'),
-              })}
-            </ContentBadge>
-            <ContentBadge>
-              {t('contents.overview.launcher.targetAlignment', {
-                value: data.target.alignment.alignType,
-              })}
-            </ContentBadge>
-            <ContentBadge>
-              {t('contents.overview.launcher.theme', { name: currentTheme.name })}
-            </ContentBadge>
-          </div>
-          <div className="flex flex-row space-x-1">
-            {data.type === LauncherDataType.ICON && data.iconType && (
-              <ContentBadge>
-                {t('contents.overview.launcher.iconType', { value: data.iconType })}
-              </ContentBadge>
-            )}
-            <ContentBadge>
-              {data.behavior.actionType === LauncherActionType.PERFORM_ACTION
-                ? t('contents.overview.launcher.performAction')
-                : t('contents.overview.launcher.showTooltip')}
-            </ContentBadge>
-          </div>
-          <div className="text-xs	 absolute right-0 bottom-0 text-muted-foreground">
-            {t('contents.overview.previewCard.lastEdited', {
-              date: currentVersion.updatedAt
-                ? formatDate(new Date(currentVersion.updatedAt), 'PPpp')
-                : '',
+      <div className={cardDetailsClassName}>
+        <h2 className="font-bold max-w-4/5 truncate pr-10">{content.name}</h2>
+        <CardEditButton name={content.name ?? ''} onEdit={onEdit} disabled={disabled} />
+        <div className="text-sm space-x-1">
+          <ContentBadge>{t(`contentBuilder.launcher.type.${data.type}`, data.type)}</ContentBadge>
+          <ContentBadge>
+            {t('contents.overview.launcher.targetElement', {
+              value: data.target.element?.customSelector ?? t('contents.overview.launcher.notSet'),
             })}
-          </div>
+          </ContentBadge>
+          <ContentBadge>
+            {t('contents.overview.launcher.targetAlignment', {
+              value: data.target.alignment.alignType,
+            })}
+          </ContentBadge>
+          <ContentBadge>
+            {t('contents.overview.launcher.theme', { name: currentTheme.name })}
+          </ContentBadge>
+        </div>
+        <div className="flex flex-row space-x-1">
+          {data.type === LauncherDataType.ICON && data.iconType && (
+            <ContentBadge>
+              {t('contents.overview.launcher.iconType', { value: data.iconType })}
+            </ContentBadge>
+          )}
+          <ContentBadge>
+            {data.behavior.actionType === LauncherActionType.PERFORM_ACTION
+              ? t('contents.overview.launcher.performAction')
+              : t('contents.overview.launcher.showTooltip')}
+          </ContentBadge>
         </div>
       </div>
-    </>
+      <div className="order-first w-40 h-32 flex flex-none items-center justify-center">
+        <DisabledPreview>
+          <LauncherPreview currentTheme={currentTheme} currentVersion={currentVersion} />
+        </DisabledPreview>
+      </div>
+      <CardLastEdited date={currentVersion.updatedAt} />
+    </div>
   );
 };
 
@@ -325,89 +323,60 @@ const ChecklistContentPreview = ({
   if (!currentVersion || !currentTheme) return null;
 
   return (
-    <>
+    <div className={cardClassName}>
       <GoogleFontCss settings={currentTheme.settings} />
-      <div className="flex flex-row p-4 px-8 shadow bg-white rounded-lg space-x-8">
-        <div
-          className="w-40 h-32 flex flex-none items-center [&_*]:pointer-events-none pointer-events-none"
-          style={{
-            height: height ? `${height}px` : undefined,
-          }}
-        >
-          <ScaledPreviewContainer
-            className="origin-[left_center]"
-            maxWidth={160}
-            maxHeight={600}
-            onContentRectChange={(contentRect, scale) => {
-              setContentRect(contentRect);
-              setScale(scale);
-            }}
-          >
-            <ChecklistPreview currentTheme={currentTheme} currentVersion={currentVersion} />
-          </ScaledPreviewContainer>
-        </div>
-        <div className="grow flex flex-col relative space-y-1 min-w-80	">
-          <div className="flex flex-row space-x-1 items-center right-0 top-0 absolute">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={'ghost'}
-                    size={'icon'}
-                    onClick={onEdit}
-                    disabled={disabled}
-                    aria-label={t('contents.overview.previewCard.editAriaLabel', {
-                      name: content.name,
-                    })}
-                  >
-                    <EditIcon className="w-4 h-4 cursor-pointer" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('contents.overview.previewCard.edit')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="font-bold flex flex-row space-x-1 items-center	max-w-4/5	truncate ...">
-            {content.name}
-          </div>
-          <div className="text-sm flex flex-row flex-wrap gap-1">
-            <ContentBadge>
-              {t('contents.overview.checklist.launcherButtonText', { value: data.buttonText })}
-            </ContentBadge>
-            <ContentBadge>
-              {t('contents.overview.checklist.initialDisplay', {
-                value:
-                  data.initialDisplay === ChecklistInitialDisplay.BUTTON
-                    ? t('contents.overview.checklist.initialDisplayButton')
-                    : t('contents.overview.checklist.initialDisplayExpanded'),
-              })}
-            </ContentBadge>
-            <ContentBadge>
-              {t('contents.overview.checklist.completionOrder', { value: data.completionOrder })}
-            </ContentBadge>
-            {data.preventDismissChecklist && (
-              <ContentBadge>{t('contents.overview.checklist.preventDismiss')}</ContentBadge>
-            )}
-            {!data.preventDismissChecklist && (
-              <ContentBadge>{t('contents.overview.checklist.allowDismiss')}</ContentBadge>
-            )}
-            <ContentBadge>
-              {t('contents.overview.checklist.theme', { name: currentTheme.name })}
-            </ContentBadge>
-            <ContentBadge>
-              {t('contents.overview.checklist.items', { count: data.items.length })}
-            </ContentBadge>
-          </div>
-          <div className="text-xs	 absolute right-0 bottom-0 text-muted-foreground">
-            {t('contents.overview.previewCard.lastEdited', {
-              date: currentVersion.updatedAt
-                ? formatDate(new Date(currentVersion.updatedAt), 'PPpp')
-                : '',
+      <div className={cardDetailsClassName}>
+        <h2 className="font-bold max-w-4/5 truncate pr-10">{content.name}</h2>
+        <CardEditButton name={content.name ?? ''} onEdit={onEdit} disabled={disabled} />
+        <div className="text-sm flex flex-row flex-wrap gap-1">
+          <ContentBadge>
+            {t('contents.overview.checklist.launcherButtonText', { value: data.buttonText })}
+          </ContentBadge>
+          <ContentBadge>
+            {t('contents.overview.checklist.initialDisplay', {
+              value:
+                data.initialDisplay === ChecklistInitialDisplay.BUTTON
+                  ? t('contents.overview.checklist.initialDisplayButton')
+                  : t('contents.overview.checklist.initialDisplayExpanded'),
             })}
-          </div>
+          </ContentBadge>
+          <ContentBadge>
+            {t('contents.overview.checklist.completionOrder', { value: data.completionOrder })}
+          </ContentBadge>
+          {data.preventDismissChecklist && (
+            <ContentBadge>{t('contents.overview.checklist.preventDismiss')}</ContentBadge>
+          )}
+          {!data.preventDismissChecklist && (
+            <ContentBadge>{t('contents.overview.checklist.allowDismiss')}</ContentBadge>
+          )}
+          <ContentBadge>
+            {t('contents.overview.checklist.theme', { name: currentTheme.name })}
+          </ContentBadge>
+          <ContentBadge>
+            {t('contents.overview.checklist.items', { count: data.items.length })}
+          </ContentBadge>
         </div>
       </div>
-    </>
+      <div
+        className="order-first w-40 h-32 flex flex-none items-center [&_*]:pointer-events-none pointer-events-none"
+        style={{
+          height: height ? `${height}px` : undefined,
+        }}
+      >
+        <ScaledPreviewContainer
+          className="origin-[left_center]"
+          maxWidth={160}
+          maxHeight={600}
+          onContentRectChange={(contentRect, scale) => {
+            setContentRect(contentRect);
+            setScale(scale);
+          }}
+        >
+          <ChecklistPreview currentTheme={currentTheme} currentVersion={currentVersion} />
+        </ScaledPreviewContainer>
+      </div>
+      <CardLastEdited date={currentVersion.updatedAt} />
+    </div>
   );
 };
 
@@ -430,17 +399,20 @@ export const ContentDetailContent = () => {
   return (
     <>
       <div className="flex flex-col space-y-6 grow">
-        {contentType === ContentTypeName.FLOWS &&
-          version.steps?.map((step, index) => (
-            <ContentDetailContentStep
-              onEdit={() => openBuilder(content, contentType)}
-              currentStep={step}
-              index={index}
-              key={index}
-              currentVersion={version}
-              disabled={isViewOnly}
-            />
-          ))}
+        {contentType === ContentTypeName.FLOWS && !!version.steps?.length && (
+          <ol className="flex flex-col space-y-6">
+            {version.steps.map((step, index) => (
+              <ContentDetailContentStep
+                onEdit={() => openBuilder(content, contentType)}
+                currentStep={step}
+                index={index}
+                key={index}
+                currentVersion={version}
+                disabled={isViewOnly}
+              />
+            ))}
+          </ol>
+        )}
         {contentType === ContentTypeName.LAUNCHERS && content && (
           <LauncherContentPreview
             currentVersion={version}

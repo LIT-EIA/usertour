@@ -13,12 +13,97 @@ import { ContentEditorSerialize } from '@usertour-packages/shared-editor';
 import { convertSettings, convertToCssVars } from '@usertour/helpers';
 import { ChecklistData, ContentVersion, LauncherData, Step, Theme } from '@usertour/types';
 import { cn } from '@usertour/helpers';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMeasure } from 'react-use';
 
-// Previews render real end-user widgets (with their own buttons). They are pictures of the content,
-// so keep them out of the tab order and accessibility tree. React 18 has no typed `inert` prop.
-const inertProps = { inert: '' } as React.HTMLAttributes<HTMLDivElement>;
+// Interactive things a disabled <fieldset> does NOT disable natively (links, ARIA widgets,
+// editable regions). These are announced, so they get aria-disabled.
+const NON_NATIVE_WIDGETS = [
+  'a[href]',
+  'area[href]',
+  'summary',
+  '[contenteditable]:not([contenteditable="false"])',
+  ...[
+    'button',
+    'link',
+    'checkbox',
+    'radio',
+    'switch',
+    'tab',
+    'menuitem',
+    'option',
+    'slider',
+    'spinbutton',
+    'textbox',
+    'combobox',
+  ].map((role) => `[role="${role}"]`),
+].join(',');
+// Anything else that can take focus (custom tabindex, embeds): only removed from the tab order,
+// since aria-disabled is not valid on generic elements.
+const FOCUSABLE = `${NON_NATIVE_WIDGETS},[tabindex],iframe`;
+
+const setAttr = (el: Element, name: string, value: string) => {
+  // Only write on change so the MutationObserver below doesn't loop on its own writes
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+};
+
+// Native form controls. The disabled fieldset already disables them per the HTML spec, but the
+// attribute is also set on each one so the DOM states it explicitly (and audit tools that only
+// read the element's own attribute see it).
+const NATIVE_CONTROLS = 'button,input,select,textarea,optgroup,option';
+
+const disablePreviewControls = (root: HTMLElement) => {
+  for (const el of root.querySelectorAll(NATIVE_CONTROLS)) {
+    setAttr(el, 'disabled', '');
+  }
+  for (const el of root.querySelectorAll(FOCUSABLE)) {
+    setAttr(el, 'tabindex', '-1');
+    if (el.matches(NON_NATIVE_WIDGETS)) setAttr(el, 'aria-disabled', 'true');
+    if (el.hasAttribute('contenteditable')) setAttr(el, 'contenteditable', 'false');
+  }
+};
+
+// Previews render real end-user widgets (close X, step buttons, NPS scale, inputs, links…). They
+// are pictures of the content, so every control is exposed to assistive tech but disabled
+// (WCAG 2.1.1, 4.1.2):
+// - every button/input/select/textarea gets the `disabled` attribute (backed by a disabled
+//   <fieldset>), so they are announced as "dimmed/unavailable" and skipped by Tab;
+// - anything else interactive (links, ARIA widgets…) gets aria-disabled + tabindex=-1;
+// - both are re-applied whenever the preview content changes (React re-renders, new elements),
+//   so anything added later is covered too;
+// - pointer events are off so mouse clicks fall through to the surrounding card.
+// The fieldset is a named group so screen-reader users know why the controls are unavailable.
+// The SDK styles `:disabled` with reduced opacity; that is undone to keep the preview faithful.
+const DisabledPreview = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
+  const ref = useRef<HTMLFieldSetElement>(null);
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    disablePreviewControls(root);
+    const observer = new MutationObserver(() => disablePreviewControls(root));
+    observer.observe(root, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['disabled', 'href', 'tabindex', 'role', 'contenteditable', 'aria-disabled'],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <fieldset
+      ref={ref}
+      disabled
+      aria-label={t('contents.overview.previewCard.previewAriaLabel')}
+      className="m-0 min-w-0 border-0 p-0 pointer-events-none [&_*]:pointer-events-none [&_:disabled]:!opacity-100"
+    >
+      {children}
+    </fieldset>
+  );
+};
 
 const EmptyContentPreview = () => {
   // Decorative placeholder: the card title already identifies the content
@@ -67,13 +152,14 @@ const ScaledPreviewContainer = forwardRef<HTMLDivElement, ScaledPreviewContainer
     return (
       <div
         ref={ref}
-        {...inertProps}
         style={{
           scale: `${scale}`,
         }}
         className={cn('[&_iframe]:pointer-events-none', className)}
       >
-        <div ref={contentRef as any}>{children}</div>
+        <DisabledPreview>
+          <div ref={contentRef as any}>{children}</div>
+        </DisabledPreview>
       </div>
     );
   },
@@ -168,7 +254,7 @@ const ChecklistPreview = (props: {
 };
 
 export {
-  inertProps,
+  DisabledPreview,
   FlowPreview,
   LauncherPreview,
   ChecklistPreview,

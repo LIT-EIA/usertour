@@ -2159,6 +2159,7 @@ const translations = {
         edit: 'Modifier',
         editAriaLabel: 'Modifier {{name}}',
         lastEdited: 'Modifié la dernière fois le {{date}}',
+        previewAriaLabel: 'Aperçu (non interactif)',
       },
       addStep: 'Ajouter une étape',
       step: {
