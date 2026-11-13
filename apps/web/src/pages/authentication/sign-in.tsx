@@ -34,7 +34,7 @@ const SignIn = () => {
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle as="h1" className="text-2xl font-semibold tracking-tight">
           {t('auth.signIn.title')}
         </CardTitle>
       </CardHeader>

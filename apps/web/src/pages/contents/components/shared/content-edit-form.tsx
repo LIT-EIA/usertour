@@ -217,15 +217,15 @@ export const ContentEditForm = (props: ContentEditFormProps) => {
                           <FormLabel className="w-32 flex-none">
                             {t('contents.shared.edit.buildUrlLabel')}
                           </FormLabel>
-                          <FormControl>
-                            <div className="flex flex-col space-x-1 w-full grow">
+                          <div className="flex flex-col space-x-1 w-full grow">
+                            <FormControl>
                               <Input
                                 placeholder={t('contents.shared.edit.buildUrlPlaceholder')}
                                 {...field}
                               />
-                              <FormMessage />
-                            </div>
-                          </FormControl>
+                            </FormControl>
+                            <FormMessage />
+                          </div>
                         </FormItem>
                       )}
                     />

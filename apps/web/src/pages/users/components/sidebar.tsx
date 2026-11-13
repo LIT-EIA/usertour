@@ -54,9 +54,11 @@ export const UserListSidebar = () => {
 
   return (
     <>
-      <AdminSidebarContainerTemplate>
+      <AdminSidebarContainerTemplate heading={t('users.sidebar.title')}>
         <AdminSidebarHeaderTemplate>
-          <h2 className="text-2xl font-semibold ">{t('users.sidebar.title')}</h2>
+          <p aria-hidden="true" className="text-2xl font-semibold ">
+            {t('users.sidebar.title')}
+          </p>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

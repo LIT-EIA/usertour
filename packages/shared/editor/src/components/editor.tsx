@@ -14,6 +14,7 @@ import {
   inertGroupBlock,
   inertImageBlock,
 } from '../lib/editorHelper';
+import { isFocusLeaving } from '../lib/focus';
 import { toggleTextProps } from '../lib/text';
 import { withButton } from '../lib/withButton';
 import { withEmbed } from '../lib/withEmbed';
@@ -217,7 +218,7 @@ export const PopperEditor = (props: PopperEditorProps) => {
       onFocus={() => {
         setIsEditorHover(true);
       }}
-      onBlur={() => setIsEditorHover(false)}
+      onBlur={(e) => isFocusLeaving(e) && setIsEditorHover(false)}
       // onClick={}
     >
       <PopperEditorContext.Provider value={value}>
@@ -237,7 +238,9 @@ export const PopperEditor = (props: PopperEditorProps) => {
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
+            className="rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('contentBuilder.editor.placeholderMini')}
+            aria-label={t('contentBuilder.editor.contentAriaLabel')}
             spellCheck
             autoFocus={false}
             style={{ outline: 'none' }}
@@ -339,8 +342,9 @@ export const PopperEditorMini = (props: PopperEditorProps) => {
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
-            className="grow"
+            className="grow rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('contentBuilder.editor.placeholderMini')}
+            aria-label={t('contentBuilder.editor.contentAriaLabel')}
             spellCheck
             autoFocus={true}
             style={{ outline: 'none' }}

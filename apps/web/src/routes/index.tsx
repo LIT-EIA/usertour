@@ -1,19 +1,27 @@
 import { useAppContext } from '@/contexts/app-context';
 import { Navigate, RouteObject, createBrowserRouter } from 'react-router-dom';
 import config, { CustomRouteConfig } from './config';
+import { PageTitle } from './page-title';
 
 const CustomRoute = ({
   loginRequired = true,
   redirectIfLogged = true,
   layout: Layout,
   component: Component,
+  title,
 }: CustomRouteConfig) => {
-  const children = Layout ? (
+  const page = Layout ? (
     <Layout>
       <Component />
     </Layout>
   ) : (
     <Component />
+  );
+  const children = (
+    <>
+      <PageTitle route={title} />
+      {page}
+    </>
   );
   const { userInfo } = useAppContext();
   const isLoggedIn = !!userInfo;

@@ -17,7 +17,7 @@ export const LauncherType = () => {
   return (
     <div className="space-y-3">
       <div className="flex items-center">
-        <h1 className="text-sm">{t('contentBuilder.launcher.appearance')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.launcher.appearance')}</h2>
       </div>
 
       <LauncherContentType
@@ -46,6 +46,7 @@ export const LauncherType = () => {
 
       {localData.type === LauncherDataType.BUTTON && (
         <Input
+          aria-label={t('contentBuilder.launcher.buttonText')}
           value={localData.buttonText ?? ''}
           placeholder={t('contentBuilder.launcher.buttonText')}
           onChange={(e) => {

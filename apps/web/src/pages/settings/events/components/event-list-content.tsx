@@ -30,7 +30,9 @@ export const EventListContent = () => {
               <TableHead>{t('settings.events.columns.displayName')}</TableHead>
               <TableHead>{t('settings.events.columns.codeName')}</TableHead>
               <TableHead>{t('settings.events.columns.createdAt')}</TableHead>
-              <TableHead />
+              <TableHead>
+                <span className="sr-only">{t('common.actionsColumn')}</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

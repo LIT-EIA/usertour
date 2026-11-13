@@ -25,9 +25,9 @@ export const AttributeListHeader = () => {
       <div className="relative ">
         <div className="flex flex-col space-y-2">
           <div className="flex flex-row justify-between ">
-            <h3 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight">
               {t('settings.attributes.title')}
-            </h3>
+            </h2>
             <Button onClick={handleCreate} disabled={isViewOnly}>
               <PlusIcon className="w-4 h-4" />
               {t('settings.attributes.newButton')}

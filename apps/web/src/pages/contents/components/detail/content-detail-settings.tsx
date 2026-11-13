@@ -54,7 +54,7 @@ export const ContentDetailSettings = () => {
   }
 
   return (
-    <div className="flex flex-col space-y-6 flex-none w-[420px]">
+    <div className="flex flex-col space-y-6 w-full min-w-0 lg:flex-none lg:w-[26.25rem]">
       <ContentDetailAutoStartRules
         defaultConditions={config.autoStartRules}
         defaultEnabled={config.enabledAutoStartRules}

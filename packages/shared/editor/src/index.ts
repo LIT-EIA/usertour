@@ -17,3 +17,9 @@ export { ContentActions } from './actions';
 export { StarButton } from './editor/components/star-rating';
 export { contentTypesConfig } from './utils/config';
 export { AttributeCreateForm } from './form/attribute-create-form';
+export {
+  ValidationBubble,
+  ValidationBubbleAnchor,
+  ValidationBubbleContent,
+  focusFirstValidationError,
+} from './components/validation-bubble';

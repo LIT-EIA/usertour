@@ -243,7 +243,10 @@ const DimensionControl = ({
           className="bg-background grow"
         />
         <Select onValueChange={onTypeChange} value={dimension.type}>
-          <SelectTrigger className="shrink w-56">
+          <SelectTrigger
+            aria-label={t('contentBuilder.editor.width.selectType')}
+            className="shrink w-56"
+          >
             <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
           </SelectTrigger>
           <SelectPortal style={{ zIndex: EDITOR_SELECT }}>
@@ -280,6 +283,7 @@ const MarginControl = ({
         <div className="flex gap-x-2">
           <div className="flex flex-col justify-center">
             <Input
+              aria-label={t('contentBuilder.editor.common.left')}
               value={margin?.left ?? ''}
               placeholder={t('contentBuilder.editor.common.left')}
               onChange={(e) => onValueChange(e, 'left')}
@@ -288,12 +292,14 @@ const MarginControl = ({
           </div>
           <div className="flex flex-col justify-center gap-y-2">
             <Input
+              aria-label={t('contentBuilder.editor.common.top')}
               value={margin?.top ?? ''}
               onChange={(e) => onValueChange(e, 'top')}
               placeholder={t('contentBuilder.editor.common.top')}
               className="bg-background flex-none w-20"
             />
             <Input
+              aria-label={t('contentBuilder.editor.common.bottom')}
               value={margin?.bottom ?? ''}
               onChange={(e) => onValueChange(e, 'bottom')}
               placeholder={t('contentBuilder.editor.common.bottom')}
@@ -302,6 +308,7 @@ const MarginControl = ({
           </div>
           <div className="flex flex-col justify-center">
             <Input
+              aria-label={t('contentBuilder.editor.common.right')}
               value={margin?.right ?? ''}
               placeholder={t('contentBuilder.editor.common.right')}
               onChange={(e) => onValueChange(e, 'right')}
@@ -335,8 +342,9 @@ const ActionButtons = ({
               variant="ghost"
               size="icon"
               onClick={onDelete}
+              aria-label={t('contentBuilder.editor.actionButtons.delete', { entity })}
             >
-              <DeleteIcon className="fill-red-700" />
+              <DeleteIcon className="fill-red-700" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
@@ -349,8 +357,14 @@ const ActionButtons = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddLeft}>
-              <InsertColumnLeftIcon className="fill-foreground" />
+            <Button
+              className="flex-none"
+              variant="ghost"
+              size="icon"
+              onClick={onAddLeft}
+              aria-label={t('contentBuilder.editor.actionButtons.insertLeft', { entity })}
+            >
+              <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
@@ -362,8 +376,14 @@ const ActionButtons = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddRight}>
-              <InsertColumnRightIcon className="fill-foreground" />
+            <Button
+              className="flex-none"
+              variant="ghost"
+              size="icon"
+              onClick={onAddRight}
+              aria-label={t('contentBuilder.editor.actionButtons.insertRight', { entity })}
+            >
+              <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">

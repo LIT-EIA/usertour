@@ -14,7 +14,8 @@ const badgeVariants = cva(
         destructive:
           'border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
         outline: 'text-foreground',
-        success: 'border-transparent bg-success text-primary-foreground shadow hover:bg-success/80',
+        // green-700 keeps white text >= 4.5:1 (WCAG 1.4.3); bg-success was 2.3:1
+        success: 'border-transparent bg-green-700 text-white shadow hover:bg-green-700/90',
       },
     },
     defaultVariants: {

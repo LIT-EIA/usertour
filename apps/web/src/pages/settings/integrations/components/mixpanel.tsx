@@ -127,6 +127,7 @@ const ExportEventsForm = ({
           <div className="flex flex-col gap-1">
             <p className="text-sm">{t('settings.integrations.providerCard.mixpanelKeyLabel')}</p>
             <Input
+              aria-label={t('settings.integrations.providerCard.mixpanelKeyPlaceholder')}
               type="text"
               placeholder={t('settings.integrations.providerCard.mixpanelKeyPlaceholder')}
               value={integration?.key || ''}
@@ -267,6 +268,7 @@ const SyncCohortsForm = ({
               {t('settings.integrations.mixpanelCohorts.userIdPropertyLabel')}
             </p>
             <Input
+              aria-label={t('settings.integrations.mixpanelCohorts.userIdPropertyPlaceholder')}
               type="text"
               placeholder={t('settings.integrations.mixpanelCohorts.userIdPropertyPlaceholder')}
               value={config.mixpanelUserIdProperty || ''}

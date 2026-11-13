@@ -22,7 +22,7 @@ const InviteHeader = () => {
   const { t } = useTranslation();
   return (
     <CardHeader className="space-y-1 text-center">
-      <CardTitle>
+      <CardTitle as="h1">
         <p className="text-lg font-normal">
           {t('auth.invite.titleTemplate', {
             userName: data?.user?.name,

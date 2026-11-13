@@ -24,7 +24,7 @@ export const ThemeListHeader = () => {
       <div className="relative ">
         <div className="flex flex-col space-y-2">
           <div className="flex flex-row justify-between ">
-            <h3 className="text-2xl font-semibold tracking-tight">{t('common.theme')}</h3>
+            <h2 className="text-2xl font-semibold tracking-tight">{t('common.theme')}</h2>
             <Button onClick={handleCreateTheme} disabled={isViewOnly}>
               <PlusIcon className="h-4 w-4" />
               {t('settings.themes.listHeader.newTheme')}

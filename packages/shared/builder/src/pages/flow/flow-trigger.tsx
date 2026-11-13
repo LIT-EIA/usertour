@@ -9,7 +9,7 @@ import { useContentListContext } from '@usertour-packages/contexts';
 import { updateContentStep } from '@usertour-packages/gql';
 import { SpinnerIcon } from '@usertour-packages/icons';
 import { ScrollArea } from '@usertour-packages/scroll-area';
-import { createValue1 } from '@usertour-packages/shared-editor';
+import { createValue1, focusFirstValidationError } from '@usertour-packages/shared-editor';
 import { defaultStep, getErrorMessage, hasActionError, hasError } from '@usertour/helpers';
 import {
   AttributeBizTypes,
@@ -30,6 +30,7 @@ import { SidebarMini } from '../sidebar/sidebar-mini';
 import { useListAttributesQuery } from '@usertour-packages/shared-hooks';
 
 const FlowBuilderTriggerHeader = () => {
+  const { t } = useTranslation();
   const { setCurrentMode, currentStep, currentContent, currentIndex } = useBuilderContext();
 
   const handleBackup = () => {
@@ -38,15 +39,19 @@ const FlowBuilderTriggerHeader = () => {
 
   return (
     <CardHeader className="flex-none p-5 space-y-2">
-      <CardTitle className="text-base truncate ...">{currentContent?.name}</CardTitle>
+      <CardTitle as="h2" className="text-base truncate ...">
+        {currentContent?.name}
+      </CardTitle>
       <div className="flex">
         <Button
+          title={t('common.back')}
           variant="link"
           size="icon"
           onClick={handleBackup}
           className="mr-2 text-foreground w-6 h-8"
+          aria-label={t('common.back')}
         >
-          <ChevronLeftIcon className="h-6 w-6 " />
+          <ChevronLeftIcon className="h-6 w-6 " aria-hidden="true" />
         </Button>
         <div className="grow text-base leading-8 truncate ...">
           {currentIndex + 1}、{currentStep?.name}
@@ -164,7 +169,7 @@ const FlowBuilderTriggerBody = (props: { attributes: Attribute[]; loading: boole
     <CardContent className="bg-background-900 grow p-0 overflow-hidden">
       <ScrollArea className="h-full ">
         <div className="flex-col space-y-3 p-4">
-          <h1 className="text-sm">{t('contentBuilder.flow.triggers')}</h1>
+          <h2 className="text-sm">{t('contentBuilder.flow.triggers')}</h2>
           {loading && (
             <div className="flex justify-center items-center h-full">
               <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
@@ -228,6 +233,17 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
   const { setShowError } = useTriggerContext();
   const { t } = useTranslation();
 
+  // A refused Save must not be silent: take focus to the first field with an error (its bubble is
+  // then read as the field's description), or say why if none is on screen (WCAG 3.3.1, 4.1.3).
+  // Deferred a frame so bubbles opened by this click have rendered.
+  const reportInvalid = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (!focusFirstValidationError()) {
+        toast({ variant: 'destructive', title: t('contentBuilder.flow.fixErrorsBeforeSave') });
+      }
+    });
+  }, [toast, t]);
+
   const handleSave = useCallback(async () => {
     setShowError(false);
     if (!currentStep || !currentStep.trigger || !attributes) {
@@ -236,10 +252,12 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
     for (let index = 0; index < currentStep.trigger.length; index++) {
       const { actions, conditions } = currentStep.trigger[index];
       if (hasError(conditions, attributes) || hasActionError(actions)) {
+        reportInvalid();
         return;
       }
       if (conditions.length === 0 || actions.length === 0) {
         setShowError(true);
+        reportInvalid();
         return;
       }
     }
@@ -263,7 +281,7 @@ const FlowBuilderTriggerFooter = (props: { attributes: Attribute[] }) => {
     }
     setIsLoading(false);
     setCurrentMode({ mode: BuilderMode.FLOW });
-  }, [currentStep, attributes]);
+  }, [currentStep, attributes, reportInvalid]);
 
   return (
     <CardFooter className="flex-none p-5">

@@ -101,7 +101,7 @@ const RulesCurrentTimeDatePicker = (props: {
         <Button
           variant={'outline'}
           className={cn(
-            'w-[240px] justify-start text-left font-normal h-9',
+            'w-[15rem] max-w-full justify-start text-left font-normal h-9',
             !date && 'text-muted-foreground',
           )}
         >

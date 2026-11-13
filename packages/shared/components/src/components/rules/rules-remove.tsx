@@ -7,6 +7,7 @@ import {
 } from '@usertour-packages/tooltip';
 import { useTranslation } from 'react-i18next';
 import { useRulesGroupContext } from '../contexts/rules-group-context';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 type RulesRemoveProps = {
   index: number;
@@ -26,12 +27,14 @@ export const RulesRemove = (props: RulesRemoveProps) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <CloseIcon
-              width={18}
-              height={18}
-              className="absolute top-1 right-1 cursor-pointer"
+            <TooltipIconButton
+              label={t('conditions.actions.removeCondition')}
               onClick={handleOnClick}
-            />
+              // 24px target with the 18px icon where it was (WCAG 2.5.8)
+              className="absolute top-0 right-0 h-6 w-6 cursor-pointer rounded-sm"
+            >
+              <CloseIcon width={18} height={18} aria-hidden="true" />
+            </TooltipIconButton>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
             {t('conditions.actions.removeCondition')}

@@ -27,11 +27,14 @@ export const LauncherPosition = (props: LauncherPositionProps) => {
     <div className="space-y-3 ">
       <div className="flex justify-between items-center space-x-1	">
         <div className="flex flex-row justify-between items-center space-x-1 ">
-          <h1 className="text-sm">{t('contentBuilder.launcher.reference.label')}</h1>
+          <h2 className="text-sm">{t('contentBuilder.launcher.reference.label')}</h2>
         </div>
       </div>
       <Select defaultValue={type} onValueChange={handleTypeChange} value={type}>
-        <SelectTrigger className="justify-start flex h-8">
+        <SelectTrigger
+          aria-label={t('contentBuilder.launcher.reference.label')}
+          className="justify-start flex h-8"
+        >
           <CubeIcon className="flex-none mr-2" />
           <div className="grow text-left">
             <SelectValue placeholder="" asChild>

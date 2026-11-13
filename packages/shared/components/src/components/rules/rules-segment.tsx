@@ -112,7 +112,7 @@ const RulesSegmentName = () => {
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </Popover.PopoverTrigger>
-        <Popover.PopoverContent className="w-[350px] p-0">
+        <Popover.PopoverContent className="w-[21.875rem] max-w-[calc(100vw-2rem)] p-0">
           <Command filter={handleFilter}>
             <CommandInput placeholder="" />
             <CommandEmpty>{t('common.selectPopover.noItems')}</CommandEmpty>

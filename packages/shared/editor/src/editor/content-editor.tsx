@@ -64,6 +64,7 @@ import { ContentEditorSingleLineTextSerialize } from './components/single-line-t
 import { ContentEditorSingleLineText } from './components/single-line-text';
 import { ContentEditorStarRatingSerialize } from './components/star-rating';
 import { ContentEditorStarRating } from './components/star-rating';
+import { isFocusLeaving } from '../lib/focus';
 
 export const contentEditorElements = [
   {
@@ -586,7 +587,7 @@ const Editor = () => {
       }}
       onMouseOut={() => setIsEditorHover(false)}
       onFocus={() => setIsEditorHover(true)}
-      onBlur={() => setIsEditorHover(false)}
+      onBlur={(e) => isFocusLeaving(e) && setIsEditorHover(false)}
     >
       {!activeId && (isEditorHover || isOpen) && (
         <ContentEditorSideBar

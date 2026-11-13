@@ -1,10 +1,11 @@
+import { BackButton } from '@/components/atoms/back-button';
 import {
   ContentLocalizationListProvider,
   useContentLocalizationListContext,
 } from '@/contexts/content-localization-list-context';
 import { useContentVersionContext } from '@/contexts/content-version-context';
 import { useLocalizationListContext } from '@/contexts/localization-list-context';
-import { ArrowLeftIcon, ArrowRightIcon, KeyboardIcon, ResetIcon } from '@radix-ui/react-icons';
+import { ArrowRightIcon, KeyboardIcon, ResetIcon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import { Badge } from '@usertour-packages/badge';
 import { useAws } from '@usertour-packages/builder/src/hooks/use-aws';
@@ -26,7 +27,7 @@ import type { ContentVersion, Localization, Step } from '@usertour/types';
 import { cn } from '@usertour/helpers';
 import Upload from 'rc-upload';
 import { UploadRequestOption } from 'rc-upload/lib/interface';
-import { ChangeEvent, ReactNode, useState } from 'react';
+import { ChangeEvent, ReactNode, useState, useId } from 'react';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -41,8 +42,8 @@ const ContentLocalizationTemplateContainer = (props: ContentLocalizationTemplate
   return (
     <>
       <Separator />
-      <div className="flex flex-row">
-        <div className="w-40 flex-none">{name}</div>
+      <div className="flex flex-col gap-1 sm:flex-row sm:gap-0">
+        <div className="sm:w-40 sm:flex-none">{name}</div>
         <div className="flex flex-col space-y-1 grow ">{children}</div>
       </div>
     </>
@@ -52,8 +53,8 @@ const ContentLocalizationTemplateB1 = (props: ContentLocalizationTemplateProps) 
   const { children, name } = props;
   return (
     <>
-      <div className="flex flex-row bg-secondary p-2 rounded-sm">
-        <div className="w-40 flex-none">{name}</div>
+      <div className="flex flex-col gap-1 sm:flex-row sm:gap-0 bg-secondary p-2 rounded-sm">
+        <div className="sm:w-40 sm:flex-none">{name}</div>
         {children}
       </div>
     </>
@@ -63,8 +64,8 @@ const ContentLocalizationTemplateB2 = (props: ContentLocalizationTemplateProps) 
   const { children, name } = props;
   return (
     <>
-      <div className="flex flex-row pl-2">
-        <div className="w-40 flex-none">{name}</div>
+      <div className="flex flex-col gap-1 sm:flex-row sm:gap-0 pl-2">
+        <div className="sm:w-40 sm:flex-none">{name}</div>
         {children}
       </div>
     </>
@@ -122,11 +123,11 @@ const ContentLocalizationImage = (props: ContentLocalizationImageProps) => {
     <Popover.Root>
       <ContentLocalizationTemplateContainer name={t('contents.localization.element.image')}>
         <ContentLocalizationTemplateB1 name={defaultLocate?.name}>
-          <img src={element.url} className="max-w-64 max-h-64	" />
+          <img src={element.url} className="max-w-full sm:max-w-64 max-h-64" />
         </ContentLocalizationTemplateB1>
         <ContentLocalizationTemplateB2 name={currentLocalization?.name}>
           <div className="flex flex-col">
-            {!isLoading && <img src={imageUrl} className="max-w-64 max-h-64	" />}
+            {!isLoading && <img src={imageUrl} className="max-w-full sm:max-w-64 max-h-64" />}
             {isLoading && (
               <div className="flex items-center w-40	h-40 justify-center">
                 <SpinnerIcon className="mr-2 h-10 w-10 animate-spin" />
@@ -159,12 +160,13 @@ const ContentLocalizationImage = (props: ContentLocalizationImageProps) => {
                 >
                   <div className="flex flex-row space-x-2">
                     <Input
+                      aria-label={t('contents.localization.image.enterUrl')}
                       placeholder={t('contents.localization.image.enterUrl')}
                       value={remoteImageUrl}
                       onChange={(e) => {
                         setRemoteImageUrl(e.target.value);
                       }}
-                      className="bg-background w-80 "
+                      className="bg-background w-80 max-w-full"
                     />
                     <Button
                       className="flex-none  h-9 py-1"
@@ -219,6 +221,7 @@ const ContentLocalizationEmbed = (props: ContentLocalizationEmbedProps) => {
       </ContentLocalizationTemplateB1>
       <ContentLocalizationTemplateB2 name={currentLocalization?.name}>
         <Input
+          aria-label={`${t('contents.localization.element.video')} - ${currentLocalization?.name ?? ''}`}
           value={embedUrl}
           onChange={(e) => {
             handleEmbedUrlChange(e.target.value);
@@ -250,6 +253,7 @@ const ContentLocalizationButton = (props: ContentLocalizationButtonProps) => {
       </ContentLocalizationTemplateB1>
       <ContentLocalizationTemplateB2 name={currentLocalization?.name}>
         <Input
+          aria-label={`${t('contents.localization.element.button')} - ${currentLocalization?.name ?? ''}`}
           value={text}
           onChange={(e) => {
             handleTextChange(e.target.value);
@@ -268,14 +272,17 @@ const ContentLocalizationLeaf = (props: ContentLocalizationLeafProps) => {
   const { text } = props;
 
   const [inputValue, setInputValue] = useState<string>('');
+  const sourceId = useId();
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
   return (
     <>
       <div className="flex flex-col space-y-1 grow">
-        <div className="pl-3 bg-secondary p-2 rounded-md">{text}</div>
-        <Input value={inputValue} onChange={handleOnChange} />
+        <div id={sourceId} className="pl-3 bg-secondary p-2 rounded-md">
+          {text}
+        </div>
+        <Input value={inputValue} onChange={handleOnChange} aria-labelledby={sourceId} />
       </div>
     </>
   );
@@ -311,11 +318,15 @@ const ContentLocalizationText = (props: ContentLocalizationRichTextProps) => {
         {isNotEmpty && (
           <>
             <Separator />
-            <div className="flex flex-row">
-              <div className="w-40 flex-none">{t('contents.localization.element.content')}</div>
-              <div className="flex flex-row space-x-1 grow ">
+            <div className="flex flex-col gap-1 sm:flex-row sm:gap-0">
+              <div className="sm:w-40 sm:flex-none">
+                {t('contents.localization.element.content')}
+              </div>
+              <div className="flex flex-row flex-wrap gap-1 grow min-w-0">
                 <div className="flex-none flex flex-col">
-                  <div className="w-40 bg-secondary rounded-sm p-2">{defaultLocate.name}</div>
+                  <div className="w-40 max-w-full bg-secondary rounded-sm p-2">
+                    {defaultLocate.name}
+                  </div>
                   <div className="p-2">{currentLocalization.name}</div>
                 </div>
                 {item.children.map((leaf: any, ii: number) => {
@@ -500,16 +511,16 @@ const ContentLocalizationDetailMain = (props: ContentLocalizationDetailMainProps
   const localized = contentLocalization.localized as ContentEditorRoot[][];
 
   return (
-    <div className="flex p-14 mt-12 space-x-8 justify-center ">
+    <div className="flex justify-center px-4 py-6 sm:p-8 lg:p-14 lg:pt-10">
       <div className="flex flex-col space-y-6 grow  max-w-screen-xl mx-auto">
         <div className="flex flex-row space-x-1 items-center">
-          <ArrowLeftIcon
-            className="h-4 w-6 cursor-pointer flex-none"
+          <BackButton
+            iconClassName="h-4 w-6"
             onClick={() => {
               navigator(location.pathname.replace(`/${localization.locale}`, ''));
             }}
           />
-          <h3 className="text-lg font-medium">{localization.name}</h3>
+          <h2 className="text-lg font-medium">{localization.name}</h2>
           {!contentLocalization.enabled && (
             <Badge variant={'destructive'}>{t('contents.localization.status.disabled')}</Badge>
           )}

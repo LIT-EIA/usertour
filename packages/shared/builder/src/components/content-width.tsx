@@ -25,10 +25,14 @@ export const ContentWidth = (props: ContentWidthProps) => {
   return (
     <div className="space-y-3 ">
       <div className="flex justify-start items-center space-x-1	">
-        <h1 className="text-sm">{t('contentBuilder.shared.width')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.shared.width')}</h2>
         <HelpTooltip>{tooltipContent[type]}</HelpTooltip>
       </div>
-      <InputNumber defaultNumber={width} onValueChange={handleWidthChange} />
+      <InputNumber
+        label={t('contentBuilder.shared.width')}
+        defaultNumber={width}
+        onValueChange={handleWidthChange}
+      />
     </div>
   );
 };

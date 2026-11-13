@@ -219,8 +219,14 @@ const ObjectMappingSection = ({
               {t('settings.integrations.objectMapping.newBadge')}
             </span>
           )}
-          <Button variant="ghost" size="icon" onClick={() => handleRemoveMapping(idx)}>
-            <XIcon className="w-4 h-4" />
+          <Button
+            title={t('common.remove')}
+            variant="ghost"
+            size="icon"
+            onClick={() => handleRemoveMapping(idx)}
+            aria-label={t('common.remove')}
+          >
+            <XIcon className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       ))}

@@ -31,7 +31,9 @@ export const LocalizationListContent = () => {
               <TableHead>{t('settings.localizations.columns.code')}</TableHead>
               <TableHead>{t('settings.localizations.columns.name')}</TableHead>
               <TableHead>{t('settings.localizations.columns.createdAt')}</TableHead>
-              <TableHead />
+              <TableHead>
+                <span className="sr-only">{t('common.actionsColumn')}</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

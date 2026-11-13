@@ -304,6 +304,7 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
                 <div className={RANGE_INPUT_CONTAINER_CLASS}>
                   <Input
                     type="number"
+                    aria-label={`${t('contentBuilder.editor.question.scaleRange')} - ${t('contentBuilder.editor.question.scaleRangeLow')}`}
                     value={localData.lowRange}
                     placeholder="0"
                     min={0}
@@ -314,6 +315,7 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
                   <p>-</p>
                   <Input
                     type="number"
+                    aria-label={`${t('contentBuilder.editor.question.scaleRange')} - ${t('contentBuilder.editor.question.scaleRangeHigh')}`}
                     value={localData.highRange}
                     placeholder="10"
                     min={0}
@@ -336,12 +338,14 @@ export const ContentEditorScale = (props: ContentEditorScaleProps) => {
                 </Label>
                 <div className={LABELS_INPUT_CONTAINER_CLASS}>
                   <Input
+                    aria-label={t('contentBuilder.editor.question.lowLabel')}
                     type="text"
                     value={localData.lowLabel || ''}
                     placeholder={t('contentBuilder.editor.question.lowLabel')}
                     onChange={(e) => handleDataChange({ lowLabel: e.target.value })}
                   />
                   <Input
+                    aria-label={t('contentBuilder.editor.question.highLabel')}
                     type="text"
                     value={localData.highLabel || ''}
                     placeholder={t('contentBuilder.editor.question.highLabel')}

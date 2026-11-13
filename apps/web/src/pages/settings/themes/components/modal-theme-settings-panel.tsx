@@ -122,6 +122,7 @@ export const ModalThemeSettingsPanel = ({
                 value={currentTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder={t('themeBuilder.placeholders.variationTitle')}
+                aria-label={t('themeBuilder.placeholders.variationTitleLabel')}
                 className="h-8 shadow-none focus-visible:ring-0 focus:border-b text-base"
               />
             </div>
@@ -134,8 +135,9 @@ export const ModalThemeSettingsPanel = ({
                       variant="ghost"
                       size="icon"
                       onClick={onDelete}
+                      aria-label={t('themeBuilder.tooltips.deleteConditionVariation')}
                     >
-                      <Delete2Icon />
+                      <Delete2Icon aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">

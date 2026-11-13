@@ -27,8 +27,9 @@ const ChecklistItemHeader = () => {
   const { t } = useTranslation();
   return (
     <CardHeader className="flex-none p-4 space-y-2">
-      <CardTitle className="flex flex-row space-x-1 text-base items-center">
+      <CardTitle as="h2" className="flex flex-row space-x-1 text-base items-center">
         <Button
+          title={t('common.back')}
           variant="link"
           size="icon"
           onClick={() => {
@@ -36,8 +37,9 @@ const ChecklistItemHeader = () => {
             setCurrentMode({ mode: BuilderMode.CHECKLIST });
           }}
           className="text-foreground w-6 h-8"
+          aria-label={t('common.back')}
         >
-          <ChevronLeftIcon className="h-6 w-6 " />
+          <ChevronLeftIcon className="h-6 w-6 " aria-hidden="true" />
         </Button>
         <span className=" truncate ...">{t('contentBuilder.checklist.item')}</span>
       </CardTitle>

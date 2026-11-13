@@ -65,7 +65,10 @@ export const LauncherContentType = ({ zIndex, type, onChange }: LauncherTypeProp
 
   return (
     <Select value={type} onValueChange={onChange}>
-      <SelectTrigger className="justify-start flex h-8">
+      <SelectTrigger
+        aria-label={t('contentBuilder.launcher.appearance')}
+        className="justify-start flex h-8"
+      >
         {getIcon(type)}
         <div className="grow text-left ml-2">
           <SelectValue placeholder="" asChild>

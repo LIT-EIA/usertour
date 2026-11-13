@@ -9,7 +9,7 @@ const ThemeDetailInner = () => {
   const { loading } = useThemeDetailContext();
 
   if (loading) {
-    return <ContentLoading message="Loading theme details..." />;
+    return <ContentLoading messageKey="common.loadingThemeDetails" />;
   }
 
   return (

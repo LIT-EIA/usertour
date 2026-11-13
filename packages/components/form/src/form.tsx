@@ -146,6 +146,8 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
+      // Announce validation errors as they appear; plain messages stay silent
+      role={error ? 'alert' : undefined}
       className={cn('text-[0.8rem] font-medium text-destructive', className)}
       {...props}
     >

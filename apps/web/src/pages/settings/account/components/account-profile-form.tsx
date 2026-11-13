@@ -77,9 +77,9 @@ export const AccountProfileForm = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-row justify-between items-center h-10">
-        <h3 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight">
           {t('settings.account.profile.title')}
-        </h3>
+        </h2>
         {/* <p className="text-sm text-muted-foreground">
           Update your profile name.
         </p> */}
@@ -94,7 +94,11 @@ export const AccountProfileForm = () => {
               <FormItem>
                 <FormLabel>{t('settings.account.profile.nameLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t('settings.account.profile.namePlaceholder')} {...field} />
+                  <Input
+                    placeholder={t('settings.account.profile.namePlaceholder')}
+                    autoComplete="name"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

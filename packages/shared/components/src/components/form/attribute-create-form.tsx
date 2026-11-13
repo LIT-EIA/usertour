@@ -51,6 +51,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 interface CreateFormProps {
   isOpen: boolean;
@@ -157,7 +158,12 @@ export const AttributeCreateForm = ({ onClose, isOpen, projectId }: CreateFormPr
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>Determines which kind of objects this attribute can be set for.</p>
@@ -212,7 +218,12 @@ export const AttributeCreateForm = ({ onClose, isOpen, projectId }: CreateFormPr
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -254,7 +265,12 @@ export const AttributeCreateForm = ({ onClose, isOpen, projectId }: CreateFormPr
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -284,7 +300,12 @@ export const AttributeCreateForm = ({ onClose, isOpen, projectId }: CreateFormPr
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                              <TooltipIconButton>
+                                <QuestionMarkCircledIcon
+                                  className="ml-1 cursor-help"
+                                  aria-hidden="true"
+                                />
+                              </TooltipIconButton>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-slate-700">
                               <p>
@@ -315,7 +336,12 @@ export const AttributeCreateForm = ({ onClose, isOpen, projectId }: CreateFormPr
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <QuestionMarkCircledIcon className="ml-1 cursor-help" />
+                            <TooltipIconButton>
+                              <QuestionMarkCircledIcon
+                                className="ml-1 cursor-help"
+                                aria-hidden="true"
+                              />
+                            </TooltipIconButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-slate-700">
                             <p>Put any additional information for your ownreference here.</p>

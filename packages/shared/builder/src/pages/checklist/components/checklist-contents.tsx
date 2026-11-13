@@ -2,7 +2,6 @@ import {
   DndContext,
   DragEndEvent,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
   closestCenter,
   useSensor,
@@ -11,12 +10,11 @@ import {
 import {
   SortableContext,
   arrayMove,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DragHandleDots2Icon, GearIcon } from '@radix-ui/react-icons';
+import { GearIcon } from '@radix-ui/react-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,13 +37,23 @@ import {
 import { ChecklistItemType } from '@usertour/types';
 import { forwardRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  SortableHandle,
+  SortableMoveButtons,
+  SortableMoveDirection,
+  SortableOverlayContent,
+  useSortableListA11y,
+} from '../../../components/sortable-a11y';
 import { BuilderMode, useBuilderContext, useChecklistContext } from '../../../contexts';
 // Add interface for component props
 interface ChecklistContentProps {
   onClick?: (action: 'edit' | 'delete', item: ChecklistItemType) => void;
+  onMove?: (direction: SortableMoveDirection, target: EventTarget) => void;
   listeners?: Record<string, any>;
-  attributes?: Record<string, any>;
+  setActivatorNodeRef?: (element: HTMLElement | null) => void;
   item: ChecklistItemType;
+  index: number;
+  total: number;
   style?: React.CSSProperties;
 }
 
@@ -90,24 +98,30 @@ const DeleteDialog = ({
 
 // Optimized ChecklistContent component
 const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
-  ({ onClick, listeners = {}, attributes = {}, item, style }, ref) => {
+  (
+    { onClick, onMove, listeners = {}, setActivatorNodeRef, item, index, total, style, ...props },
+    ref,
+  ) => {
     const { t } = useTranslation();
     return (
       <div
         ref={ref}
-        {...attributes}
+        // biome-ignore lint/a11y/useSemanticElements: a sortable card, not a set of form fields, so <fieldset> does not fit
+        role="group"
+        {...props}
         style={style}
-        className="bg-background-700 p-2.5 rounded-lg flex flex-col"
+        className="bg-background-700 p-2.5 rounded-lg flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex items-center justify-between">
-          <div className="grow inline-flex items-center text-sm gap-2">
-            <DragHandleDots2Icon className="cursor-move" {...listeners} />
-            <span className="w-36 truncate" title={item.name}>
+          <div className="grow min-w-0 inline-flex items-center text-sm gap-2">
+            <SortableHandle listeners={listeners} setActivatorNodeRef={setActivatorNodeRef} />
+            <span className="min-w-0 flex-1 truncate" title={item.name}>
               {item.name}
             </span>
           </div>
 
           <div className="flex-none flex gap-1">
+            {onMove && <SortableMoveButtons index={index} total={total} onMove={onMove} />}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -116,8 +130,9 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
                     size="sm"
                     className="p-1 h-fit"
                     onClick={() => onClick?.('edit', item)}
+                    aria-label={t('contentBuilder.checklist.edit')}
                   >
-                    <GearIcon className="h-4 w-4" />
+                    <GearIcon className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('contentBuilder.checklist.edit')}</TooltipContent>
@@ -125,8 +140,14 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
             </TooltipProvider>
 
             <DeleteDialog onDelete={() => onClick?.('delete', item)}>
-              <Button variant="ghost" size="sm" className="p-1 h-fit">
-                <Delete2Icon className="h-4 w-4 text-foreground" />
+              <Button
+                title={t('contentBuilder.checklist.delete')}
+                variant="ghost"
+                size="sm"
+                className="p-1 h-fit"
+                aria-label={t('contentBuilder.checklist.delete')}
+              >
+                <Delete2Icon className="h-4 w-4 text-foreground" aria-hidden="true" />
               </Button>
             </DeleteDialog>
           </div>
@@ -136,10 +157,9 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
   },
 );
 
-const SortableItem = ({ id, onClick, item }: any) => {
-  const { attributes, listeners, isDragging, setNodeRef, transform, transition } = useSortable({
-    id,
-  });
+const SortableItem = ({ id, onClick, onMove, item, index, total, ...props }: any) => {
+  const { listeners, isDragging, setNodeRef, setActivatorNodeRef, transform, transition } =
+    useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -151,10 +171,14 @@ const SortableItem = ({ id, onClick, item }: any) => {
     <ChecklistContent
       ref={setNodeRef}
       item={item}
+      index={index}
+      total={total}
       style={style}
       onClick={onClick}
+      onMove={onMove}
       listeners={listeners}
-      attributes={attributes}
+      setActivatorNodeRef={setActivatorNodeRef}
+      {...props}
     />
   );
 };
@@ -163,18 +187,28 @@ export const ChecklistContents = () => {
   const { setCurrentMode } = useBuilderContext();
   const { localData, updateLocalData, setCurrentItem, removeItem } = useChecklistContext();
   const { t } = useTranslation();
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor));
+  const items = localData?.items ?? [];
+  const { accessibility, announceMove, itemProps, statusRegion } = useSortableListA11y({
+    ids: items.map((item) => item.id),
+    getName: (id) => items.find((item) => item.id === id)?.name ?? '',
+  });
 
   if (!localData) {
     return null;
   }
 
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const indexOf = (id: unknown) => localData.items.findIndex((item) => item.id === id);
+
+  const handleMove = (index: number, direction: SortableMoveDirection, target: EventTarget) => {
+    const to = direction === 'up' ? index - 1 : index + 1;
+    if (to < 0 || to >= localData.items.length) {
+      return;
+    }
+    updateLocalData({ items: arrayMove(localData.items, index, to) });
+    announceMove(target, localData.items[index].id, to, direction);
+  };
 
   const handleEditItem = (item: ChecklistItemType) => {
     setCurrentItem(item);
@@ -194,13 +228,16 @@ export const ChecklistContents = () => {
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (active && over && active.id !== over?.id) {
-      const from = localData.items.findIndex((item) => item.id === active.id);
-      const to = localData.items.findIndex((item) => item.id === over.id);
-      const newList = arrayMove(localData.items, from, to);
-      updateLocalData({ items: newList });
-      setActiveId(null);
+    setActiveId(null);
+    if (over && active.id !== over.id) {
+      updateLocalData({
+        items: arrayMove(localData.items, indexOf(active.id), indexOf(over.id)),
+      });
     }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
   };
 
   const activeItem = localData.items.find((item) => item.id === activeId);
@@ -208,21 +245,45 @@ export const ChecklistContents = () => {
   return (
     <>
       <div className="flex justify-between items-center space-x-1	">
-        <h1 className="text-sm">{t('contentBuilder.checklist.items')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.checklist.items')}</h2>
       </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        accessibility={accessibility}
       >
         <SortableContext items={localData.items} strategy={verticalListSortingStrategy}>
-          {localData.items.map((item) => (
-            <SortableItem id={item.id} onClick={handleOnClick} key={item.id} item={item} />
+          {localData.items.map((item, index) => (
+            <SortableItem
+              id={item.id}
+              onClick={handleOnClick}
+              onMove={(direction: SortableMoveDirection, target: EventTarget) =>
+                handleMove(index, direction, target)
+              }
+              key={item.id}
+              item={item}
+              index={index}
+              total={localData.items.length}
+              {...itemProps(index)}
+            />
           ))}
         </SortableContext>
-        <DragOverlay>{activeItem ? <ChecklistContent item={activeItem} /> : null}</DragOverlay>
+        <DragOverlay>
+          {activeItem ? (
+            <SortableOverlayContent>
+              <ChecklistContent
+                item={activeItem}
+                index={indexOf(activeItem.id)}
+                total={localData.items.length}
+              />
+            </SortableOverlayContent>
+          ) : null}
+        </DragOverlay>
       </DndContext>
+      {statusRegion}
     </>
   );
 };

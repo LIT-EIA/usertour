@@ -30,13 +30,29 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 interface QuestionTooltipProps {
   children: React.ReactNode;
+  /** Accessible name for the help button; defaults to a localized "More information" */
+  label?: string;
 }
 
-const QuestionTooltip = ({ children }: QuestionTooltipProps) => (
+// This package has no i18n dependency; the app keeps <html lang> in sync with the UI language.
+const defaultHelpLabel = () =>
+  typeof document !== 'undefined' && document.documentElement.lang.startsWith('fr')
+    ? "Plus d'information"
+    : 'More information';
+
+// The trigger is a native button so the help text is reachable by keyboard and screen readers
+// (WCAG 2.1.1, 1.4.13, 4.1.2), not only on mouse hover.
+const QuestionTooltip = ({ children, label }: QuestionTooltipProps) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <QuestionMarkCircledIcon className="cursor-help" />
+        <button
+          type="button"
+          aria-label={label ?? defaultHelpLabel()}
+          className="inline-flex flex-none items-center justify-center rounded-full align-middle cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <QuestionMarkCircledIcon aria-hidden="true" />
+        </button>
       </TooltipTrigger>
       <TooltipContent className="max-w-xs">{children}</TooltipContent>
     </Tooltip>

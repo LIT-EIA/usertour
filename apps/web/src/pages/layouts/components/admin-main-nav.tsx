@@ -1,5 +1,4 @@
 import { useAppContext } from '@/contexts/app-context';
-import { Button } from '@usertour-packages/button';
 import {
   ChecklistIcon,
   CompanyIcon,
@@ -20,7 +19,11 @@ import { AdminUserNav } from './admin-user-nav';
 
 // Extract common button styles to reduce repetition
 const commonButtonStyles =
-  'inline-flex main-transition items-center justify-center whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border dark:hover:border-dark-accent hover:shadow hover:border-input hover:bg-background !text-foreground hover:!text-foreground dark:!text-foreground dark:hover:!text-dark-accent-foreground h-9 w-9 p-0 relative unstyled-button border-transparent shadow-none bg-transparent dark:shadow-none dark:bg-transparent dark:hover:bg-secondary';
+  'inline-flex main-transition items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border dark:hover:border-dark-accent hover:shadow hover:border-input hover:bg-background !text-foreground hover:!text-foreground dark:!text-foreground dark:hover:!text-dark-accent-foreground h-9 w-9 p-0 relative unstyled-button border-transparent shadow-none bg-transparent dark:shadow-none dark:bg-transparent dark:hover:bg-secondary';
+
+// Focus ring lives on the link, since it is the focusable element
+const commonLinkStyles =
+  'block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 // Extract common icon styles
 const commonIconStyles = '!h-[18px] !w-[18px] text-primary-modified dark:text-foreground/[60%]';
@@ -76,30 +79,54 @@ const navigations = [
   },
 ];
 
-// Create a reusable NavButton component
+// Create a reusable NavButton component.
+// The link is the only interactive element; the button look is a presentational <div> inside it
+// (no nested <a><button>). The link is named via aria-label with the same text as the tooltip,
+// because the visible content is an icon and the tooltip text is not in the DOM until hovered.
 const NavButton = ({
   isActive,
   icon: Icon,
   name,
+  to,
   ...props
 }: {
   isActive: boolean;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{
+    className?: string;
+    'aria-hidden'?: React.AriaAttributes['aria-hidden'];
+  }>;
   name: string;
-} & React.HTMLAttributes<HTMLButtonElement>) => {
+  to: string;
+} & React.HTMLAttributes<HTMLAnchorElement>) => {
   const { t } = useTranslation();
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            className={cn(commonButtonStyles, isActive ? 'bg-background shadow border-input' : '')}
+          <Link
+            to={to}
+            aria-label={t(name)}
+            aria-current={isActive ? 'page' : undefined}
+            className={commonLinkStyles}
             {...props}
           >
-            <Icon className={cn(commonIconStyles, isActive ? 'text-primary' : '')} />
-          </Button>
+            <div
+              className={cn(
+                commonButtonStyles,
+                isActive ? 'bg-background shadow border-input' : '',
+              )}
+            >
+              <Icon
+                className={cn(commonIconStyles, isActive ? 'text-primary' : '')}
+                aria-hidden="true"
+              />
+            </div>
+          </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">{t(name)}</TooltipContent>
+        {/* Clear the 4px focus ring (2px offset + 2px ring) so the tooltip never touches it */}
+        <TooltipContent side="right" sideOffset={10}>
+          {t(name)}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -109,6 +136,7 @@ export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HT
   const matches = useMatches();
   const { environment, project } = useAppContext();
   const { contentType } = useParams();
+  const { t } = useTranslation();
 
   const isNavActive = (nav: (typeof navigations)[0]) =>
     nav.contentType
@@ -121,7 +149,10 @@ export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HT
       : `/env/${environment?.id}${nav.href}`;
 
   return (
-    <div className="pt-5 pb-3 px-2 items-center flex flex-col min-h-screen flex-shrink-0">
+    <nav
+      aria-label={t('nav.mainNavigation')}
+      className="pt-5 pb-3 px-2 items-center flex flex-col min-h-screen flex-shrink-0"
+    >
       <AdminEnvSwitcher />
 
       <div className="flex flex-col justify-between gap-3 h-full">
@@ -129,23 +160,33 @@ export const AdminMainNewNav = ({ className, ...props }: React.HTMLAttributes<HT
           {navigations
             .filter((nav) => !nav.href.startsWith('/settings'))
             .map((nav, index) => (
-              <Link to={getNavPath(nav)} key={index}>
-                <NavButton name={nav.name} isActive={isNavActive(nav)} icon={nav.icon} {...props} />
-              </Link>
+              <NavButton
+                key={index}
+                to={getNavPath(nav)}
+                name={nav.name}
+                isActive={isNavActive(nav)}
+                icon={nav.icon}
+                {...props}
+              />
             ))}
         </div>
         <div className="flex flex-col gap-3">
           {navigations
             .filter((nav) => nav.href.startsWith('/settings'))
             .map((nav, index) => (
-              <Link to={getNavPath(nav)} key={index}>
-                <NavButton name={nav.name} isActive={isNavActive(nav)} icon={nav.icon} {...props} />
-              </Link>
+              <NavButton
+                key={index}
+                to={getNavPath(nav)}
+                name={nav.name}
+                isActive={isNavActive(nav)}
+                icon={nav.icon}
+                {...props}
+              />
             ))}
           <AdminUserNav />
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 

@@ -22,7 +22,7 @@ interface LanguageSwitcherProps {
 }
 
 export const LanguageSwitcher = ({ className }: LanguageSwitcherProps) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const current = resolveLanguage(i18n.language);
 
   return (
@@ -32,9 +32,12 @@ export const LanguageSwitcher = ({ className }: LanguageSwitcherProps) => {
           variant="ghost"
           size="sm"
           className={cn('w-[168px] gap-1.5 text-foreground', className)}
+          aria-label={`${t('common.language')}: ${current.label}`}
         >
-          <Globe className="h-4 w-4 shrink-0" />
-          <span className="truncate">{current.label}</span>
+          <Globe className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="truncate" lang={current.code}>
+            {current.label}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -46,6 +49,7 @@ export const LanguageSwitcher = ({ className }: LanguageSwitcherProps) => {
             key={lang.code}
             onClick={() => i18n.changeLanguage(lang.code)}
             className={current.code === lang.code ? 'font-medium' : ''}
+            lang={lang.code}
           >
             {lang.label}
           </DropdownMenuItem>

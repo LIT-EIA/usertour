@@ -27,6 +27,7 @@ import { ReactNode, forwardRef, useCallback, useMemo, useRef, useState } from 'r
 import { useEvent } from 'react-use';
 import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
+import { isFocusLeaving } from '../../lib/focus';
 import {
   ContentEditorColumnElement,
   ContentEditorElement,
@@ -129,8 +130,9 @@ const ActionButtons = ({
               variant="ghost"
               size="icon"
               onClick={onDelete}
+              aria-label={t('contentBuilder.editor.actionButtons.delete', { entity })}
             >
-              <DeleteIcon className="fill-red-700" />
+              <DeleteIcon className="fill-red-700" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
@@ -143,8 +145,13 @@ const ActionButtons = ({
         <Tooltip>
           <ContentEditorSideBarPopper onClick={onAddLeft}>
             <TooltipTrigger asChild>
-              <Button className="flex-none" variant="ghost" size="icon">
-                <InsertColumnLeftIcon className="fill-foreground" />
+              <Button
+                className="flex-none"
+                variant="ghost"
+                size="icon"
+                aria-label={t('contentBuilder.editor.actionButtons.insertLeft', { entity })}
+              >
+                <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
           </ContentEditorSideBarPopper>
@@ -160,8 +167,13 @@ const ActionButtons = ({
         <Tooltip>
           <ContentEditorSideBarPopper onClick={onAddRight}>
             <TooltipTrigger asChild>
-              <Button className="flex-none" variant="ghost" size="icon">
-                <InsertColumnRightIcon className="fill-foreground" />
+              <Button
+                className="flex-none"
+                variant="ghost"
+                size="icon"
+                aria-label={t('contentBuilder.editor.actionButtons.insertRight', { entity })}
+              >
+                <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
           </ContentEditorSideBarPopper>
@@ -305,7 +317,7 @@ export const ContentEditorColumn = (props: ContentEditorColumnProps) => {
         onMouseOut={() => setIsHover(false)}
         onMouseDown={() => setIsActive(true)}
         onFocus={() => setIsHover(true)}
-        onBlur={() => setIsHover(false)}
+        onBlur={(e) => isFocusLeaving(e) && setIsHover(false)}
       >
         {!isDragging && isActive && (
           <div className="absolute -top-4 -left-[1px] h-4 px-1 rounded-none rounded-t bg-primary flex flex-row text-primary-foreground items-center justify-center">
@@ -340,6 +352,7 @@ export const ContentEditorColumn = (props: ContentEditorColumnProps) => {
               <div className="flex gap-x-2">
                 {width.type !== WIDTH_TYPES.FILL && (
                   <Input
+                    aria-label={t('contentBuilder.editor.column.width')}
                     type="number"
                     value={width.value?.toString() || ''}
                     placeholder={t('contentBuilder.editor.column.width')}
@@ -348,7 +361,10 @@ export const ContentEditorColumn = (props: ContentEditorColumnProps) => {
                   />
                 )}
                 <Select onValueChange={handleWidthTypeChange} value={width.type}>
-                  <SelectTrigger className="shrink">
+                  <SelectTrigger
+                    aria-label={t('contentBuilder.editor.width.selectType')}
+                    className="shrink"
+                  >
                     <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                   </SelectTrigger>
                   <SelectContent style={{ zIndex: zIndex + EDITOR_SELECT }}>
@@ -372,7 +388,7 @@ export const ContentEditorColumn = (props: ContentEditorColumnProps) => {
                 onValueChange={handleDistributeValueChange}
                 value={element.justifyContent || DEFAULT_JUSTIFY_CONTENT}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t('contentBuilder.editor.column.distribute')}>
                   <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                 </SelectTrigger>
                 <SelectContent style={{ zIndex: zIndex + EDITOR_SELECT }}>
@@ -404,7 +420,7 @@ export const ContentEditorColumn = (props: ContentEditorColumnProps) => {
                 onValueChange={handleAlignValueChange}
                 value={element.alignItems || DEFAULT_ALIGN_ITEMS}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t('contentBuilder.editor.column.align')}>
                   <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                 </SelectTrigger>
                 <SelectContent style={{ zIndex: zIndex + EDITOR_SELECT }}>

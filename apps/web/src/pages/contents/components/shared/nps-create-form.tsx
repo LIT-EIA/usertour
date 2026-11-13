@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { contentNameErrorMap } from './content-name-error-map';
 import { z } from 'zod';
 
 interface NpsCreateFormProps {
@@ -78,7 +79,7 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
   };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema, { errorMap: contentNameErrorMap(t) }),
     defaultValues,
     mode: 'onChange',
   });
@@ -125,8 +126,8 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
                     <FormLabel className="w-32 flex-none">
                       {t('contents.create.nameLabel')}
                     </FormLabel>
-                    <FormControl>
-                      <div className="flex flex-col space-x-1 w-full grow">
+                    <div className="flex flex-col space-x-1 w-full grow">
+                      <FormControl>
                         <Input
                           placeholder={t('contents.create.namePlaceholder', {
                             type: translatedType,
@@ -134,9 +135,9 @@ export const NpsCreateForm = ({ onClose, isOpen }: NpsCreateFormProps) => {
                           {...field}
                           id="nps-name-input"
                         />
-                        <FormMessage />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />

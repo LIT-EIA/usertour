@@ -26,7 +26,7 @@ export const PrecisionSelect = ({ value, onChange, zIndex }: PrecisionSelectProp
         <HelpTooltip>{t('contentBuilder.shared.precision.tooltip')}</HelpTooltip>
       </div>
       <Select onValueChange={onChange} defaultValue={value}>
-        <SelectTrigger>
+        <SelectTrigger aria-label={t('contentBuilder.shared.precision.label')}>
           <SelectValue placeholder={t('contentBuilder.shared.precision.selectPlaceholder')} />
         </SelectTrigger>
         <SelectContent style={{ zIndex }}>

@@ -21,7 +21,7 @@ export const RulesLogic = (props: RulesLogicProps) => {
       <Button
         variant="secondary"
         disabled={disabled}
-        className={cn('flex-none py-2 w-[88px]', isHorizontal ? 'h-auto' : 'h-7')}
+        className={cn('flex-none py-2 w-[5.5rem]', isHorizontal ? 'h-auto' : 'h-7')}
       >
         {t('conditions.logic.if')}
       </Button>
@@ -33,7 +33,7 @@ export const RulesLogic = (props: RulesLogicProps) => {
   if (disabled) {
     return (
       <Tabs className="h-auto flex-none">
-        <TabsList className="h-auto  w-[88px]">
+        <TabsList className="h-auto  w-[5.5rem]">
           <TabsTrigger value="and" className={className1} disabled={true}>
             {t('conditions.operators.and')}
           </TabsTrigger>
@@ -57,7 +57,7 @@ export const RulesLogic = (props: RulesLogicProps) => {
           }
         }}
       >
-        <TabsList className="h-auto  w-[88px]">
+        <TabsList className="h-auto  w-[5.5rem]">
           <TabsTrigger value="and" className={className1}>
             {t('conditions.operators.and')}
           </TabsTrigger>

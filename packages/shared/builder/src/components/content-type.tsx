@@ -36,11 +36,14 @@ export const ContentType = ({ onChange, zIndex, type }: ContentTypeProps) => {
   return (
     <div className="space-y-3">
       <div className="flex items-center">
-        <h1 className="text-sm">{t('contentBuilder.flow.stepTypeTitle')}</h1>
+        <h2 className="text-sm">{t('contentBuilder.flow.stepTypeTitle')}</h2>
       </div>
 
       <Select value={type} onValueChange={onChange}>
-        <SelectTrigger className="h-8 justify-start">
+        <SelectTrigger
+          aria-label={t('contentBuilder.flow.stepTypeTitle')}
+          className="h-8 justify-start"
+        >
           {type === 'tooltip' && <TooltipIcon className="w-4 h-4 mr-2 mt-0.5 flex-none" />}
           {type === 'modal' && <ModelIcon className="w-4 h-4 mr-2 mt-0.5 flex-none" />}
           {type === 'hidden' && <EyeNoneIcon className="w-4 h-4 mr-2 flex-none" />}

@@ -75,6 +75,7 @@ export function DataTableToolbar<TData>({ table, currentSegment }: DataTableTool
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center space-x-2">
           <Input
+            aria-label={t('common.search')}
             placeholder={t('common.search')}
             value={searchValue}
             onChange={handleSearchChange}

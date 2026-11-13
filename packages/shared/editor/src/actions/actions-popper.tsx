@@ -8,11 +8,33 @@ const ContentActionsPopover = PopoverPrimitive.Root;
 const ContentActionsPopoverTrigger = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <PopoverPrimitive.Trigger ref={ref} asChild {...props}>
-    <div className={cn('grow pr-6 text-sm  py-2 w-60 break-words', className)}>{children}</div>
-  </PopoverPrimitive.Trigger>
-));
+>(({ className, children, ...props }, ref) => {
+  // Popover only opens on click; make Enter/Space do the same for keyboard users
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.currentTarget.click();
+    }
+  };
+  return (
+    <PopoverPrimitive.Trigger ref={ref} asChild {...props}>
+      {/* role="button" so the aria-haspopup/aria-expanded set by Radix are allowed, and focusable so
+          the action can be edited with the keyboard */}
+      {/* biome-ignore lint/a11y/useSemanticElements: children include block elements, which are invalid inside <button> */}
+      <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          'grow pr-6 text-sm  py-2 w-60 break-words rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+          className,
+        )}
+      >
+        {children}
+      </div>
+    </PopoverPrimitive.Trigger>
+  );
+});
 
 const ContentActionsPopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,

@@ -21,8 +21,14 @@ export const ApiCopyButton = ({ token }: ApiCopyButtonProps) => {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={handleCopy}>
-      <CopyIcon className="h-4 w-4" />
+    <Button
+      title={t('common.copyToClipboard')}
+      variant="ghost"
+      size="icon"
+      onClick={handleCopy}
+      aria-label={t('common.copyToClipboard')}
+    >
+      <CopyIcon className="h-4 w-4" aria-hidden="true" />
     </Button>
   );
 };

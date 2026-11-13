@@ -202,6 +202,7 @@ const ImageElement = (props: RenderElementProps) => {
                 <Label htmlFor="button-text">{t('contentBuilder.editor.image.width')}</Label>
                 <div className="flex gap-x-2">
                   <Input
+                    aria-label={t('contentBuilder.editor.image.width')}
                     type="width"
                     value={element.width?.value}
                     placeholder={t('contentBuilder.editor.image.width')}
@@ -212,7 +213,10 @@ const ImageElement = (props: RenderElementProps) => {
                     onValueChange={handleWidthTypeChange}
                     defaultValue={element.width?.type ?? 'percent'}
                   >
-                    <SelectTrigger className="shrink">
+                    <SelectTrigger
+                      aria-label={t('contentBuilder.editor.width.selectType')}
+                      className="shrink"
+                    >
                       <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
                     </SelectTrigger>
                     <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -241,6 +245,7 @@ const ImageElement = (props: RenderElementProps) => {
                   <div className="flex gap-x-2">
                     <div className="flex flex-col justify-center">
                       <Input
+                        aria-label={t('contentBuilder.editor.common.left')}
                         value={element.margin?.left}
                         placeholder={t('contentBuilder.editor.common.left')}
                         onChange={(e) => {
@@ -251,6 +256,7 @@ const ImageElement = (props: RenderElementProps) => {
                     </div>
                     <div className="flex flex-col justify-center gap-y-2">
                       <Input
+                        aria-label={t('contentBuilder.editor.common.top')}
                         value={element.margin?.top}
                         onChange={(e) => {
                           handleMarginValueChange(e, 'top');
@@ -259,6 +265,7 @@ const ImageElement = (props: RenderElementProps) => {
                         className="bg-background flex-none w-20"
                       />
                       <Input
+                        aria-label={t('contentBuilder.editor.common.bottom')}
                         value={element.margin?.bottom}
                         onChange={(e) => {
                           handleMarginValueChange(e, 'bottom');
@@ -269,6 +276,7 @@ const ImageElement = (props: RenderElementProps) => {
                     </div>
                     <div className="flex flex-col justify-center">
                       <Input
+                        aria-label={t('contentBuilder.editor.common.right')}
                         value={element.margin?.right}
                         placeholder={t('contentBuilder.editor.common.right')}
                         onChange={(e) => {
@@ -289,8 +297,11 @@ const ImageElement = (props: RenderElementProps) => {
                           variant="ghost"
                           size="icon"
                           onClick={handleDelete}
+                          aria-label={t('contentBuilder.editor.actionButtons.delete', {
+                            entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                          })}
                         >
-                          <DeleteIcon className="fill-red-500" />
+                          <DeleteIcon className="fill-red-500" aria-hidden="true" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
@@ -330,8 +341,11 @@ const ImageElement = (props: RenderElementProps) => {
                           variant="ghost"
                           size="icon"
                           onClick={handleAddLeft}
+                          aria-label={t('contentBuilder.editor.actionButtons.insertLeft', {
+                            entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                          })}
                         >
-                          <InsertColumnLeftIcon className="fill-foreground" />
+                          <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
@@ -356,8 +370,11 @@ const ImageElement = (props: RenderElementProps) => {
                           variant="ghost"
                           size="icon"
                           onClick={handleAddRight}
+                          aria-label={t('contentBuilder.editor.actionButtons.insertRight', {
+                            entity: t('contentBuilder.editor.actionButtons.entity.image'),
+                          })}
                         >
-                          <InsertColumnRightIcon className="fill-foreground" />
+                          <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">

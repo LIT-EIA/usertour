@@ -7,7 +7,7 @@ import { BannerListContent } from './components/list/banner-list';
 import { ChecklistListContent } from './components/list/checklist-list';
 import { FlowListContent } from './components/list/flow-list';
 import { LauncherListContent } from './components/list/launcher-list';
-import { ContentListSidebar } from './components/shared/content-list-sidebar';
+import { ContentListSidebar, ContentStatusFilter } from './components/shared/content-list-sidebar';
 
 export const ContentList = () => {
   const { contentType } = useParams();
@@ -27,8 +27,12 @@ export const ContentList = () => {
         <ThemeListProvider projectId={project?.id}>
           <ContentListSidebar />
 
-          <ScrollArea className="h-full w-full ">
-            <div className="flex space-y-4 p-8 lg:pt-0 lg:pl-0 ">
+          {/* Radix ScrollArea wraps content in a display:table div that grows to the content's
+              min-content width (and the overflow is clipped, not scrollable); make it a block so
+              the list reflows to the panel width instead (WCAG 1.4.10). */}
+          <ScrollArea className="h-full w-full [&_[data-radix-scroll-area-viewport]>div]:!block">
+            <ContentStatusFilter className="md:hidden px-4 pt-4" />
+            <div className="flex space-y-4 sm:p-8 lg:pt-0 lg:pl-0">
               {(contentType === 'flows' || contentType === 'content') && <FlowListContent />}
               {contentType === 'launchers' && <LauncherListContent />}
               {contentType === 'banners' && <BannerListContent />}

@@ -9,7 +9,7 @@ export const ResetPasswordSuccess = () => {
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl  font-semibold tracking-tight">
+        <CardTitle as="h1" className="text-2xl  font-semibold tracking-tight">
           {t('auth.resetPassword.success.title')}
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">

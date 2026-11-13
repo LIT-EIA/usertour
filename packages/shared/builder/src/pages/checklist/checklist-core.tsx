@@ -99,7 +99,7 @@ const ChecklistCoreBody = () => {
             }
             defaultValue={localData.initialDisplay}
           >
-            <SelectTrigger>
+            <SelectTrigger id="initial-display">
               <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
             </SelectTrigger>
             <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
@@ -130,7 +130,7 @@ const ChecklistCoreBody = () => {
             }
             defaultValue={localData.completionOrder}
           >
-            <SelectTrigger>
+            <SelectTrigger id="completion-order">
               <SelectValue placeholder={t('contentBuilder.checklist.selectOption')} />
             </SelectTrigger>
             <SelectPortal style={{ zIndex: zIndex + EXTENSION_SELECT }}>
@@ -190,7 +190,7 @@ const ChecklistCoreHeader = () => {
   const { currentContent } = useBuilderContext();
   return (
     <CardHeader className="flex-none p-4 space-y-3">
-      <CardTitle className="flex h-8">
+      <CardTitle as="h2" className="flex h-8">
         <SidebarHeader title={currentContent?.name ?? ''} />
       </CardTitle>
     </CardHeader>

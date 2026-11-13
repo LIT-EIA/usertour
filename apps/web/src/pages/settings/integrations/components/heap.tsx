@@ -103,6 +103,7 @@ const ExportEventsForm = ({
           <div className="flex flex-col gap-1">
             <p className="text-sm">{t('settings.integrations.providerCard.heapKeyLabel')}</p>
             <Input
+              aria-label={t('settings.integrations.providerCard.heapKeyPlaceholder')}
               type="text"
               placeholder={t('settings.integrations.providerCard.heapKeyPlaceholder')}
               value={integration?.key || ''}

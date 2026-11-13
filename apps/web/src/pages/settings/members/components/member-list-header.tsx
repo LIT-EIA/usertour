@@ -22,7 +22,7 @@ export const MemberListHeader = () => {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-semibold tracking-tight">{t('settings.team.title')}</h3>
+        <h2 className="text-2xl font-semibold tracking-tight">{t('settings.team.title')}</h2>
         <Button onClick={handleCreate} className="flex-none">
           <PlusIcon className="w-4 h-4" />
           {t('settings.team.newButton')}

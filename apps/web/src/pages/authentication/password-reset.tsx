@@ -106,7 +106,7 @@ export const PasswordReset = () => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl  font-semibold tracking-tight">
+            <CardTitle as="h1" className="text-2xl  font-semibold tracking-tight">
               {t('auth.passwordReset.title')}
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
@@ -125,6 +125,7 @@ export const PasswordReset = () => {
                       <Input
                         placeholder={t('auth.passwordReset.newPasswordPlaceholder')}
                         type="password"
+                        autoComplete="new-password"
                         {...field}
                       />
                     </FormControl>
@@ -144,6 +145,7 @@ export const PasswordReset = () => {
                       <Input
                         placeholder={t('auth.passwordReset.repeatPasswordPlaceholder')}
                         type="password"
+                        autoComplete="new-password"
                         {...field}
                       />
                     </FormControl>

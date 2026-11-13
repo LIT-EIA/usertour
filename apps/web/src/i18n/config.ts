@@ -5,6 +5,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enUSUi from '@usertour-packages/i18n/en-US/ui';
 import frCAUi from '@usertour-packages/i18n/fr-CA/ui';
 
+// Keep <html lang> in sync with the active UI language (WCAG 3.1.1 Language of Page)
+i18next.on('languageChanged', (lng) => {
+  document.documentElement.lang = i18next.resolvedLanguage || lng;
+});
+
 i18next
   .use(LanguageDetector)
   .use(initReactI18next)

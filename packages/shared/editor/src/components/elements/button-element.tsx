@@ -149,7 +149,7 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
             />
             <Label>{t('contentBuilder.editor.button.style')}</Label>
             <Select onValueChange={handleButtonStyleChange} defaultValue={element.data.type}>
-              <SelectTrigger>
+              <SelectTrigger aria-label={t('contentBuilder.editor.button.style')}>
                 <SelectValue placeholder={t('contentBuilder.editor.button.stylePlaceholder')} />
               </SelectTrigger>
               <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -173,7 +173,7 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
             </Select>
             <Label>{t('contentBuilder.editor.button.whenClicked')}</Label>
             <Select onValueChange={handleButtonActionChange} defaultValue={element.data.action}>
-              <SelectTrigger>
+              <SelectTrigger aria-label={t('contentBuilder.editor.button.whenClicked')}>
                 <SelectValue placeholder={t('contentBuilder.editor.width.selectType')} />
               </SelectTrigger>
               <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -212,8 +212,11 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                       variant="ghost"
                       size="icon"
                       onClick={handleDelete}
+                      aria-label={t('contentBuilder.editor.actionButtons.delete', {
+                        entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                      })}
                     >
-                      <DeleteIcon className="fill-red-500" />
+                      <DeleteIcon className="fill-red-500" aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
@@ -234,8 +237,11 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                       variant="ghost"
                       size="icon"
                       onClick={handleAddLeft}
+                      aria-label={t('contentBuilder.editor.actionButtons.insertLeft', {
+                        entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                      })}
                     >
-                      <InsertColumnLeftIcon className="fill-foreground" />
+                      <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
@@ -260,8 +266,11 @@ export const ButtonElement = (props: RenderElementProps & { className?: string }
                       variant="ghost"
                       size="icon"
                       onClick={handleAddRight}
+                      aria-label={t('contentBuilder.editor.actionButtons.insertRight', {
+                        entity: t('contentBuilder.editor.actionButtons.entity.button'),
+                      })}
                     >
-                      <InsertColumnRightIcon className="fill-foreground" />
+                      <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">

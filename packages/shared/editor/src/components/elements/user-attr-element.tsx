@@ -120,7 +120,7 @@ export const UserAttributeElement = (props: RenderElementProps) => {
         >
           <div className="flex flex-col gap-2.5">
             <Select onValueChange={handleButtonActionChange} defaultValue={element.attrCode}>
-              <SelectTrigger>
+              <SelectTrigger aria-label={t('contentBuilder.editor.userAttr.attributeLabel')}>
                 <SelectValue placeholder={t('contentBuilder.editor.userAttr.selectPlaceholder')} />
               </SelectTrigger>
               <SelectPortal style={{ zIndex: zIndex + 2 }}>
@@ -152,8 +152,9 @@ export const UserAttributeElement = (props: RenderElementProps) => {
                     variant="ghost"
                     size="icon"
                     onClick={handleDelete}
+                    aria-label={t('contentBuilder.editor.userAttr.deleteTooltip')}
                   >
-                    <DeleteIcon className="fill-red-500" />
+                    <DeleteIcon className="fill-red-500" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">

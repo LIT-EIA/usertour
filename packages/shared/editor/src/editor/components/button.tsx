@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from '@usertour-packages/tooltip';
 import { RulesCondition } from '@usertour/types';
+import { isEmptyString } from '@usertour/helpers';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ContentActions } from '../..';
@@ -97,6 +98,7 @@ const MarginControls = ({
         <div className="flex gap-x-2">
           <div className="flex flex-col justify-center">
             <Input
+              aria-label={t('contentBuilder.editor.common.left')}
               value={element.margin?.left}
               placeholder={t('contentBuilder.editor.common.left')}
               onChange={(e) => onMarginChange('left', e.target.value)}
@@ -105,12 +107,14 @@ const MarginControls = ({
           </div>
           <div className="flex flex-col justify-center gap-y-2">
             <Input
+              aria-label={t('contentBuilder.editor.common.top')}
               value={element.margin?.top}
               onChange={(e) => onMarginChange('top', e.target.value)}
               placeholder={t('contentBuilder.editor.common.top')}
               className="bg-background flex-none w-20"
             />
             <Input
+              aria-label={t('contentBuilder.editor.common.bottom')}
               value={element.margin?.bottom}
               onChange={(e) => onMarginChange('bottom', e.target.value)}
               placeholder={t('contentBuilder.editor.common.bottom')}
@@ -119,6 +123,7 @@ const MarginControls = ({
           </div>
           <div className="flex flex-col justify-center">
             <Input
+              aria-label={t('contentBuilder.editor.common.right')}
               value={element.margin?.right}
               placeholder={t('contentBuilder.editor.common.right')}
               onChange={(e) => onMarginChange('right', e.target.value)}
@@ -153,8 +158,9 @@ const ActionButtons = ({
               variant="ghost"
               size="icon"
               onClick={onDelete}
+              aria-label={t('contentBuilder.editor.actionButtons.delete', { entity })}
             >
-              <DeleteIcon className="fill-red-500" />
+              <DeleteIcon className="fill-red-500" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
@@ -166,8 +172,14 @@ const ActionButtons = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddLeft}>
-              <InsertColumnLeftIcon className="fill-foreground" />
+            <Button
+              className="flex-none"
+              variant="ghost"
+              size="icon"
+              onClick={onAddLeft}
+              aria-label={t('contentBuilder.editor.actionButtons.insertLeft', { entity })}
+            >
+              <InsertColumnLeftIcon className="fill-foreground" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
@@ -181,8 +193,14 @@ const ActionButtons = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="flex-none" variant="ghost" size="icon" onClick={onAddRight}>
-              <InsertColumnRightIcon className="fill-foreground" />
+            <Button
+              className="flex-none"
+              variant="ghost"
+              size="icon"
+              onClick={onAddRight}
+              aria-label={t('contentBuilder.editor.actionButtons.insertRight', { entity })}
+            >
+              <InsertColumnRightIcon className="fill-foreground" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
@@ -284,11 +302,13 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
     [element, id, updateElement],
   );
 
-  // Error state effect
+  // Error state effect. Empty text blocks Save too (isMissingRequiredData), so it needs a
+  // visible message like empty actions do, or Save fails with nothing to point at.
+  const isEmptyText = isEmptyString(element?.data?.text);
+  const isEmptyActions = !element?.data?.actions || element?.data?.actions.length === 0;
   useEffect(() => {
-    const isEmptyActions = !element?.data?.actions || element?.data?.actions.length === 0;
-    setIsShowError(isEmptyActions && !isOpen);
-  }, [element?.data?.actions, isOpen]);
+    setIsShowError((isEmptyText || isEmptyActions) && !isOpen);
+  }, [isEmptyText, isEmptyActions, isOpen]);
 
   return (
     <EditorError open={isShowError}>
@@ -301,6 +321,8 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
               contentEditable={false}
               className="h-fit"
               style={buttonStyle}
+              // keep a name while the text is empty (the error bubble then describes it)
+              aria-label={isEmptyText ? t('contentBuilder.editor.button.text') : undefined}
             >
               <span>{element.data.text}</span>
             </Button>
@@ -326,7 +348,7 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
 
                 <Label>{t('contentBuilder.editor.button.style')}</Label>
                 <Select onValueChange={handleButtonStyleChange} value={element.data.type}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label={t('contentBuilder.editor.button.style')}>
                     <SelectValue placeholder={t('contentBuilder.editor.button.stylePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent style={{ zIndex: zIndex + EDITOR_SELECT }}>
@@ -373,7 +395,9 @@ export const ContentEditorButton = (props: ContentEditorButtonProps) => {
         </Popover.Root>
       </EditorErrorAnchor>
       <EditorErrorContent style={{ zIndex: zIndex }}>
-        {t('contentBuilder.editor.button.actionRequired')}
+        {isEmptyText
+          ? t('contentBuilder.editor.button.textRequired')
+          : t('contentBuilder.editor.button.actionRequired')}
       </EditorErrorContent>
     </EditorError>
   );

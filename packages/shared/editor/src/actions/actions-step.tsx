@@ -301,7 +301,15 @@ export const ContentActionsStep = (props: ContentActionsStepProps) => {
   // Memoize trigger content
   const triggerContent = useMemo(
     () => (
-      <div className="flex h-9 w-full items-center justify-between rounded-md bg-transparent py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 justify-start flex border-none focus:outline-none focus:ring-0 px-2 shadow-none">
+      // role="button" so the aria-haspopup/aria-expanded set by the dropdown trigger are allowed,
+      // and focusable so it can be opened with the keyboard (Radix handles Enter/Space/ArrowDown).
+      // biome-ignore lint/a11y/useSemanticElements: children include block elements, which are invalid inside <button>
+      <div
+        role="button"
+        tabIndex={isLoading ? -1 : 0}
+        aria-disabled={isLoading || undefined}
+        className="flex h-9 w-full items-center justify-between rounded-md bg-transparent py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 justify-start flex border-none px-2 shadow-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
         <ContentActionsConditionIcon className="px-0 pr-2">
           <ArrowRightIcon width={16} height={16} />
         </ContentActionsConditionIcon>

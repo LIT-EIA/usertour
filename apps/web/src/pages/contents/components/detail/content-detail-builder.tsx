@@ -30,7 +30,7 @@ export const ContentDetailBuilder = (props: ContentDetailBuilderProps) => {
   const isLoading = environmentLoading || attributeLoading || subscriptionLoading || appLoading;
 
   if (isLoading) {
-    return <ContentLoading message="Loading builder..." />;
+    return <ContentLoading messageKey="contentBuilder.loadingBuilder" />;
   }
 
   return (

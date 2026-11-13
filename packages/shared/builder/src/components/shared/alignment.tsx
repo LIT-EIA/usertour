@@ -115,6 +115,7 @@ interface CircleProps {
 }
 
 const Circle = ({ side, align, onClick }: CircleProps) => {
+  const { t } = useTranslation();
   const [className, setClassName] = useState('');
   const { type, currentAlign, currentSide } = useContext(AlignmentContext);
 
@@ -123,7 +124,22 @@ const Circle = ({ side, align, onClick }: CircleProps) => {
     setClassName(cn('sdk-alignment', isActive ? circleHoveredClassName : circleClassName));
   }, [type, currentAlign, currentSide, align, side]);
 
-  return <div className={className} onClick={() => onClick(side, align)} />;
+  const isActive = type === 'fixed' && currentAlign === align && currentSide === side;
+
+  // Native button so each position can be chosen with the keyboard; padding + negative margin give
+  // a 24px target without moving the 10px dot (WCAG 2.1.1, 2.5.8)
+  return (
+    <button
+      title={alwaysShowFrom(t, side, align)}
+      type="button"
+      aria-label={alwaysShowFrom(t, side, align)}
+      aria-pressed={isActive}
+      className="-m-[7px] p-[7px] rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      onClick={() => onClick(side, align)}
+    >
+      <span className={className} />
+    </button>
+  );
 };
 
 export const Alignment = ({
@@ -187,7 +203,8 @@ export const Alignment = ({
           <Circle side={POSITIONS.BOTTOM} align={ALIGNMENTS.END} onClick={handleAlignmentChange} />
         </div>
         <div className="items-center flex justify-between">
-          <div className="items-center flex-col flex h-20 justify-between px-0 py-3">
+          {/* py-2.5 keeps the 24px targets of the dots in this column from overlapping (WCAG 2.5.8) */}
+          <div className="items-center flex-col flex h-20 justify-between px-0 py-2.5">
             <Circle
               side={POSITIONS.RIGHT}
               align={ALIGNMENTS.START}
@@ -206,7 +223,7 @@ export const Alignment = ({
               className={cn('absolute border-transparent border-solid border-[6px]', arrowCls)}
             />
           </div>
-          <div className="items-center flex-col flex h-20 justify-between px-0 py-3">
+          <div className="items-center flex-col flex h-20 justify-between px-0 py-2.5">
             <Circle
               side={POSITIONS.LEFT}
               align={ALIGNMENTS.START}

@@ -77,6 +77,7 @@ function useRulesTextInputContext(): RulesTextInputContextValue {
 }
 
 const RulesTextInputInput = () => {
+  const { t } = useTranslation();
   const { inputValue, setInputValue, conditionValue } = useRulesTextInputContext();
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -84,7 +85,13 @@ const RulesTextInputInput = () => {
   return (
     <>
       {conditionValue !== 'empty' && conditionValue !== 'any' && (
-        <Input type="text" value={inputValue} onChange={handleOnChange} placeholder={''} />
+        <Input
+          type="text"
+          aria-label={t('conditions.types.userAttr.valuePlaceholder')}
+          value={inputValue}
+          onChange={handleOnChange}
+          placeholder={''}
+        />
       )}
     </>
   );

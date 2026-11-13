@@ -10,6 +10,7 @@ import {
 import { ContentDataType } from '@usertour/types';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TooltipIconButton } from '../common/tooltip-icon-button';
 
 interface RulesIfCompletedProps {
   defaultValue: boolean;
@@ -24,7 +25,7 @@ export const RulesIfCompleted = (props: RulesIfCompletedProps) => {
   const [checked, setChecked] = useState(defaultValue);
   const id = useId();
   return (
-    <div className="flex flex-row items-center space-x-2">
+    <div className="flex flex-row flex-wrap items-center gap-2">
       <Checkbox
         id={id}
         checked={checked}
@@ -42,7 +43,9 @@ export const RulesIfCompleted = (props: RulesIfCompletedProps) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <QuestionMarkCircledIcon />
+            <TooltipIconButton>
+              <QuestionMarkCircledIcon aria-hidden="true" />
+            </TooltipIconButton>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs bg-foreground text-background">
             {t('conditions.standalone.ifCompleted.tooltip', { contentType })}

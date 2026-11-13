@@ -17,9 +17,11 @@ interface PluginsSidebarProps {
 export const PluginsSidebar = ({ activeView, onViewChange }: PluginsSidebarProps) => {
   const { t } = useTranslation();
   return (
-    <AdminSidebarContainerTemplate>
+    <AdminSidebarContainerTemplate heading={t('plugins.sidebar.title')}>
       <AdminSidebarHeaderTemplate>
-        <h2 className="text-2xl font-semibold">{t('plugins.sidebar.title')}</h2>
+        <p aria-hidden="true" className="text-2xl font-semibold">
+          {t('plugins.sidebar.title')}
+        </p>
       </AdminSidebarHeaderTemplate>
       <AdminSidebarBodyTemplate>
         <AdminSidebarBodyTitleTemplate>

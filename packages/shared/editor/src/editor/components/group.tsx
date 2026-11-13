@@ -4,8 +4,18 @@ import { CSS } from '@dnd-kit/utilities';
 import { DragHandleDots2Icon } from '@radix-ui/react-icons';
 import { Button } from '@usertour-packages/button';
 import { cn } from '@usertour/helpers';
-import { ReactNode, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  FocusEvent,
+  ReactNode,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { useTranslation } from 'react-i18next';
 import { useContentEditorContext } from '../../contexts/content-editor-context';
+import { isFocusLeaving } from '../../lib/focus';
 import {
   ContentEditorElement,
   ContentEditorElementInsertDirection,
@@ -48,10 +58,12 @@ const DragHandle = ({
   attributes: any;
   listeners: any;
 }) => {
+  const { t } = useTranslation();
   if (!isVisible) return null;
 
   return (
     <Button
+      title={t('themeBuilder.aria.dragToReorder')}
       size="icon"
       ref={setActivatorNodeRef}
       className={cn(
@@ -60,8 +72,9 @@ const DragHandle = ({
       )}
       {...attributes}
       {...listeners}
+      aria-label={t('themeBuilder.aria.dragToReorder')}
     >
-      <DragHandleDots2Icon className="h-4" />
+      <DragHandleDots2Icon className="h-4" aria-hidden="true" />
     </Button>
   );
 };
@@ -138,8 +151,10 @@ export const ContentEditorGroup = (props: ContentEditorGroupProps) => {
     setIsGroupHover(true);
   }, [activeId, id]);
 
-  const handleBlur = useCallback(() => {
-    setIsGroupHover(false);
+  const handleBlur = useCallback((event: FocusEvent<HTMLDivElement>) => {
+    if (isFocusLeaving(event)) {
+      setIsGroupHover(false);
+    }
   }, []);
 
   // DnD monitor
@@ -205,6 +220,9 @@ export const ContentEditorGroupOverlay = forwardRef<HTMLDivElement, ContentEdito
             'rounded-none absolute w-4 h-full rounded-l -left-4 cursor-move',
             'bg-sdk-primary',
           )}
+          // Visual-only clone shown while dragging
+          aria-hidden="true"
+          tabIndex={-1}
         >
           <DragHandleDots2Icon className="h-4" />
         </Button>

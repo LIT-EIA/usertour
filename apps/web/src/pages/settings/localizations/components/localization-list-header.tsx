@@ -22,9 +22,9 @@ export const LocalizationListHeader = () => {
       <div className="relative ">
         <div className="flex flex-col space-y-2">
           <div className="flex flex-row justify-between ">
-            <h3 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight">
               {t('settings.localizations.title')}
-            </h3>
+            </h2>
             <Button onClick={handleCreate} className="flex-none">
               {t('settings.localizations.newButton')}
             </Button>

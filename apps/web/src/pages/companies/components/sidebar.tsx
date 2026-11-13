@@ -55,9 +55,11 @@ export function CompanyListSidebar() {
 
   return (
     <>
-      <AdminSidebarContainerTemplate>
+      <AdminSidebarContainerTemplate heading={t('companies.sidebar.title')}>
         <AdminSidebarHeaderTemplate>
-          <h2 className="text-2xl font-semibold ">{t('companies.sidebar.title')}</h2>
+          <p aria-hidden="true" className="text-2xl font-semibold ">
+            {t('companies.sidebar.title')}
+          </p>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
