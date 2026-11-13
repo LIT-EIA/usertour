@@ -253,6 +253,7 @@ const translations = {
     },
     common: {
       save: 'Save',
+      saving: 'Saving...',
       submit: 'Submit',
       cancel: 'Cancel',
       delete: 'Delete',
@@ -1343,6 +1344,10 @@ const translations = {
     success: 'Success',
     error: 'Error',
     loading: 'Loading...',
+    loadingFlowDetails: 'Loading flow details...',
+    loadingChecklistDetails: 'Loading checklist details...',
+    loadingLauncherDetails: 'Loading launcher details...',
+    loadingThemeDetails: 'Loading theme details...',
     pickADate: 'Pick a date',
     datePresets: {
       today: 'Today',

@@ -9,7 +9,7 @@ export const ContentBuilder = () => {
   const { project, environment } = useAppContext();
   const { t } = useTranslation();
   if (!project || !project.id || !contentId || !versionId || !environment || !contentType) {
-    return <ContentLoading message="Loading builder..." />;
+    return <ContentLoading messageKey="contentBuilder.loadingBuilder" />;
   }
 
   return (

@@ -35,7 +35,7 @@ function LauncherDetailContentWrapper(props: LauncherDetailProps) {
   const { isLoading } = useContentDetailProviderWrapper();
 
   if (isLoading) {
-    return <ContentLoading message="Loading launcher details..." />;
+    return <ContentLoading messageKey="common.loadingLauncherDetails" />;
   }
 
   return (

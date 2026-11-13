@@ -35,7 +35,7 @@ function ChecklistDetailContentWrapper(props: ChecklistDetailProps) {
   const { isLoading } = useContentDetailProviderWrapper();
 
   if (isLoading) {
-    return <ContentLoading message="Loading checklist details..." />;
+    return <ContentLoading messageKey="common.loadingChecklistDetails" />;
   }
 
   return (

@@ -258,6 +258,7 @@ const translations = {
     },
     common: {
       save: 'Enregistrer',
+      saving: 'Enregistrement en cours...',
       submit: 'Soumettre',
       cancel: 'Annuler',
       delete: 'Supprimer',
@@ -1381,6 +1382,10 @@ const translations = {
     success: 'Succès',
     error: 'Erreur',
     loading: 'Chargement en cours...',
+    loadingFlowDetails: 'Chargement des détails du parcours...',
+    loadingChecklistDetails: 'Chargement des détails de la liste de tâches...',
+    loadingLauncherDetails: 'Chargement des détails du lanceur...',
+    loadingThemeDetails: 'Chargement des détails du thème...',
     pickADate: 'Choisir une date',
     datePresets: {
       today: "Aujourd'hui",

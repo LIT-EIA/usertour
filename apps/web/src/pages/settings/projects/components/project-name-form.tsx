@@ -126,7 +126,7 @@ export const ProjectNameForm = () => {
 
           <Button type="submit" disabled={isFormDisabled}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? 'Saving...' : t('settings.common.save')}
+            {isLoading ? t('settings.common.saving') : t('settings.common.save')}
           </Button>
         </form>
       </Form>

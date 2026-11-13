@@ -22,7 +22,7 @@ function FlowDetailContent(props: FlowDetailProps) {
   const { isLoading } = useContentDetailProviderWrapper();
 
   if (isLoading) {
-    return <ContentLoading message="Loading flow details..." />;
+    return <ContentLoading messageKey="common.loadingFlowDetails" />;
   }
 
   return (
