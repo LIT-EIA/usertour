@@ -13,6 +13,7 @@ export const UserAttrButton = ({ className }: { className: string }) => {
   };
   return (
     <Button
+      title={t('contentBuilder.editor.toolbar.userAttribute.ariaLabel')}
       variant="ghost"
       onClick={handleOnClick}
       className={cn('h-fit p-2', className)}

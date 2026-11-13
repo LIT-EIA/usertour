@@ -75,7 +75,12 @@ function UserListContentInner({ environmentId }: { environmentId: string | undef
                 navigate(`/env/${environmentId}/users`);
               }}
             >
-              <Button variant="ghost" className="h-8 w-8 p-0" aria-label={t('common.moreActions')}>
+              <Button
+                title={t('common.moreActions')}
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                aria-label={t('common.moreActions')}
+              >
                 <DotsVerticalIcon className="h-4 w-4 " aria-hidden="true" />
               </Button>
             </UserEditDropdownMenu>

@@ -195,7 +195,7 @@ const SessionDetailContentInner = ({
                 refetch();
               }}
             >
-              <Button variant="secondary">
+              <Button title={t('users.sessions.detail.actionsMenu')} variant="secondary">
                 <span className="sr-only">{t('users.sessions.detail.actionsMenu')}</span>
                 <DotsHorizontalIcon className="h-4 w-4" />
               </Button>

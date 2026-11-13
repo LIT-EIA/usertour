@@ -231,6 +231,7 @@ export const ContentEditorSideBar = (props: ContentEditorSideBarProps) => {
       {customIconStyle && (
         <ContentEditorSideBarPopper onClick={handleButtonClick} onOpenChange={handleOnOpenChange}>
           <button
+            title={t('contentBuilder.editor.addContentBlock')}
             type="button"
             aria-label={t('contentBuilder.editor.addContentBlock')}
             className="inline-flex rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

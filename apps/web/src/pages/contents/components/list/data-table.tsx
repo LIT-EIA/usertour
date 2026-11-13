@@ -66,6 +66,7 @@ const ContentPreviewFooter = ({ content }: { content: Content }) => {
           disabled={isViewOnly}
         >
           <button
+            title={t('contents.listView.card.actionsMenu', { name: content.name })}
             type="button"
             aria-label={t('contents.listView.card.actionsMenu', { name: content.name })}
             className="flex-none -m-1 p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

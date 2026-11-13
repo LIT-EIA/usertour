@@ -58,6 +58,7 @@ export const SidebarMini = (props: SideBarMiniProps) => {
       >
         {position === 'right' && (
           <button
+            title={t('contentBuilder.common.switchSide')}
             type="button"
             aria-label={t('contentBuilder.common.switchSide')}
             className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -70,6 +71,7 @@ export const SidebarMini = (props: SideBarMiniProps) => {
         )}
         {position === 'left' && (
           <button
+            title={t('contentBuilder.common.switchSide')}
             type="button"
             aria-label={t('contentBuilder.common.switchSide')}
             className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -82,6 +84,7 @@ export const SidebarMini = (props: SideBarMiniProps) => {
         )}
         {position === 'left' && isMini && (
           <button
+            title={t('contentBuilder.common.expandPanel')}
             type="button"
             aria-label={t('contentBuilder.common.expandPanel')}
             className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -92,6 +95,7 @@ export const SidebarMini = (props: SideBarMiniProps) => {
         )}
         {position === 'left' && !isMini && (
           <button
+            title={t('contentBuilder.common.collapsePanel')}
             type="button"
             aria-label={t('contentBuilder.common.collapsePanel')}
             className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -102,6 +106,7 @@ export const SidebarMini = (props: SideBarMiniProps) => {
         )}
         {position === 'right' && isMini && (
           <button
+            title={t('contentBuilder.common.expandPanel')}
             type="button"
             aria-label={t('contentBuilder.common.expandPanel')}
             className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -112,6 +117,7 @@ export const SidebarMini = (props: SideBarMiniProps) => {
         )}
         {position === 'right' && !isMini && (
           <button
+            title={t('contentBuilder.common.collapsePanel')}
             type="button"
             aria-label={t('contentBuilder.common.collapsePanel')}
             className="inline-flex cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

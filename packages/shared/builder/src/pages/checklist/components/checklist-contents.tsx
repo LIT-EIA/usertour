@@ -141,6 +141,7 @@ const ChecklistContent = forwardRef<HTMLDivElement, ChecklistContentProps>(
 
             <DeleteDialog onDelete={() => onClick?.('delete', item)}>
               <Button
+                title={t('contentBuilder.checklist.delete')}
                 variant="ghost"
                 size="sm"
                 className="p-1 h-fit"

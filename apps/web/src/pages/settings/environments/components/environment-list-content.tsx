@@ -50,6 +50,7 @@ const EnvironmentListContentTableRow = (props: EnvironmentListContentTableRowPro
         <div className="flex flex-row items-center space-x-1">
           <span>{environment.token} </span>
           <Button
+            title={t('common.copyToClipboard')}
             variant={'ghost'}
             size={'icon'}
             // opacity (not visibility) so the button stays keyboard-focusable and appears on focus

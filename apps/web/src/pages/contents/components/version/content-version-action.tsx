@@ -40,6 +40,7 @@ export const ContentVersionAction = (props: ContentVersionActionProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
+            title={t('common.moreActions')}
             variant="ghost"
             className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
             disabled={isViewOnly}

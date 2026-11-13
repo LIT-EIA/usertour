@@ -320,6 +320,9 @@ export const EventCreateForm = ({ onClose, isOpen }: CreateFormProps) => {
                             <div className="p-2">{eventsOnAttribute.displayName}</div>
                             <div className="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-0 group-hover:opacity-100 focus-within:opacity-100 items-center justify-center">
                               <button
+                                title={t('settings.events.form.removeAttribute', {
+                                  name: eventsOnAttribute.displayName,
+                                })}
                                 type="button"
                                 aria-label={t('settings.events.form.removeAttribute', {
                                   name: eventsOnAttribute.displayName,

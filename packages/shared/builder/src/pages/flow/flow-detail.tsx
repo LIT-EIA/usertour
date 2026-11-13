@@ -73,6 +73,7 @@ const FlowBuilderDetailHeader = () => {
       </CardTitle>
       <div className="flex">
         <Button
+          title={t('common.back')}
           variant="link"
           size="icon"
           onClick={handleBackup}

@@ -13,6 +13,7 @@ export const BackButton = ({ onClick, className, iconClassName = 'h-6 w-8' }: Ba
   const { t } = useTranslation();
   return (
     <button
+      title={t('common.back')}
       type="button"
       onClick={onClick}
       aria-label={t('common.back')}

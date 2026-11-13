@@ -29,6 +29,7 @@ const LauncherTooltipHeader = () => {
     <CardHeader className="flex-none p-4 space-y-2">
       <CardTitle as="h2" className="flex flex-row space-x-1 text-base items-center">
         <Button
+          title={t('common.back')}
           variant="link"
           size="icon"
           onClick={handleBackToLauncher}

@@ -61,6 +61,7 @@ export const ThemeListPreview = (props: ThemeListPreviewProps) => {
           </div>
           <ThemeEditDropdownMenu theme={theme} onSubmit={handleOnSuccess} disabled={isViewOnly}>
             <button
+              title={t('themeBuilder.aria.themeActions')}
               type="button"
               aria-label={t('themeBuilder.aria.themeActions')}
               className="-m-1 p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

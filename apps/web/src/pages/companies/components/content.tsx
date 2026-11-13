@@ -76,7 +76,12 @@ function CompanyListContentInner({ environmentId }: { environmentId: string | un
                 navigate(`/env/${environmentId}/companies`);
               }}
             >
-              <Button variant="ghost" className="h-8 w-8 p-0" aria-label={t('common.moreActions')}>
+              <Button
+                title={t('common.moreActions')}
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                aria-label={t('common.moreActions')}
+              >
                 <DotsVerticalIcon className="h-4 w-4 " aria-hidden="true" />
               </Button>
             </UserEditDropdownMenu>

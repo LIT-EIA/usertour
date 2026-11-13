@@ -543,7 +543,7 @@ const CompanyDetailContentInner = ({ environmentId, companyId }: CompanyDetailCo
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary">
+                <Button title={t('companies.detail.actionsLabel')} variant="secondary">
                   <span className="sr-only">{t('companies.detail.actionsLabel')}</span>
                   <DotsHorizontalIcon className="h-4 w-4" />
                 </Button>

@@ -130,6 +130,7 @@ const Circle = ({ side, align, onClick }: CircleProps) => {
   // a 24px target without moving the 10px dot (WCAG 2.1.1, 2.5.8)
   return (
     <button
+      title={alwaysShowFrom(t, side, align)}
       type="button"
       aria-label={alwaysShowFrom(t, side, align)}
       aria-pressed={isActive}

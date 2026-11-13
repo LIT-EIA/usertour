@@ -67,6 +67,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
         </div>
         <div className="flex items-center space-x-2">
           <Button
+            title={t('pagination.goToFirstPage')}
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => table.setPageIndex(0)}
@@ -76,6 +77,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <DoubleArrowLeftIcon className="h-4 w-4" />
           </Button>
           <Button
+            title={t('pagination.goToPreviousPage')}
             variant="outline"
             className="h-8 w-8 p-0"
             onClick={() => table.previousPage()}
@@ -85,6 +87,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronLeftIcon className="h-4 w-4" />
           </Button>
           <Button
+            title={t('pagination.goToNextPage')}
             variant="outline"
             className="h-8 w-8 p-0"
             onClick={() => table.nextPage()}
@@ -94,6 +97,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronRightIcon className="h-4 w-4" />
           </Button>
           <Button
+            title={t('pagination.goToLastPage')}
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}

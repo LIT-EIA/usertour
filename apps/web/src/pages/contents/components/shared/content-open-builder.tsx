@@ -122,6 +122,7 @@ export const ContentOpenBuilder = (props: ContentDetailBuilderProps) => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
+              title={t('contents.detail.moreBuilderOptions')}
               variant={'outline'}
               className="rounded-l-none border-l-0	"
               aria-label={t('contents.detail.moreBuilderOptions')}

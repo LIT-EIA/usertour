@@ -339,6 +339,9 @@ export const EventEditForm = (props: EditFormProps) => {
                             <div className="p-2 text-sm">{eventsOnAttribute.displayName}</div>
                             <div className="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-0 group-hover:opacity-100 focus-within:opacity-100 items-center justify-center">
                               <Button
+                                title={t('settings.events.form.removeAttribute', {
+                                  name: eventsOnAttribute.displayName,
+                                })}
                                 variant={'ghost'}
                                 className="mr-1 w-6 h-6 p-1 rounded cursor-pointer"
                                 aria-label={t('settings.events.form.removeAttribute', {

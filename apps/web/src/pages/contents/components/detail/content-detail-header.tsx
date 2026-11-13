@@ -135,6 +135,9 @@ export const ContentDetailHeader = () => {
                 }}
               >
                 <Button
+                  title={t('contents.shared.rename.title', {
+                    type: t(`contents.types.${content.type}`),
+                  })}
                   variant={'ghost'}
                   className="hover:bg-transparent"
                   disabled={isViewOnly}
@@ -195,7 +198,7 @@ export const ContentDetailHeader = () => {
                     }
                   }}
                 >
-                  <Button variant="secondary">
+                  <Button title={t('contents.detail.actionsMenu')} variant="secondary">
                     <span className="sr-only">{t('contents.detail.actionsMenu')}</span>
                     <DotsHorizontalIcon className="h-4 w-4" />
                   </Button>

@@ -143,7 +143,7 @@ const UserDetailContentInner = ({ environmentId, userId }: UserDetailContentProp
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary">
+                <Button title={t('users.detail.actionsLabel')} variant="secondary">
                   <span className="sr-only">{t('users.detail.actionsLabel')}</span>
                   <DotsHorizontalIcon className="h-4 w-4" />
                 </Button>

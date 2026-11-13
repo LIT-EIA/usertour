@@ -57,6 +57,11 @@ export const AdminEnvSwitcher = () => {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            title={
+              environment?.name
+                ? `${t('nav.switchEnvironment')} (${environment.name})`
+                : t('nav.switchEnvironment')
+            }
             aria-label={
               environment?.name
                 ? `${t('nav.switchEnvironment')} (${environment.name})`

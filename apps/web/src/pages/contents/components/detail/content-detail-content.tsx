@@ -462,6 +462,7 @@ export const ContentDetailContent = () => {
         )}
         {showAddButton && (
           <Button
+            title={t('contents.overview.addStep')}
             onClick={() => openBuilder(content, contentType)}
             className="flex py-8 shadow bg-white rounded-lg justify-center cursor-pointer w-auto h-auto hover:bg-white "
             disabled={isViewOnly}

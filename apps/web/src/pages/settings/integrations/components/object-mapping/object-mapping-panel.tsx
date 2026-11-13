@@ -220,6 +220,7 @@ const ObjectMappingSection = ({
             </span>
           )}
           <Button
+            title={t('common.remove')}
             variant="ghost"
             size="icon"
             onClick={() => handleRemoveMapping(idx)}

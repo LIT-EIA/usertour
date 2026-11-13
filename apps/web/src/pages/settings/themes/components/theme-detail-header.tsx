@@ -82,6 +82,7 @@ export const ThemeDetailHeader = () => {
             }}
           >
             <Button
+              title={t('settings.themes.renameTitle')}
               variant={'ghost'}
               className="hover:bg-transparent"
               disabled={isViewOnly}
@@ -98,7 +99,11 @@ export const ThemeDetailHeader = () => {
             {t('themeBuilder.chrome.save')}
           </Button>
           <ThemeEditDropdownMenu theme={theme!} onSubmit={handleOnSubmit}>
-            <Button variant="secondary" disabled={isViewOnly}>
+            <Button
+              title={t('themeBuilder.aria.themeActions')}
+              variant="secondary"
+              disabled={isViewOnly}
+            >
               <span className="sr-only">{t('themeBuilder.aria.themeActions')}</span>
               <DotsHorizontalIcon className="h-4 w-4" />
             </Button>

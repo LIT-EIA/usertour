@@ -79,6 +79,7 @@ const SortableVariationItem = ({
         <span className="text-sm font-medium">{name}</span>
       </Button>
       <Button
+        title={t('themeBuilder.aria.moveUp', { name })}
         type="button"
         variant="ghost"
         className={moveButtonClass}
@@ -89,6 +90,7 @@ const SortableVariationItem = ({
         <ArrowUpIcon className="h-4 w-4" aria-hidden="true" />
       </Button>
       <Button
+        title={t('themeBuilder.aria.moveDown', { name })}
         type="button"
         variant="ghost"
         className={moveButtonClass}

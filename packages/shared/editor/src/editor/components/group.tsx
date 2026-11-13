@@ -63,6 +63,7 @@ const DragHandle = ({
 
   return (
     <Button
+      title={t('themeBuilder.aria.dragToReorder')}
       size="icon"
       ref={setActivatorNodeRef}
       className={cn(

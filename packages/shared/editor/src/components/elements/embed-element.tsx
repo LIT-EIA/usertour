@@ -324,6 +324,9 @@ export const EmbedElement = (props: RenderElementProps) => {
 
               <div className="flex">
                 <Button
+                  title={t('contentBuilder.editor.actionButtons.delete', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.embed'),
+                  })}
                   className="flex-none hover:bg-red-200"
                   variant="ghost"
                   size="icon"
@@ -336,6 +339,9 @@ export const EmbedElement = (props: RenderElementProps) => {
                 </Button>
                 <div className="grow" />
                 <Button
+                  title={t('contentBuilder.editor.actionButtons.insertLeft', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.embed'),
+                  })}
                   className="flex-none"
                   variant="ghost"
                   size="icon"
@@ -350,6 +356,9 @@ export const EmbedElement = (props: RenderElementProps) => {
                   {t('contentBuilder.editor.embed.url')}
                 </div>
                 <Button
+                  title={t('contentBuilder.editor.actionButtons.insertRight', {
+                    entity: t('contentBuilder.editor.actionButtons.entity.embed'),
+                  })}
                   className="flex-none"
                   variant="ghost"
                   size="icon"

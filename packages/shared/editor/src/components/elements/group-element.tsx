@@ -244,6 +244,7 @@ const SideBar = (props: SideBarProps) => {
       <Popover.Root onOpenChange={setIsOpen} open={isOpen}>
         <Popover.Trigger asChild>
           <button
+            title={t('contentBuilder.editor.addContentBlock')}
             type="button"
             aria-label={t('contentBuilder.editor.addContentBlock')}
             className="inline-flex rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

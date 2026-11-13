@@ -519,6 +519,7 @@ const RulesUserAttributeInput = () => {
             {/* Show remove button when input has value or it's not the last empty input */}
             {(value || index !== listValues.length - 1) && (
               <Button
+                title={t('common.remove')}
                 variant={'ghost'}
                 className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0 w-8"
                 onClick={() => handleRemoveListValue(index)}

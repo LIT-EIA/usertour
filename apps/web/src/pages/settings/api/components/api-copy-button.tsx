@@ -22,6 +22,7 @@ export const ApiCopyButton = ({ token }: ApiCopyButtonProps) => {
 
   return (
     <Button
+      title={t('common.copyToClipboard')}
       variant="ghost"
       size="icon"
       onClick={handleCopy}
