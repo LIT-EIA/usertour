@@ -140,7 +140,7 @@ const RulesAddDropdown = (props: RulesAddDropdownProps) => {
         {items?.map(({ type, text, IconElement }, index) => (
           <DropdownMenuItem
             key={index}
-            className="cursor-pointer min-w-[180px]"
+            className="cursor-pointer min-w-[11.25rem]"
             onSelect={() => {
               onSelect(type);
             }}
@@ -289,7 +289,7 @@ export const RulesGroup = (props: RulesGroupProps) => {
           }
           return null;
         })}
-        <div className="flex flex-row space-x-3">
+        <div className="flex flex-row flex-wrap gap-3">
           <RulesLogic index={conditions.length} disabled={conditions.length > 0 || disabled} />
           <RulesAddDropdown
             onSelect={handleOnSelect}

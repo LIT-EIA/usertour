@@ -3,14 +3,14 @@ import { Skeleton } from '@usertour-packages/skeleton';
 // Skeleton for individual step/item in content detail
 export const ContentDetailItemSkeleton = () => {
   return (
-    <div className="flex flex-row p-4 px-8 shadow bg-white rounded-lg space-x-8">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-8 p-4 sm:px-8 shadow bg-white rounded-lg">
       {/* Preview area skeleton */}
       <div className="w-40 h-32 flex flex-none items-center justify-center">
         <Skeleton className="h-24 w-32 rounded-lg" />
       </div>
 
       {/* Content info skeleton */}
-      <div className="grow flex flex-col relative space-y-1 min-w-80">
+      <div className="grow flex flex-col relative space-y-1 min-w-0">
         {/* Edit button skeleton */}
         <div className="flex flex-row space-x-1 items-center right-0 top-0 absolute">
           <Skeleton className="h-8 w-8 rounded" />
@@ -22,11 +22,11 @@ export const ContentDetailItemSkeleton = () => {
         </div>
 
         {/* Badges skeleton */}
-        <div className="text-sm space-x-1">
-          <Skeleton className="h-5 w-16 inline-block mr-1" />
-          <Skeleton className="h-5 w-20 inline-block mr-1" />
-          <Skeleton className="h-5 w-24 inline-block mr-1" />
-          <Skeleton className="h-5 w-20 inline-block" />
+        <div className="text-sm flex flex-wrap gap-1">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-5 w-20" />
         </div>
 
         {/* Additional badges skeleton */}
@@ -85,7 +85,7 @@ export const ContentDetailSettingsRuleSkeleton = () => {
 // Main skeleton for ContentDetailSettings
 export const ContentDetailSettingsSkeleton = () => {
   return (
-    <div className="flex flex-col space-y-6 flex-none w-[420px]">
+    <div className="flex flex-col space-y-6 w-full min-w-0 lg:flex-none lg:w-[26.25rem]">
       {/* Auto-start rules skeleton */}
       <ContentDetailSettingsRuleSkeleton />
 
@@ -98,7 +98,7 @@ export const ContentDetailSettingsSkeleton = () => {
 // Main skeleton for ContentDetailContent
 export const ContentDetailContentSkeleton = () => {
   return (
-    <div className="flex flex-col space-y-6 grow">
+    <div className="flex flex-col space-y-6 grow min-w-0">
       {/* Show multiple skeleton items to represent content */}
       {Array.from({ length: 3 }, (_, index) => (
         <ContentDetailItemSkeleton key={index} />

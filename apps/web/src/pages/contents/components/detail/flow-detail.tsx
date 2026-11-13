@@ -29,8 +29,8 @@ function FlowDetailContent(props: FlowDetailProps) {
     <>
       <ContentDetailHeader />
       {type === 'detail' && (
-        <div className="p-14 mt-12 ">
-          <div className="flex flex-row space-x-8 justify-center max-w-screen-xl mx-auto">
+        <div className="px-4 py-6 sm:p-8 lg:p-14 lg:pt-10">
+          <div className="flex flex-col lg:flex-row gap-8 lg:justify-center max-w-screen-xl mx-auto">
             <ContentDetailSettings />
             <ContentDetailContent />
           </div>

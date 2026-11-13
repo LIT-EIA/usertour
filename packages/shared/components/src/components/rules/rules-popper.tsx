@@ -63,7 +63,7 @@ const RulesPopoverContent = React.forwardRef<
       side={side}
       sideOffset={sideOffset}
       alignOffset={alignOffset}
-      className={cn('z-50 border bg-popover rounded p-4  w-96', className)}
+      className={cn('z-50 border bg-popover rounded p-4 w-96 max-w-[calc(100vw-2rem)]', className)}
       style={{
         zIndex: EXTENSION_CONTENT_RULES,
         filter:

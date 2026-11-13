@@ -274,7 +274,7 @@ const RulesUserAttributeName = () => {
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[350px] p-0"
+          className="w-[21.875rem] max-w-[calc(100vw-2rem)] p-0"
           style={{ zIndex: EXTENSION_CONTENT_RULES }}
           withoutPortal
         >

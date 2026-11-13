@@ -37,8 +37,8 @@ export const RulesWait = (props: RulesCurrentTimeProps) => {
 
   return (
     <RulesError open={openError}>
-      <div className="flex flex-row space-x-3">
-        <div className="flex flex-row items-center space-x-2 h-9 space-x-2 items-center">
+      <div className="flex flex-row flex-wrap gap-3">
+        <div className="flex flex-row flex-wrap items-center gap-2 min-h-9">
           <span className="text-sm">{t('conditions.standalone.wait.before')}</span>
           <RulesErrorAnchor asChild>
             <Input
@@ -67,7 +67,7 @@ export const RulesWait = (props: RulesCurrentTimeProps) => {
             </Tooltip>
           </TooltipProvider>
         </div>
-        <RulesErrorContent className="w-60">
+        <RulesErrorContent className="w-60 max-w-[calc(100vw-2rem)]">
           {t('conditions.standalone.wait.error', {
             max: maxSeconds,
             minutes: Math.floor(maxSeconds / 60),

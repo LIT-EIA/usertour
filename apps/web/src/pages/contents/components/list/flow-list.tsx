@@ -39,7 +39,7 @@ export const FlowListContent = () => {
   return (
     <div className="flex flex-col flex-shrink min-w-0 px-4 py-6 lg:px-8 grow">
       {/* Reversed so the New flow button comes before the guide link in tab order but stays on the right */}
-      <div className="flex flex-row-reverse justify-between">
+      <div className="flex flex-col-reverse items-start gap-4 sm:flex-row-reverse sm:justify-between">
         <>
           <Button
             ref={createButtonRef}

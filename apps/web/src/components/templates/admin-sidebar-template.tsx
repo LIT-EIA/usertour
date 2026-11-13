@@ -28,7 +28,7 @@ export const AdminSidebarHeaderTemplate = (props: {
 }) => {
   const { children } = props;
   return (
-    <div className="pt-4 pb-[18px] min-h-[66.86px] sidebar-header gap-2 flex items-center justify-between w-full border-b border-b-gray-200/30 dark:border-b-accent/5 !pl-5 !pr-3 bg-gradient-to-br dark:from-primary-modified/[6%] dark:to-transparent !text-[17px] text-foreground dark:text-gray-200">
+    <div className="pt-4 pb-[1.125rem] min-h-[4.18rem] sidebar-header gap-2 flex items-center justify-between w-full border-b border-b-gray-200/30 dark:border-b-accent/5 !pl-5 !pr-3 bg-gradient-to-br dark:from-primary-modified/[6%] dark:to-transparent !text-[1.0625rem] text-foreground dark:text-gray-200">
       {children}
     </div>
   );
@@ -71,7 +71,7 @@ export const AdminSidebarFooterLinkItemTemplate = (props: {
   return (
     <Link
       to={href}
-      className="inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none dark:shadow-none items-center !text-[13px] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start"
+      className="inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none dark:shadow-none items-center !text-[0.8125rem] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start"
       target={target}
     >
       {children}
@@ -113,7 +113,7 @@ export const AdminSidebarBodyItemTemplate = (props: ButtonProps) => {
     <Button
       {...buttonProps}
       className={cn(
-        'inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-offset-0 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none dark:shadow-none items-center !text-[13px] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start',
+        'inline-flex main-transition whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-offset-0 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-transparent shadow-none select-none dark:shadow-none items-center !text-[0.8125rem] w-full hover:bg-gray-200/40 dark:hover:bg-secondary/60 !text-foreground hover:!text-gray-600 dark:!text-foreground dark:hover:!text-dark-accent-foreground h-8 rounded-md px-2 text-xs justify-start',
         className,
       )}
     >

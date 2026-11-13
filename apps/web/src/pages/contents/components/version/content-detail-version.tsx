@@ -6,7 +6,7 @@ export const ContentDetailVersion = () => {
   const { t } = useTranslation();
   return (
     <>
-      <div className="flex p-14 mt-12 space-x-8 justify-center ">
+      <div className="flex justify-center px-4 py-6 sm:p-8 lg:p-14 lg:pt-10">
         <div className="flex flex-col p-4 shadow bg-white rounded-lg space-y-6 w-full  max-w-screen-xl mx-auto">
           <h3 className="text-lg font-medium">{t('contents.versions.title')}</h3>
           <Separator />

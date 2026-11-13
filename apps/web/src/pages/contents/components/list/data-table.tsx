@@ -53,7 +53,7 @@ const ContentPreviewFooter = ({ content }: { content: Content }) => {
         <Link
           to={`/env/${environment?.id}/${contentType}/${content.id}/detail`}
           onClick={(e) => e.stopPropagation()}
-          className="grow text-base font-medium text-gray-900 dark:text-white truncate ...	rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="grow min-w-0 break-words text-base font-medium text-gray-900 dark:text-white rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {content.name}{' '}
         </Link>
@@ -214,7 +214,7 @@ const ContentTableItem = ({
     <div
       onClick={handleOnClick}
       ref={containerRef}
-      className="h-72 min-w-72  flex flex-col bg-white rounded-lg border hover:border-primary dark:border-gray-800 dark:hover:border-gray-700 hover:shadow-lg dark:hover:shadow-lg-light dark:bg-gray-900 cursor-pointer"
+      className="min-h-72 min-w-0 flex flex-col bg-white rounded-lg border hover:border-primary dark:border-gray-800 dark:hover:border-gray-700 hover:shadow-lg dark:hover:shadow-lg-light dark:bg-gray-900 cursor-pointer"
     >
       <div className="flex-none bg-muted rounded-t-md">
         <div className="h-48 flex justify-center items-center overflow-hidden">

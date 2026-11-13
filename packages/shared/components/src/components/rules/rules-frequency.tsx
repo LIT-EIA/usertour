@@ -66,7 +66,7 @@ const RulesFrequencyUnits = (props: RulesFrequencyUnitsProps) => {
   const [frequency, setFrequency] = useState<Frequency>(_frequency);
 
   return (
-    <div className="flex flex-row items-center space-x-2">
+    <div className="flex flex-row flex-wrap items-center gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
           <button type="button" className={cn(dropdownTriggerClassName, 'w-fit')}>
@@ -161,7 +161,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
 
   if (frequency === Frequency.MULTIPLE) {
     return (
-      <div className="flex flex-row items-center space-x-2">
+      <div className="flex flex-row flex-wrap items-center gap-2">
         <Input
           type="text"
           aria-label={t('conditions.standalone.frequency.timesInputLabel')}
@@ -206,7 +206,7 @@ const RulesFrequencyEvery = (props: RulesFrequencyEveryProps) => {
     );
   }
   return (
-    <div className="flex flex-row items-center space-x-2">
+    <div className="flex flex-row flex-wrap items-center gap-2">
       <span className="text-sm">{t('conditions.standalone.frequency.every')} </span>
       <Input
         type="text"
@@ -257,7 +257,7 @@ const RulesFrequencyAtLeast = (props: RulesFrequencyAtLeastProps) => {
   };
 
   return (
-    <div className="flex flex-row items-center space-x-2">
+    <div className="flex flex-row flex-wrap items-center gap-2">
       <span className="text-sm">{t('conditions.standalone.frequency.atLeast')}</span>
       <Input
         type="text"

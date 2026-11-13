@@ -49,7 +49,7 @@ export const BannerListContent = () => {
 
   return (
     <div className="h-full px-4 py-6 lg:px-8 lg:border-l shadow bg-white rounded-lg grow">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col space-y-1 ">
           <h2 className="text-2xl font-semibold tracking-tight">
             {t('contents.list.banners.title')}
@@ -61,7 +61,7 @@ export const BannerListContent = () => {
       </div>
       <Separator className="my-4" />
       <Tabs defaultValue="all" className="h-full space-y-6" onValueChange={handleOnValueChange}>
-        <div className="space-between flex items-center">
+        <div className="flex flex-wrap items-center gap-2">
           <TabsList>
             <TabsTrigger value="all" className="relative">
               {t('contents.list.allTab')}

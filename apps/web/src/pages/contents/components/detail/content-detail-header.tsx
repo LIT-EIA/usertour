@@ -50,7 +50,10 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
     return { ...nav, href: baseUrl + nav.href };
   });
   return (
-    <nav className={cn('flex items-center space-x-4 lg:space-x-6', className)} {...props}>
+    <nav
+      className={cn('flex flex-wrap items-center gap-x-4 gap-y-1 lg:gap-x-6', className)}
+      {...props}
+    >
       {navs.map((nav, index) => (
         <Link
           to={nav.href}
@@ -116,40 +119,43 @@ export const ContentDetailHeader = () => {
   return (
     <>
       <>
-        <div
-          data-page-header
-          className="border-b bg-white flex-col md:flex w-full fixed z-10 top-0"
-        >
-          <div className="flex h-16 items-center px-4">
-            <BackButton className="ml-4" onClick={handleBack} />
-            <h1 className="flex-none max-w-40	truncate ...	">{content?.name}</h1>
-            <ContentRenameForm
-              data={content}
-              onSubmit={() => {
-                refetch();
-              }}
-            >
-              <Button
-                variant={'ghost'}
-                className="hover:bg-transparent"
-                disabled={isViewOnly}
-                aria-label={t('contents.shared.rename.title', {
-                  type: t(`contents.types.${content.type}`),
-                })}
+        {/* Reflow / resize text (WCAG 1.4.4, 1.4.10, F69): the bar wraps instead of overflowing and
+            grows with its content (min-h, not h). It is sticky (not fixed) on wide screens so a taller,
+            wrapped bar pushes the page down instead of covering it; below lg (incl. 200–400% zoom)
+            it scrolls with the page so it doesn't eat a large part of a short viewport. */}
+        <div data-page-header className="border-b bg-white w-full z-10 lg:sticky lg:top-0">
+          <div className="flex flex-wrap min-h-16 items-center gap-x-4 gap-y-2 px-4 py-2">
+            <div className="flex items-center min-w-0 max-w-full">
+              <BackButton className="sm:ml-4 flex-none" onClick={handleBack} />
+              <h1 className="min-w-0 break-words lg:max-w-xs">{content?.name}</h1>
+              <ContentRenameForm
+                data={content}
+                onSubmit={() => {
+                  refetch();
+                }}
               >
-                <EditIcon
-                  className="ml-1 cursor-pointer"
-                  width={16}
-                  height={16}
-                  aria-hidden="true"
-                />
-              </Button>
-            </ContentRenameForm>
-            <MainNav className="mx-6" />
-            <div className="ml-auto flex items-center space-x-4">
+                <Button
+                  variant={'ghost'}
+                  className="hover:bg-transparent"
+                  disabled={isViewOnly}
+                  aria-label={t('contents.shared.rename.title', {
+                    type: t(`contents.types.${content.type}`),
+                  })}
+                >
+                  <EditIcon
+                    className="ml-1 cursor-pointer"
+                    width={16}
+                    height={16}
+                    aria-hidden="true"
+                  />
+                </Button>
+              </ContentRenameForm>
+            </div>
+            <MainNav className="lg:mx-6" />
+            <div className="ml-auto flex flex-wrap items-center gap-2 lg:gap-4">
               {isSaveing && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
               {!isSaveing && (
-                <div className="px-1 text-sm text-muted-foreground min-w-60 text-right">
+                <div className="px-1 text-sm text-muted-foreground lg:min-w-60 lg:text-right">
                   {content.editedVersionId !== content.publishedVersionId &&
                     version &&
                     t('contents.detail.autosaved', {

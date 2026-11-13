@@ -22,6 +22,7 @@ import {
   Theme,
 } from '@usertour/types';
 import { formatDate } from '@/utils/common';
+import { cn } from '@usertour/helpers';
 import { useEffect, useState } from 'react';
 import { ContentEditForm } from '../shared/content-edit-form';
 import {
@@ -51,26 +52,43 @@ const ContentBadge = ({
   className?: string;
 }) => {
   return (
-    <Badge variant={'secondary'} className={className}>
-      <span className="first-letter:uppercase">{children}</span>
+    <Badge variant={'secondary'} className={cn('max-w-full', className)}>
+      {/* Long values (e.g. a CSS selector) wrap instead of overflowing the card (WCAG 1.4.10) */}
+      <span className="min-w-0 first-letter:uppercase [overflow-wrap:anywhere]">{children}</span>
     </Badge>
   );
 };
 
-// Cards are laid out visually as [preview | details] with Edit pinned top-right and "Last edited"
+// Cards are laid out visually as [preview | details] with Edit top-right and "Last edited"
 // bottom-right, but the DOM follows the logical reading order so screen-reader arrow navigation
 // and Tab order match (WCAG 1.3.2, 2.4.3): name (heading) → Edit → details → preview → last edited.
 // Edit sits right after the heading so a keyboard user who Tabs to it and then continues with the
 // arrow keys reads that same card's details next (not the following card's).
-// The preview is moved back to the left with `order-first`; Edit/last-edited are absolutely
-// positioned against the card (offsets match the card padding: p-4 px-8).
-const cardClassName = 'relative flex flex-row gap-8 p-4 px-8 shadow bg-white rounded-lg';
-const cardDetailsClassName = 'grow flex flex-col space-y-1 min-w-80';
+// Reflow / resize text (WCAG 1.4.4, 1.4.10, F69): a grid places the parts (no absolute
+// positioning, so enlarged or wrapped text can't run under Edit / "Last edited"); it collapses to
+// a single column on narrow viewports (preview first, as on wide screens); badges wrap; long
+// names and values break instead of being truncated or overflowing.
+const cardClassName =
+  'grid grid-cols-1 gap-x-8 gap-y-3 p-4 sm:px-8 sm:grid-cols-[10rem_minmax(0,1fr)] shadow bg-white rounded-lg';
+const cardDetailsClassName = 'min-w-0 flex flex-col space-y-1 sm:col-start-2 sm:row-start-1';
+const cardPreviewClassName =
+  'order-first sm:order-none sm:col-start-1 sm:row-start-1 sm:row-span-2';
+const cardBadgeRowClassName = 'text-sm flex flex-wrap gap-1';
+
+const CardTitle = ({
+  children,
+  action,
+}: { children: React.ReactNode; action: React.ReactNode }) => (
+  <div className="flex items-center justify-between gap-2">
+    <h2 className="font-bold min-w-0 break-words">{children}</h2>
+    {action}
+  </div>
+);
 
 const CardLastEdited = ({ date }: { date?: string | Date }) => {
   const { t } = useTranslation();
   return (
-    <div className="text-xs absolute right-8 bottom-4 text-muted-foreground">
+    <div className="text-xs text-muted-foreground self-end sm:text-right sm:col-start-2 sm:row-start-2">
       {t('contents.overview.previewCard.lastEdited', {
         date: date ? formatDate(new Date(date), 'PPpp') : '',
       })}
@@ -89,7 +107,7 @@ const CardEditButton = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-row space-x-1 items-center absolute top-4 right-8 !mt-0">
+    <div className="flex flex-row space-x-1 items-center flex-none">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -157,9 +175,10 @@ const ContentDetailContentStep = ({
     <li className={cardClassName}>
       <GoogleFontCss settings={currentTheme.settings} />
       <div className={cardDetailsClassName}>
-        <h2 className="font-bold pr-10">{stepName}</h2>
-        <CardEditButton name={stepName} onEdit={onEdit} disabled={disabled} />
-        <div className="text-sm space-x-1">
+        <CardTitle action={<CardEditButton name={stepName} onEdit={onEdit} disabled={disabled} />}>
+          {stepName}
+        </CardTitle>
+        <div className={cardBadgeRowClassName}>
           <ContentBadge>
             {t(`contentBuilder.flow.stepType.${currentStep.type}`, currentStep.type)}
           </ContentBadge>
@@ -180,7 +199,7 @@ const ContentDetailContentStep = ({
           )}
         </div>
         {!isHidddenStep && (
-          <div className="flex flex-row space-x-1">
+          <div className={cardBadgeRowClassName}>
             <ContentBadge>
               {!currentStep.setting.skippable && t('contents.overview.step.notSkippable')}
               {currentStep.setting.skippable && t('contents.overview.step.skippable')}
@@ -195,14 +214,17 @@ const ContentDetailContentStep = ({
         )}
         {!stepIsReachable(currentVersion.steps as Step[], currentStep) && (
           <div className="text-xs flex flex-row items-center text-warning space-x-1 pt-2">
-            <ExclamationTriangleIcon className="h-3 w-3" />
+            <ExclamationTriangleIcon className="h-3 w-3 flex-none" aria-hidden="true" />
             <span>{t('contents.overview.step.unreachableWarning')}</span>
           </div>
         )}
       </div>
       {!isHidddenStep && (
         <div
-          className="order-first w-40 h-32 flex flex-none items-center [&_*]:pointer-events-none pointer-events-none"
+          className={cn(
+            cardPreviewClassName,
+            'w-40 h-32 flex items-center [&_*]:pointer-events-none pointer-events-none',
+          )}
           style={{
             height: height ? `${height}px` : undefined,
           }}
@@ -222,7 +244,7 @@ const ContentDetailContentStep = ({
       )}
       {isHidddenStep && (
         // Decorative: the "hidden" step-type badge already conveys this
-        <div className="order-first w-40 h-32 flex flex-none items-center justify-center">
+        <div className={cn(cardPreviewClassName, 'w-40 h-32 flex items-center justify-center')}>
           <EyeNoneIcon className="w-8 h-8" aria-hidden="true" />
         </div>
       )}
@@ -255,9 +277,12 @@ const LauncherContentPreview = ({
     <div className={cardClassName}>
       <GoogleFontCss settings={currentTheme.settings} />
       <div className={cardDetailsClassName}>
-        <h2 className="font-bold max-w-4/5 truncate pr-10">{content.name}</h2>
-        <CardEditButton name={content.name ?? ''} onEdit={onEdit} disabled={disabled} />
-        <div className="text-sm space-x-1">
+        <CardTitle
+          action={<CardEditButton name={content.name ?? ''} onEdit={onEdit} disabled={disabled} />}
+        >
+          {content.name}
+        </CardTitle>
+        <div className={cardBadgeRowClassName}>
           <ContentBadge>{t(`contentBuilder.launcher.type.${data.type}`, data.type)}</ContentBadge>
           <ContentBadge>
             {t('contents.overview.launcher.targetElement', {
@@ -273,7 +298,7 @@ const LauncherContentPreview = ({
             {t('contents.overview.launcher.theme', { name: currentTheme.name })}
           </ContentBadge>
         </div>
-        <div className="flex flex-row space-x-1">
+        <div className={cardBadgeRowClassName}>
           {data.type === LauncherDataType.ICON && data.iconType && (
             <ContentBadge>
               {t('contents.overview.launcher.iconType', { value: data.iconType })}
@@ -286,7 +311,7 @@ const LauncherContentPreview = ({
           </ContentBadge>
         </div>
       </div>
-      <div className="order-first w-40 h-32 flex flex-none items-center justify-center">
+      <div className={cn(cardPreviewClassName, 'w-40 h-32 flex items-center justify-center')}>
         <DisabledPreview>
           <LauncherPreview currentTheme={currentTheme} currentVersion={currentVersion} />
         </DisabledPreview>
@@ -326,9 +351,12 @@ const ChecklistContentPreview = ({
     <div className={cardClassName}>
       <GoogleFontCss settings={currentTheme.settings} />
       <div className={cardDetailsClassName}>
-        <h2 className="font-bold max-w-4/5 truncate pr-10">{content.name}</h2>
-        <CardEditButton name={content.name ?? ''} onEdit={onEdit} disabled={disabled} />
-        <div className="text-sm flex flex-row flex-wrap gap-1">
+        <CardTitle
+          action={<CardEditButton name={content.name ?? ''} onEdit={onEdit} disabled={disabled} />}
+        >
+          {content.name}
+        </CardTitle>
+        <div className={cardBadgeRowClassName}>
           <ContentBadge>
             {t('contents.overview.checklist.launcherButtonText', { value: data.buttonText })}
           </ContentBadge>
@@ -358,7 +386,10 @@ const ChecklistContentPreview = ({
         </div>
       </div>
       <div
-        className="order-first w-40 h-32 flex flex-none items-center [&_*]:pointer-events-none pointer-events-none"
+        className={cn(
+          cardPreviewClassName,
+          'w-40 h-32 flex items-center [&_*]:pointer-events-none pointer-events-none',
+        )}
         style={{
           height: height ? `${height}px` : undefined,
         }}
@@ -398,7 +429,7 @@ export const ContentDetailContent = () => {
 
   return (
     <>
-      <div className="flex flex-col space-y-6 grow">
+      <div className="flex flex-col space-y-6 grow min-w-0">
         {contentType === ContentTypeName.FLOWS && !!version.steps?.length && (
           <ol className="flex flex-col space-y-6">
             {version.steps.map((step, index) => (

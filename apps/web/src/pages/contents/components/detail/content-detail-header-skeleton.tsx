@@ -3,7 +3,7 @@ import { Skeleton } from '@usertour-packages/skeleton';
 // Skeleton for the main navigation tabs
 export const ContentDetailHeaderNavSkeleton = () => {
   return (
-    <nav className="flex items-center space-x-4 lg:space-x-6 mx-6">
+    <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 lg:gap-x-6 lg:mx-6">
       {Array.from({ length: 3 }, (_, index) => (
         <Skeleton key={index} className="h-4 w-16" />
       ))}
@@ -14,13 +14,13 @@ export const ContentDetailHeaderNavSkeleton = () => {
 // Main skeleton for ContentDetailHeader
 export const ContentDetailHeaderSkeleton = () => {
   return (
-    <div className="border-b bg-white flex-col md:flex w-full fixed z-10 top-0">
-      <div className="flex h-16 items-center px-4">
+    <div className="border-b bg-white w-full z-10 lg:sticky lg:top-0">
+      <div className="flex flex-wrap min-h-16 items-center gap-x-4 gap-y-2 px-4 py-2">
         {/* Back arrow skeleton */}
-        <Skeleton className="h-6 w-8 ml-4" />
+        <Skeleton className="h-6 w-8 sm:ml-4" />
 
         {/* Content name skeleton */}
-        <Skeleton className="h-5 w-40 ml-4" />
+        <Skeleton className="h-5 w-40 max-w-full" />
 
         {/* Edit button skeleton */}
         <Skeleton className="h-8 w-8 ml-2" />
@@ -29,10 +29,10 @@ export const ContentDetailHeaderSkeleton = () => {
         <ContentDetailHeaderNavSkeleton />
 
         {/* Right side actions skeleton */}
-        <div className="ml-auto flex items-center space-x-4">
+        <div className="ml-auto flex flex-wrap items-center gap-2 lg:gap-4">
           {/* Autosave/Published text skeleton */}
-          <div className="px-1 text-sm text-muted-foreground min-w-60 text-right">
-            <Skeleton className="h-4 w-48" />
+          <div className="px-1 text-sm text-muted-foreground lg:min-w-60 lg:text-right">
+            <Skeleton className="h-4 w-48 max-w-full" />
           </div>
 
           {/* Edit In Builder button skeleton */}

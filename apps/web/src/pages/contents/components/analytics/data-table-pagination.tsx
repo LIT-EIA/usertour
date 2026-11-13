@@ -27,13 +27,13 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
   const { t } = useTranslation();
   const rowsPerPageLabelId = useId();
   return (
-    <div className="flex items-center justify-between px-2">
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-2">
       <div className="flex-1 text-sm text-muted-foreground">
         {/* {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected. */}
         {t('contents.analytics.sessionsTable.totalCount', { count: totalCount })}
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:gap-x-8">
         <div className="flex items-center space-x-2">
           <p id={rowsPerPageLabelId} className="text-sm font-medium">
             {t('pagination.rowsPerPage')}
@@ -44,7 +44,10 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
               table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className="h-8 w-[70px]" aria-labelledby={rowsPerPageLabelId}>
+            <SelectTrigger
+              className="h-8 w-auto min-w-[4.5rem] gap-2"
+              aria-labelledby={rowsPerPageLabelId}
+            >
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
@@ -56,7 +59,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+        <div className="flex items-center justify-center whitespace-nowrap text-sm font-medium">
           {t('pagination.pageOf', {
             current: table.getState().pagination.pageIndex + 1,
             total: table.getPageCount(),
