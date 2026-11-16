@@ -485,7 +485,16 @@ JSON
 
     mkdir -p /var/cache/nginx /etc/nginx/conf.d
     cp nginx/nginx.conf /etc/nginx/nginx.conf
-    cp nginx/default.conf /etc/nginx/conf.d/default.conf
+    # Branches that ship nginx/default.dev.conf (dev-only, never read by
+    # the production Dockerfile) get port 80 proxied to the Vite dev server
+    # on :5174, so the app shows current source instead of a static build.
+    # Branches without it keep the old behaviour. start.sh fills in
+    # NEST_SERVER_PORT either way, since both files use the placeholder.
+    if [ -f nginx/default.dev.conf ]; then
+      cp nginx/default.dev.conf /etc/nginx/conf.d/default.conf
+    else
+      cp nginx/default.conf /etc/nginx/conf.d/default.conf
+    fi
     chmod +x scripts/start.sh
 
     # nginx.conf has `user nginx;` - Alpine's nginx package creates that
