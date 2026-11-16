@@ -189,16 +189,46 @@ resource "docker_network" "usertour" {
   name = "${local.name_prefix}-net"
 }
 
+# Volumes are not tied to start_count, so they survive a workspace stop/start
+# (only deleting the workspace removes them). ignore_changes = all keeps a
+# template update or provider drift from ever replacing - i.e. wiping - one.
 resource "docker_volume" "postgres_data" {
   name = "${local.name_prefix}-postgres-data"
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "docker_volume" "redis_data" {
   name = "${local.name_prefix}-redis-data"
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "docker_volume" "app_data" {
   name = "${local.name_prefix}-app-data"
+  lifecycle {
+    ignore_changes = all
+  }
+}
+
+# root's home: code-server state (incl. unsaved-buffer backups), shell
+# history, git/ssh config, CLI logins (~/.claude, ~/.config/gh, ...) and
+# anything installed into ~/.local - everything outside /app that would
+# otherwise be lost when the container is recreated on start.
+resource "docker_volume" "root_home" {
+  name = "${local.name_prefix}-root-home"
+  lifecycle {
+    ignore_changes = all
+  }
+}
+
+resource "docker_volume" "adminaux_home" {
+  name = "${local.name_prefix}-adminaux-home"
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "docker_image" "postgres" {
@@ -310,6 +340,16 @@ resource "docker_container" "app" {
     container_path = "/app"
   }
 
+  volumes {
+    volume_name    = docker_volume.root_home.name
+    container_path = "/root"
+  }
+
+  volumes {
+    volume_name    = docker_volume.adminaux_home.name
+    container_path = "/home/adminaux"
+  }
+
   # init_script deliberately does not embed the auth token in its own text
   # (so it doesn't leak via `docker logs`/`docker inspect`) - it expects
   # CODER_AGENT_TOKEN to already be set in the environment it runs in.
@@ -347,6 +387,38 @@ resource "docker_container" "app" {
 
     apt-get install -y --no-install-recommends nginx openssl gettext-base git netcat-openbsd
     npm install -g pnpm prisma@5.12.1 prisma-dbml-generator@0.12.0 husky@9.1.7
+
+    # /etc/passwd, /etc/shadow etc. live in the container's own filesystem,
+    # which is recreated on every start, so the user has to be recreated too.
+    # Fixed UID/GID 1001 (node:22.13-slim's `node` user already has 1000) so
+    # files on the persistent volumes keep the right owner across restarts.
+    getent group adminaux >/dev/null || groupadd -g 1001 adminaux
+    getent passwd adminaux >/dev/null || useradd -u 1001 -g 1001 -d /home/adminaux -s /bin/bash adminaux
+    # The volume mount creates /home/adminaux empty and root-owned, so
+    # useradd -m would skip it - seed the skeleton dotfiles ourselves, once.
+    if [ ! -f /home/adminaux/.bashrc ]; then
+      cp -rT /etc/skel /home/adminaux
+      chown -R adminaux:adminaux /home/adminaux
+    fi
+    chown adminaux:adminaux /home/adminaux
+    # /etc/shadow is wiped on every restart, so the password is re-applied
+    # every start. Stored as a SHA-512 crypt hash (`openssl passwd -6`), not
+    # plaintext - single-quoted so the shell leaves its $ signs alone.
+    usermod -p '$6$Qur5blFmtwMIR9Uu$iRfHAOJcytcUCin17PcqbcfIEhxxLbmG6bP44TmHIeeOXnNotrqaea4TEciek95erJjQeXqeBy3JLUl2V/Wg4/' adminaux
+
+    # Per-workspace extras (packages, users, etc.). Lives on the persistent
+    # /root volume so it survives restarts; re-run on every start because
+    # the container's own filesystem doesn't. Failures are logged, not fatal,
+    # so a broken personal script can't take the whole workspace down.
+    if [ -f /root/.workspace-setup.sh ]; then
+      sh /root/.workspace-setup.sh || echo "workspace-setup.sh failed, continuing"
+    fi
+
+    # /app ends up owned by adminaux (see below), but root still runs git
+    # here (code-server, GitLens and this script all run as root) - without
+    # this, git refuses the repo as "dubious ownership". /etc/gitconfig is
+    # wiped with the rest of the container, so it's re-added every start.
+    git config --system --add safe.directory /app
 
     # --no-single-branch (and no --depth) so every branch's history is
     # fetched, not just var.git_ref's tip - /app is a persistent volume and
@@ -476,6 +548,15 @@ JSON
     [ -d apps/web/dist ] && mkdir -p /usr/share/nginx/html/web && cp -r apps/web/dist/. /usr/share/nginx/html/web/
     [ -d apps/sdk/dist ] && mkdir -p /usr/share/nginx/html/sdk && cp -r apps/sdk/dist/. /usr/share/nginx/html/sdk/
     [ -d apps/server/dist ] && rm -rf /app/dist && ln -s apps/server/dist /app/dist
+
+    # Give adminaux ownership of /app - done here, after the clone, install
+    # and build steps above (all run as root), so their output is covered
+    # too. Only touches entries not already owned by adminaux, so after the
+    # first start this is a quick walk rather than re-chowning all of
+    # node_modules. -h changes pnpm's symlinks themselves instead of
+    # following them. Anything root creates later (code-server and
+    # start.sh run as root) gets fixed up on the next start.
+    find /app ! -user adminaux -exec chown -h adminaux:adminaux {} +
 
     # Run the branch's own start script - NOT exec'd, so no matter how it
     # ends (the old dev-container-style `sleep infinity`, a crash, a
