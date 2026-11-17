@@ -470,6 +470,22 @@ JSON
     # Override NODE_ENV just for this install so all deps are resolved.
     [ -x node_modules/.bin/prisma ] || NODE_ENV=development pnpm install
 
+    # Playwright (SDK e2e tests): its browsers live on the persistent
+    # adminaux_home volume, but the system libraries they link against
+    # (glib, nss, X11, ...) go into the container's own filesystem, which is
+    # recreated on every start - so install-deps has to run every start, like
+    # the apt-get installs above. Uses the repo's own pinned Playwright, so
+    # the libraries always match the browser builds. Skipped on branches
+    # without it, and never fatal: a failed apt mirror shouldn't take the
+    # workspace down over a test dependency.
+    if [ -x apps/sdk/node_modules/.bin/playwright ]; then
+      pnpm --dir apps/sdk exec playwright install-deps chromium firefox webkit \
+        || echo "playwright install-deps failed, SDK e2e tests won't run"
+      runuser -u adminaux -- env HOME=/home/adminaux \
+        pnpm --dir apps/sdk exec playwright install chromium firefox webkit \
+        || echo "playwright browser download failed, continuing"
+    fi
+
     # getaddrinfo("localhost") on this container resolves ::1 (IPv6) before
     # 127.0.0.1. Vite's dev server host config defaults to the string
     # "localhost", so it ends up bound to ::1 only - meanwhile nginx's own
