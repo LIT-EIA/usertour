@@ -1,5 +1,11 @@
 import type { Config } from './config.interface';
 
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!jwtSecret) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
 const config: Config = {
   nest: {
     port: process.env.NEST_SERVER_PORT ? Number.parseInt(process.env.NEST_SERVER_PORT) : 3000,
@@ -78,7 +84,7 @@ const config: Config = {
       resendApiKey: process.env.RESEND_API_KEY || 'test',
     },
     jwt: {
-      secret: process.env.JWT_SECRET || 'test',
+      secret: jwtSecret,
       expiresIn: process.env.JWT_EXPIRATION_TIME || '1h',
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME || '7d',
     },
