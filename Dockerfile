@@ -1,22 +1,28 @@
 # Build stage for server
-FROM node:22.13-alpine AS server-builder
+FROM node:22.21-alpine AS server-builder
 
 WORKDIR /app
 
-# Set npm registry and install pnpm
-RUN npm install -g pnpm@8
+# pnpm version must match the root package.json "packageManager" (lockfile v9)
+RUN npm install -g pnpm@9.0.6
 
-# Copy server files directly
-COPY apps/server ./
+# Install server deps from the root lockfile so builds are reproducible.
+# apps/server/node_modules holds symlinks into /app/node_modules/.pnpm, so the
+# production stage must keep this same layout.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/server ./apps/server
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile --filter @usertour/server...
+
+WORKDIR /app/apps/server
+RUN pnpm prisma generate
 RUN pnpm build
 
 # Copy email templates after build
 COPY apps/server/src/email-templates ./dist/email-templates
 
 # Build stage for web and sdk
-FROM node:22.13-alpine AS web-builder
+FROM node:22.21-alpine AS web-builder
 
 WORKDIR /app
 
@@ -54,7 +60,7 @@ RUN SDK_VERSION=$(node -e "console.log(require('./apps/sdk/package.json').versio
     cp -r apps/sdk/dist/$SDK_VERSION/* /sdk-dist/
 
 # Production stage
-FROM node:22.13-alpine
+FROM node:22.21-alpine
 
 WORKDIR /app
 
@@ -75,9 +81,13 @@ COPY --from=web-builder /app/apps/sdk/dist /usr/share/nginx/html/sdk
 COPY --from=web-builder /sdk-dist /usr/share/nginx/html/sdk
 
 COPY --from=server-builder /app/node_modules ./node_modules
-COPY --from=server-builder /app/dist ./dist
-COPY --from=server-builder /app/package.json ./package.json
-COPY --from=server-builder /app/prisma ./prisma
+COPY --from=server-builder /app/apps/server/node_modules ./apps/server/node_modules
+COPY --from=server-builder /app/apps/server/dist ./apps/server/dist
+COPY --from=server-builder /app/apps/server/package.json ./apps/server/package.json
+COPY --from=server-builder /app/apps/server/prisma ./apps/server/prisma
+
+# start.sh runs prisma, the seed, and dist/main relative to the server dir
+WORKDIR /app/apps/server
 
 # Create nginx cache directory
 RUN mkdir -p /var/cache/nginx
