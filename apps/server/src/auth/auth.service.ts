@@ -444,6 +444,9 @@ export class AuthService {
 
   async sendMagicLinkEmail(code: string, email: string) {
     const link = `${this.configService.get('app.homepageUrl')}/auth/registration/${code}`;
+    // No email service yet: print the link so it can be picked up from the server console.
+    // Logged before sending so it still shows when the mail transport is not configured.
+    this.logger.log(`Magic link for ${email}: ${link}`);
     const template = await compileEmailTemplate({
       fileName: 'verifyEmail.mjml',
       data: {
