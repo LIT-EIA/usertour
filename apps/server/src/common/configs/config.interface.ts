@@ -66,6 +66,7 @@ export interface Config {
     };
     jwt: {
       secret: string;
+      refreshSecret: string;
       expiresIn: string;
       refreshExpiresIn: string;
     };
