@@ -82,6 +82,10 @@ const config: Config = {
       expiresIn: process.env.JWT_EXPIRATION_TIME || '1h',
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME || '7d',
     },
+    // Third-party (OAuth) sign-in is removed. In invite-only mode (the default) accounts can
+    // only be created from a valid team invite; set AUTH_INVITE_ONLY=false to re-open
+    // self-registration via magic link.
+    inviteOnly: process.env.AUTH_INVITE_ONLY !== 'false',
   },
   content: {
     limit: {

@@ -23,6 +23,7 @@ import {
   AuthenticationExpiredError,
   EmailAlreadyRegistered,
   InvalidVerificationSession,
+  InviteOnlyError,
   PasswordIncorrect,
   UnknownError,
 } from '@/common/errors';
@@ -57,6 +58,20 @@ export class AuthService {
       items.push({ provider: 'email' });
     }
     return items;
+  }
+
+  private isInviteOnly(): boolean {
+    return this.configService.get<boolean>('auth.inviteOnly') !== false;
+  }
+
+  /**
+   * Block every self-registration path when invite-only mode is on.
+   * Accounts may then only be created through `signup` with a valid team invite code.
+   */
+  private assertOpenRegistrationAllowed(): void {
+    if (this.isInviteOnly()) {
+      throw new InviteOnlyError();
+    }
   }
 
   cookieOptions(key: string): CookieOptions {
@@ -192,6 +207,7 @@ export class AuthService {
   }
 
   async createMagicLink(email: string) {
+    this.assertOpenRegistrationAllowed();
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user) {
       throw new EmailAlreadyRegistered();
@@ -211,6 +227,7 @@ export class AuthService {
   }
 
   async resendMargicLink(id: string) {
+    this.assertOpenRegistrationAllowed();
     const data = await this.prisma.register.findUnique({ where: { id } });
     if (!data) {
       throw new InvalidVerificationSession();
@@ -261,6 +278,11 @@ export class AuthService {
 
   async signup(payload: SignupInput): Promise<TokenData> {
     const { code, userName, companyName, password, isInvite } = payload;
+
+    // Non-invite signup redeems a magic-link registration code: that is open registration.
+    if (!isInvite) {
+      this.assertOpenRegistrationAllowed();
+    }
 
     // Validate verification code
     const { email, projectId, role } = await this.validateSignupCode(code, isInvite);

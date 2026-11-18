@@ -69,6 +69,7 @@ export interface Config {
       expiresIn: string;
       refreshExpiresIn: string;
     };
+    inviteOnly: boolean;
   };
   stripe: {
     apiKey: string;

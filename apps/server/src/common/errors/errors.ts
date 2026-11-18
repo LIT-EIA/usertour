@@ -161,6 +161,14 @@ export class LicenseDecodeError extends BaseError {
   };
 }
 
+export class InviteOnlyError extends BaseError {
+  code = 'E0020';
+  messageDict = {
+    en: 'Registration is by invitation only. Ask a project admin to invite you.',
+    fr: 'L’inscription se fait uniquement sur invitation. Demandez à un administrateur de projet de vous inviter.',
+  };
+}
+
 export abstract class OpenAPIError extends BaseError {
   statusCode: HttpStatus;
 }
@@ -335,6 +343,7 @@ const errorMap = {
   E0017: LicenseExpiredError,
   E0018: LicenseProjectMismatchError,
   E0019: LicenseDecodeError,
+  E0020: InviteOnlyError,
   E1000: InvalidApiKeyError,
   E1001: UserNotFoundError,
   E1002: CompanyNotFoundError,
