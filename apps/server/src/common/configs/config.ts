@@ -73,7 +73,6 @@ const config: Config = {
       domain: process.env.USERTOUR_COOKIE_DOMAIN,
     },
     email: {
-      enabled: process.env.EMAIL_AUTH_ENABLED === 'true',
       sender: process.env.EMAIL_SENDER || 'UserTour <support@usertour.io>',
       resendApiKey: process.env.RESEND_API_KEY || 'test',
     },

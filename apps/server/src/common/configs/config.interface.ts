@@ -60,7 +60,6 @@ export interface Config {
       domain: string;
     };
     email: {
-      enabled: boolean;
       sender: string;
       resendApiKey: string;
     };

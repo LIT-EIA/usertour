@@ -52,12 +52,12 @@ export class AuthService {
     @InjectQueue(QUEUE_INITIALIZE_PROJECT) private initializeProjectQueue: Queue,
   ) {}
 
+  /**
+   * Email/password is the only sign-in method since third-party sign-in was removed,
+   * so it is always enabled: a switch here could leave no way to sign in at all.
+   */
   getAuthConfig(): AuthConfigItem[] {
-    const items: AuthConfigItem[] = [];
-    if (this.configService.get('auth.email.enabled')) {
-      items.push({ provider: 'email' });
-    }
-    return items;
+    return [{ provider: 'email' }];
   }
 
   private isInviteOnly(): boolean {
