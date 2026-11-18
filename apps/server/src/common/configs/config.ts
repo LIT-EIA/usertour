@@ -79,7 +79,7 @@ const config: Config = {
     },
     jwt: {
       secret: process.env.JWT_SECRET || 'test',
-      expiresIn: process.env.JWT_EXPIRATION_TIME || '1h',
+      expiresIn: process.env.JWT_EXPIRATION_TIME || '12h',
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME || '7d',
     },
     github: {
