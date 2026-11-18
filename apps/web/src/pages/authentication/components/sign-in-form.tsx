@@ -14,11 +14,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@usertour-packages/form';
-import { GithubIcon, GoogleIcon, SpinnerIcon } from '@usertour-packages/icons';
+import { SpinnerIcon } from '@usertour-packages/icons';
 import { Input } from '@usertour-packages/input';
 import { useToast } from '@usertour-packages/use-toast';
 import { Link } from 'react-router-dom';
-import { apiUrl } from '@/utils/env';
 import {
   LoginMutationVariables,
   useGetAuthConfigQuery,
@@ -43,7 +42,8 @@ const defaultValues: Partial<SigninFormValues> = {
   password: '',
 };
 
-type AuthProvider = 'email' | 'google' | 'github';
+// Third-party (OAuth) sign-in has been removed server-side; email/password is the only provider.
+type AuthProvider = 'email';
 type AuthConfigItem = {
   provider: AuthProvider;
 };
@@ -51,15 +51,8 @@ type AuthConfigItem = {
 // Context type definition
 type SignInContextType = {
   isLoading: boolean;
-  isGoogleAuthLoading: boolean;
-  isGithubAuthLoading: boolean;
   setIsLoading: (value: boolean) => void;
-  setIsGoogleAuthLoading: (value: boolean) => void;
-  setIsGithubAuthLoading: (value: boolean) => void;
-  isGoogleAuthEnabled: boolean;
-  isGithubAuthEnabled: boolean;
   isEmailAuthEnabled: boolean;
-  handleLogin: (provider: 'github' | 'google') => void;
   toast: ReturnType<typeof useToast>['toast'];
   showError: (title: string) => void;
   form: ReturnType<typeof useForm<SigninFormValues>>;
@@ -87,20 +80,13 @@ interface SignInRootProps {
 const SignInRoot = (props: SignInRootProps) => {
   const { children, inviteCode } = props;
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isGoogleAuthLoading, setIsGoogleAuthLoading] = useState<boolean>(false);
-  const [isGithubAuthLoading, setIsGithubAuthLoading] = useState<boolean>(false);
   const { invoke } = useLoginMutation();
   const { toast } = useToast();
   const { data: authConfig } = useGetAuthConfigQuery();
 
-  // Show all auth options by default when config is loading
-  // Only disable if explicitly set to false in config
+  // Show the email form while the config is loading; hide it only if the server disables it
   const isEmailAuthEnabled =
     !authConfig || authConfig.some((item: AuthConfigItem) => item.provider === 'email');
-  const isGithubAuthEnabled =
-    !authConfig || authConfig.some((item: AuthConfigItem) => item.provider === 'github');
-  const isGoogleAuthEnabled =
-    !authConfig || authConfig.some((item: AuthConfigItem) => item.provider === 'google');
 
   const form = useForm<SigninFormValues>({
     resolver: zodResolver(signinFormSchema),
@@ -113,20 +99,6 @@ const SignInRoot = (props: SignInRootProps) => {
       variant: 'destructive',
       title,
     });
-  };
-
-  const handleLogin = (provider: 'github' | 'google') => {
-    if (provider === 'google') {
-      setIsGoogleAuthLoading(true);
-    } else if (provider === 'github') {
-      setIsGithubAuthLoading(true);
-    }
-    if (inviteCode) {
-      console.log('sign in inviteCode', inviteCode);
-      window.location.href = `${apiUrl}/api/auth/${provider}?inviteCode=${inviteCode}`;
-    } else {
-      window.location.href = `${apiUrl}/api/auth/${provider}`;
-    }
   };
 
   const onSubmit = async (data: SigninFormValues) => {
@@ -151,18 +123,11 @@ const SignInRoot = (props: SignInRootProps) => {
     <SignInContext.Provider
       value={{
         isLoading,
-        isGoogleAuthLoading,
-        isGithubAuthLoading,
         setIsLoading,
-        setIsGoogleAuthLoading,
-        setIsGithubAuthLoading,
-        handleLogin,
         toast,
         showError,
         form,
         onSubmit,
-        isGoogleAuthEnabled,
-        isGithubAuthEnabled,
         isEmailAuthEnabled,
       }}
     >
@@ -174,77 +139,6 @@ const SignInRoot = (props: SignInRootProps) => {
 };
 
 SignInRoot.displayName = 'SignInRoot';
-
-// Social providers component
-const SignInSocialProviders = () => {
-  const {
-    handleLogin,
-    isGoogleAuthLoading,
-    isGithubAuthLoading,
-    isGoogleAuthEnabled,
-    isGithubAuthEnabled,
-  } = useSignInContext();
-  const { t } = useTranslation();
-
-  if (!isGoogleAuthEnabled && !isGithubAuthEnabled) return null;
-
-  return (
-    <div className="flex flex-row gap-2 w-full">
-      {isGoogleAuthEnabled && (
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          onClick={() => handleLogin('google')}
-          disabled={isGoogleAuthLoading}
-        >
-          {isGoogleAuthLoading && <SpinnerIcon className="w-4 h-4 animate-spin mr-1" />}
-          <GoogleIcon className="w-4 h-4 mr-2" />
-          {isGoogleAuthLoading ? t('auth.social.signingIn') : t('auth.social.continueWithGoogle')}
-        </Button>
-      )}
-      {isGithubAuthEnabled && (
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          onClick={() => handleLogin('github')}
-          disabled={isGithubAuthLoading}
-        >
-          {isGithubAuthLoading && <SpinnerIcon className="w-4 h-4 animate-spin mr-1" />}
-          <GithubIcon className="w-4 h-4 mr-2" />
-          {isGithubAuthLoading ? t('auth.social.signingIn') : t('auth.social.continueWithGithub')}
-        </Button>
-      )}
-    </div>
-  );
-};
-
-SignInSocialProviders.displayName = 'SignInSocialProviders';
-
-// Divider component
-const SignInDivider = () => {
-  const { isGoogleAuthEnabled, isGithubAuthEnabled, isEmailAuthEnabled } = useSignInContext();
-  const { t } = useTranslation();
-
-  // Only show divider if we have both social providers and email auth enabled
-  if (!(isGoogleAuthEnabled || isGithubAuthEnabled) || !isEmailAuthEnabled) return null;
-
-  return (
-    <div className="relative w-full">
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-gray-100 text-gray-50 dark:border-border" />
-      </div>
-      <div className="relative flex justify-center text-sm leading-5">
-        <span className="px-2 font-medium bg-white text-background-accent dark:text-foreground/60 dark:bg-background">
-          {t('auth.social.divider')}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-SignInDivider.displayName = 'SignInDivider';
 
 // Form component
 interface SignInFormProps {
@@ -318,4 +212,4 @@ const SignInForm = (props: SignInFormProps) => {
 
 SignInForm.displayName = 'SignInForm';
 
-export { SignInSocialProviders, SignInDivider, SignInForm, SignInRoot };
+export { SignInForm, SignInRoot };

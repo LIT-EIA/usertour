@@ -10,7 +10,6 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { SignupInput } from './dto/signup.input';
 import { Common } from './models/common.model';
-import { Profile } from 'passport-google-oauth20';
 import { CookieOptions, Response } from 'express';
 import { TokenData } from './dto/auth.dto';
 import { PasswordService } from './password.service';
@@ -24,7 +23,6 @@ import {
   AuthenticationExpiredError,
   EmailAlreadyRegistered,
   InvalidVerificationSession,
-  OAuthError,
   PasswordIncorrect,
   UnknownError,
 } from '@/common/errors';
@@ -57,12 +55,6 @@ export class AuthService {
     const items: AuthConfigItem[] = [];
     if (this.configService.get('auth.email.enabled')) {
       items.push({ provider: 'email' });
-    }
-    if (this.configService.get('auth.google.enabled')) {
-      items.push({ provider: 'google' });
-    }
-    if (this.configService.get('auth.github.enabled')) {
-      items.push({ provider: 'github' });
     }
     return items;
   }
@@ -115,116 +107,6 @@ export class AuthService {
       .clearCookie(UID_COOKIE, clearOptions)
       .clearCookie(ACCESS_TOKEN_COOKIE, clearOptions)
       .clearCookie(REFRESH_TOKEN_COOKIE, clearOptions);
-  }
-
-  async oauthValidate(
-    accessToken: string,
-    refreshToken: string,
-    profile: Profile,
-    inviteCode?: string,
-  ) {
-    this.logger.log(
-      `oauth accessToken: ${accessToken}, refreshToken: ${refreshToken}, profile: ${JSON.stringify(
-        profile,
-      )}, inviteCode: ${inviteCode}`,
-    );
-    const { provider, id, emails, displayName, photos } = profile;
-
-    // Check if there is an authentication account record
-    const account = await this.prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider,
-          providerAccountId: id,
-        },
-      },
-    });
-
-    // If there is an authentication account record and corresponding user, return directly
-    if (account) {
-      this.logger.log(`account found for provider ${provider}, account id: ${id}`);
-      const user = await this.prisma.user.findUnique({
-        where: { id: account.userId },
-      });
-      if (user) {
-        // inviteCode is not empty, join project
-        if (inviteCode) {
-          await this.joinProject(inviteCode, user.id);
-        }
-        return user;
-      }
-
-      this.logger.log(
-        `user ${account.userId} not found for provider ${provider} account id: ${id}`,
-      );
-    }
-
-    // oauth profile returns no email, this is invalid
-    if (emails?.length === 0) {
-      this.logger.warn('emails is empty, invalid oauth');
-      throw new OAuthError();
-    }
-    const email = emails[0].value;
-
-    // Return user if this email has been registered
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user) {
-      this.logger.log(`user ${user.id} already registered for email ${email}`);
-      // inviteCode is not empty, join project
-      if (inviteCode) {
-        await this.joinProject(inviteCode, user.id);
-      }
-      return user;
-    }
-
-    // download avatar if profile photo exists
-    let avatar: string;
-    try {
-      if (photos?.length > 0) {
-        // avatar = (await this.miscService.dumpFileFromURL({ uid }, photos[0].value)).url;
-      }
-    } catch (e) {
-      this.logger.warn(`failed to download avatar: ${e}`);
-    }
-
-    return await this.prisma.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: {
-          name: displayName || email,
-          email,
-          avatarUrl: avatar,
-          emailVerified: new Date(),
-        },
-      });
-
-      this.logger.log(`user created: ${newUser.id}`);
-
-      const newAccount = await tx.account.create({
-        data: {
-          type: 'oauth',
-          userId: newUser.id,
-          provider,
-          providerAccountId: id,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        },
-      });
-      this.logger.log(`new account created for ${newAccount.id}`);
-
-      // inviteCode is not empty, join project
-      if (inviteCode) {
-        const invite = await this.teamService.getValidInviteByCode(inviteCode);
-        if (invite) {
-          await this.teamService.assignUserToProject(tx, newUser.id, invite.projectId, invite.role);
-          await this.teamService.deleteInvite(tx, inviteCode);
-        }
-      } else {
-        const project = await this.createProject(tx, 'Unnamed Project', newUser.id);
-        await initialization(tx, project.id);
-      }
-
-      return newUser;
-    });
   }
 
   private async generateRefreshToken(userId: string): Promise<string> {

@@ -82,18 +82,6 @@ const config: Config = {
       expiresIn: process.env.JWT_EXPIRATION_TIME || '1h',
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME || '7d',
     },
-    github: {
-      enabled: process.env.GITHUB_AUTH_ENABLED === 'true',
-      clientId: process.env.GITHUB_CLIENT_ID || 'test',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || 'test',
-      callbackUrl: process.env.GITHUB_CALLBACK_URL || 'test',
-    },
-    google: {
-      enabled: process.env.GOOGLE_AUTH_ENABLED === 'true',
-      clientId: process.env.GOOGLE_CLIENT_ID || 'test',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'test',
-      callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'test',
-    },
   },
   content: {
     limit: {

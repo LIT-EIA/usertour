@@ -69,18 +69,6 @@ export interface Config {
       expiresIn: string;
       refreshExpiresIn: string;
     };
-    github: {
-      enabled: boolean;
-      clientId: string;
-      clientSecret: string;
-      callbackUrl: string;
-    };
-    google: {
-      enabled: boolean;
-      clientId: string;
-      clientSecret: string;
-      callbackUrl: string;
-    };
   };
   stripe: {
     apiKey: string;

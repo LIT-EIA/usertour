@@ -10,7 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { genBaseRespDataFromError } from '@/common/exceptions/exception';
-import { OAuthError, UnknownError } from '@/common/errors/errors';
+import { UnknownError } from '@/common/errors/errors';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -40,13 +40,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     const baseRespData = genBaseRespDataFromError(exception);
-
-    // Handle OAuth errors, redirect to home page
-    if (baseRespData.errCode === new OAuthError().code) {
-      const redirectUrl = this.configService.get('auth.redirectUrl');
-      response?.redirect(`${redirectUrl}?loginFailed=1`);
-      return;
-    }
 
     if (baseRespData.errCode === new UnknownError().code) {
       this.logger.error(

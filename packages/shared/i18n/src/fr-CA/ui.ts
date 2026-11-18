@@ -1215,12 +1215,6 @@ const translations = {
       resetCodeMissing: 'Le code de réinitialisation est manquant.',
       genericFailure: 'Oups! Quelque chose a mal tourné.',
     },
-    social: {
-      continueWithGoogle: 'Continuer avec Google',
-      continueWithGithub: 'Continuer avec Github',
-      signingIn: 'Connexion en cours...',
-      divider: 'Ou connectez-vous avec votre courriel',
-    },
     sso: {
       title: 'Authentification unique',
       titleNamed: 'Se connecter à {{name}}',
