@@ -346,6 +346,22 @@ export class AuthService {
       throw new AccountNotFoundError();
     }
 
+    // Verify the password before any side effect (project creation, invite redemption).
+    // Never accept the submitted password as a new one: users without a stored password
+    // (e.g. created by a removed OAuth provider) must set one through the password-reset flow.
+    const passwordValid = await this.passwordService.validatePassword(password, user.password);
+
+    if (!passwordValid) {
+      throw new PasswordIncorrect();
+    }
+
+    // Seeded/legacy users have no email account record yet; create it on first successful login.
+    if (!user.accounts.some((account) => account.provider === 'email')) {
+      await this.prisma.$transaction(async (tx) => {
+        await this.createAccount(tx, 'email', user.id, 'email', user.email);
+      });
+    }
+
     if (user.projects.length === 0) {
       const project = await this.createProject(this.prisma, 'Unnamed Project', user.id);
       await initialization(this.prisma, project.id);
@@ -353,26 +369,6 @@ export class AuthService {
 
     if (inviteCode) {
       await this.joinProject(inviteCode, user.id);
-    }
-
-    let hashedPassword: string = user.password;
-    if (user.accounts.length === 0) {
-      await this.prisma.$transaction(async (tx) => {
-        await this.createAccount(tx, 'email', user.id, 'email', user.email);
-        hashedPassword = await this.passwordService.hashPassword(password);
-        await tx.user.update({
-          data: {
-            password: hashedPassword,
-          },
-          where: { id: user.id },
-        });
-      });
-    }
-
-    const passwordValid = await this.passwordService.validatePassword(password, hashedPassword);
-
-    if (!passwordValid) {
-      throw new PasswordIncorrect();
     }
 
     return this.login(user.id);
