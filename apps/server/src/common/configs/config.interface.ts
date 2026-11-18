@@ -98,4 +98,7 @@ export interface Config {
       sandboxLoginUrl: string;
     };
   };
+  googleFonts: {
+    apiKey: string;
+  };
 }

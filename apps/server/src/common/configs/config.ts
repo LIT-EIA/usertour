@@ -106,6 +106,9 @@ const config: Config = {
       sandboxLoginUrl: process.env.SALESFORCE_SANDBOX_LOGIN_URL || 'https://test.salesforce.com',
     },
   },
+  googleFonts: {
+    apiKey: process.env.GOOGLE_FONTS_API_KEY || '',
+  },
 };
 
 export default (): Config => config;
