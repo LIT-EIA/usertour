@@ -24,6 +24,15 @@
     <div id="already-inert" inert>Already inert</div>
     <button id="after">After</button>
     <iframe id="host-frame" src="/frame.html" title="Host frame" style="width: 400px; height: 60px"></iframe>
+    <!-- Role-based targets: kept after the iframe so they are not in other tests' Tab paths -->
+    <span id="target-gridcell" role="gridcell">Grid cell</span>
+    <div id="target-listbox" role="listbox" aria-label="Fruits" aria-activedescendant="opt-apple">
+      <div id="opt-apple" role="option">Apple</div>
+    </div>
+    <div id="target-tablist" role="tablist" aria-label="Sections">
+      <span id="tab-one" role="tab" tabindex="0" aria-selected="true">One</span>
+      <span id="tab-two" role="tab" tabindex="-1" aria-selected="false">Two</span>
+    </div>
     <div id="usertour-widget"></div>
     <script src="/harness.js"></script>
     <script>

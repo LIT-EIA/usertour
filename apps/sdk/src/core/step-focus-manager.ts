@@ -52,7 +52,9 @@ const NATIVE_ARROW_ROLES = new Set([
   'option',
   'radio',
   'radiogroup',
+  'scrollbar',
   'searchbox',
+  'separator',
   'slider',
   'spinbutton',
   'tab',
@@ -73,16 +75,19 @@ const NON_ARROW_INPUT_TYPES = new Set([
   'submit',
 ]);
 
+// WAI-ARIA 1.2 widget roles (https://www.w3.org/TR/wai-aria-1.2/#widget_roles), minus
+// progressbar (read-only), separator and tabpanel (interactive only with a tabindex)
 const INTERACTIVE_ROLES = new Set([
   'button',
   'checkbox',
-  'combobox',
+  'gridcell',
   'link',
   'menuitem',
   'menuitemcheckbox',
   'menuitemradio',
   'option',
   'radio',
+  'scrollbar',
   'searchbox',
   'slider',
   'spinbutton',
@@ -90,6 +95,20 @@ const INTERACTIVE_ROLES = new Set([
   'tab',
   'textbox',
   'treeitem',
+]);
+
+// WAI-ARIA 1.2 composite widget roles. The container is the tab stop only when it has none
+// inside (aria-activedescendant pattern); with a roving tabindex, the active child is.
+const COMPOSITE_ROLES = new Set([
+  'combobox',
+  'grid',
+  'listbox',
+  'menu',
+  'menubar',
+  'radiogroup',
+  'tablist',
+  'tree',
+  'treegrid',
 ]);
 
 const TARGET_ATTRIBUTES = ['tabindex', 'aria-describedby', 'aria-disabled'];
@@ -638,15 +657,27 @@ export class StepFocusManager {
     if ((element as HTMLButtonElement).disabled) {
       return false;
     }
+    // Checked before tabindex: widgets with a roving tabindex (inactive tabs, menu items,
+    // tree items...) have tabindex="-1" but are still interactive, reached with arrow keys
+    if (this.hasInteractiveRole(element)) {
+      return true;
+    }
     const tabIndex = Number.parseInt(element.getAttribute('tabindex') ?? '', 10);
     if (!Number.isNaN(tabIndex)) {
       return tabIndex >= 0;
     }
-    if (element.matches(FOCUSABLE_SELECTOR)) {
+    return element.matches(FOCUSABLE_SELECTOR);
+  }
+
+  private hasInteractiveRole(element: Element): boolean {
+    const role = element.getAttribute('role')?.trim().split(/\s+/)[0];
+    if (!role) {
+      return false;
+    }
+    if (INTERACTIVE_ROLES.has(role)) {
       return true;
     }
-    const role = element.getAttribute('role')?.trim().split(/\s+/)[0];
-    return Boolean(role && INTERACTIVE_ROLES.has(role));
+    return COMPOSITE_ROLES.has(role) && getTabbables(element).length === 0;
   }
 
   private usesArrowKeys(element: Element): boolean {

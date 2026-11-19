@@ -277,6 +277,38 @@ test('a widget role target without tabindex joins the loop with tabindex=-1', as
   expect((await targetAttributes(page, '#target-role')).tabindex).toBeNull();
 });
 
+test('a gridcell role target without tabindex joins the loop', async ({ page }) => {
+  await activate(page, { target: '#target-gridcell' });
+  await expect.poll(() => focusPath(page)).toBe(INITIAL_FOCUS);
+  expect((await targetAttributes(page, '#target-gridcell')).tabindex).toBe('-1');
+  await pressAndExpect(page, 'Shift+Tab', ['#target-gridcell']);
+});
+
+// Roving tabindex (Dojo, Radix, MUI): an inactive tab has tabindex="-1" but is still a widget
+test('an inactive tab target (role="tab" tabindex="-1") joins the loop', async ({ page }) => {
+  await activate(page, { target: '#tab-two' });
+  await expect.poll(() => focusPath(page)).toBe(INITIAL_FOCUS);
+  await pressAndExpect(page, 'Shift+Tab', ['#tab-two']);
+
+  await page.evaluate(() => (window as any).manager.destroy(true));
+  expect((await targetAttributes(page, '#tab-two')).tabindex).toBe('-1');
+});
+
+test('a composite role target with no tab stop inside joins the loop itself', async ({ page }) => {
+  await activate(page, { target: '#target-listbox' });
+  await expect.poll(() => focusPath(page)).toBe(INITIAL_FOCUS);
+  await pressAndExpect(page, 'Shift+Tab', ['#target-listbox']);
+});
+
+test('a composite role target with a roving tabindex: only the active child joins', async ({
+  page,
+}) => {
+  await activate(page, { target: '#target-tablist' });
+  await expect.poll(() => focusPath(page)).toBe(INITIAL_FOCUS);
+  expect((await targetAttributes(page, '#target-tablist')).tabindex).toBeNull();
+  await pressAndExpect(page, 'Shift+Tab', ['#tab-one', TOOLTIP_ORDER[5]]);
+});
+
 test('a script-only focusable target (tabindex=-1) is not a tab stop', async ({ page }) => {
   await page.evaluate(() => document.getElementById('target-div')!.setAttribute('tabindex', '-1'));
   await activate(page, { target: '#target-div' });

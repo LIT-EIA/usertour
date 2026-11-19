@@ -108,3 +108,10 @@ node ~/.claude/skills/termium-review/scripts/termium_url.js "workflow" --lang en
 
 → fetch → TERMIUM's main French entry for "workflow" is "flux de travaux"
 (correct, masculine noun) → **Match**.
+
+## Gotchas
+
+- **WebFetch can get HTTP 403 Forbidden** from btb.termiumplus.gc.ca (seen 2026-11-17 on
+  `alpha-eng.html` search URLs, with several different terms). When that happens, don't try to
+  get around the block. Tell the user the lookup failed, label any French terms you supply as
+  unverified, and ask them to check the key terms on the live site in a browser.
