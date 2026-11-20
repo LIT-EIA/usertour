@@ -1,12 +1,7 @@
 import { CardContent, CardFooter } from '@usertour-packages/card';
 import { useParams } from 'react-router-dom';
 import { useGetInviteQuery } from '@usertour-packages/shared-hooks';
-import {
-  SignInDivider,
-  SignInForm,
-  SignInSocialProviders,
-  SignInRoot,
-} from './components/sign-in-form';
+import { SignInForm, SignInRoot } from './components/sign-in-form';
 import { Card, CardHeader, CardTitle } from '@usertour-packages/card';
 import {
   RegistrationFormFields,
@@ -113,8 +108,6 @@ const InviteBody = () => {
   return (
     <SignInRoot inviteCode={inviteCode}>
       <CardContent className="grid gap-4">
-        <SignInSocialProviders />
-        <SignInDivider />
         <SignInForm buttonText="Login and join" />
         <SignInFooter />
       </CardContent>

@@ -73,7 +73,6 @@ const config: Config = {
       domain: process.env.USERTOUR_COOKIE_DOMAIN,
     },
     email: {
-      enabled: process.env.EMAIL_AUTH_ENABLED === 'true',
       sender: process.env.EMAIL_SENDER || 'UserTour <support@usertour.io>',
       resendApiKey: process.env.RESEND_API_KEY || 'test',
     },
@@ -82,18 +81,10 @@ const config: Config = {
       expiresIn: process.env.JWT_EXPIRATION_TIME || '1h',
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME || '7d',
     },
-    github: {
-      enabled: process.env.GITHUB_AUTH_ENABLED === 'true',
-      clientId: process.env.GITHUB_CLIENT_ID || 'test',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || 'test',
-      callbackUrl: process.env.GITHUB_CALLBACK_URL || 'test',
-    },
-    google: {
-      enabled: process.env.GOOGLE_AUTH_ENABLED === 'true',
-      clientId: process.env.GOOGLE_CLIENT_ID || 'test',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'test',
-      callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'test',
-    },
+    // Third-party (OAuth) sign-in is removed. In invite-only mode (the default) accounts can
+    // only be created from a valid team invite; set AUTH_INVITE_ONLY=false to re-open
+    // self-registration via magic link.
+    inviteOnly: process.env.AUTH_INVITE_ONLY !== 'false',
   },
   content: {
     limit: {
@@ -114,6 +105,9 @@ const config: Config = {
       loginUrl: process.env.SALESFORCE_LOGIN_URL || '',
       sandboxLoginUrl: process.env.SALESFORCE_SANDBOX_LOGIN_URL || 'https://test.salesforce.com',
     },
+  },
+  googleFonts: {
+    apiKey: process.env.GOOGLE_FONTS_API_KEY || '',
   },
 };
 

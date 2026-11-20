@@ -14,7 +14,8 @@ export class Auth extends Token {
   user: User;
 }
 
-export type AuthProvider = 'email' | 'google' | 'github';
+// Third-party (OAuth) sign-in has been removed; email/password is the only provider.
+export type AuthProvider = 'email';
 
 @ObjectType()
 export class AuthConfigItem {

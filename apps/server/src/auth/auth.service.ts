@@ -10,7 +10,6 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { SignupInput } from './dto/signup.input';
 import { Common } from './models/common.model';
-import { Profile } from 'passport-google-oauth20';
 import { CookieOptions, Response } from 'express';
 import { TokenData } from './dto/auth.dto';
 import { PasswordService } from './password.service';
@@ -24,7 +23,7 @@ import {
   AuthenticationExpiredError,
   EmailAlreadyRegistered,
   InvalidVerificationSession,
-  OAuthError,
+  InviteOnlyError,
   PasswordIncorrect,
   UnknownError,
 } from '@/common/errors';
@@ -53,18 +52,26 @@ export class AuthService {
     @InjectQueue(QUEUE_INITIALIZE_PROJECT) private initializeProjectQueue: Queue,
   ) {}
 
+  /**
+   * Email/password is the only sign-in method since third-party sign-in was removed,
+   * so it is always enabled: a switch here could leave no way to sign in at all.
+   */
   getAuthConfig(): AuthConfigItem[] {
-    const items: AuthConfigItem[] = [];
-    if (this.configService.get('auth.email.enabled')) {
-      items.push({ provider: 'email' });
+    return [{ provider: 'email' }];
+  }
+
+  private isInviteOnly(): boolean {
+    return this.configService.get<boolean>('auth.inviteOnly') !== false;
+  }
+
+  /**
+   * Block every self-registration path when invite-only mode is on.
+   * Accounts may then only be created through `signup` with a valid team invite code.
+   */
+  private assertOpenRegistrationAllowed(): void {
+    if (this.isInviteOnly()) {
+      throw new InviteOnlyError();
     }
-    if (this.configService.get('auth.google.enabled')) {
-      items.push({ provider: 'google' });
-    }
-    if (this.configService.get('auth.github.enabled')) {
-      items.push({ provider: 'github' });
-    }
-    return items;
   }
 
   cookieOptions(key: string): CookieOptions {
@@ -115,116 +122,6 @@ export class AuthService {
       .clearCookie(UID_COOKIE, clearOptions)
       .clearCookie(ACCESS_TOKEN_COOKIE, clearOptions)
       .clearCookie(REFRESH_TOKEN_COOKIE, clearOptions);
-  }
-
-  async oauthValidate(
-    accessToken: string,
-    refreshToken: string,
-    profile: Profile,
-    inviteCode?: string,
-  ) {
-    this.logger.log(
-      `oauth accessToken: ${accessToken}, refreshToken: ${refreshToken}, profile: ${JSON.stringify(
-        profile,
-      )}, inviteCode: ${inviteCode}`,
-    );
-    const { provider, id, emails, displayName, photos } = profile;
-
-    // Check if there is an authentication account record
-    const account = await this.prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider,
-          providerAccountId: id,
-        },
-      },
-    });
-
-    // If there is an authentication account record and corresponding user, return directly
-    if (account) {
-      this.logger.log(`account found for provider ${provider}, account id: ${id}`);
-      const user = await this.prisma.user.findUnique({
-        where: { id: account.userId },
-      });
-      if (user) {
-        // inviteCode is not empty, join project
-        if (inviteCode) {
-          await this.joinProject(inviteCode, user.id);
-        }
-        return user;
-      }
-
-      this.logger.log(
-        `user ${account.userId} not found for provider ${provider} account id: ${id}`,
-      );
-    }
-
-    // oauth profile returns no email, this is invalid
-    if (emails?.length === 0) {
-      this.logger.warn('emails is empty, invalid oauth');
-      throw new OAuthError();
-    }
-    const email = emails[0].value;
-
-    // Return user if this email has been registered
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user) {
-      this.logger.log(`user ${user.id} already registered for email ${email}`);
-      // inviteCode is not empty, join project
-      if (inviteCode) {
-        await this.joinProject(inviteCode, user.id);
-      }
-      return user;
-    }
-
-    // download avatar if profile photo exists
-    let avatar: string;
-    try {
-      if (photos?.length > 0) {
-        // avatar = (await this.miscService.dumpFileFromURL({ uid }, photos[0].value)).url;
-      }
-    } catch (e) {
-      this.logger.warn(`failed to download avatar: ${e}`);
-    }
-
-    return await this.prisma.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: {
-          name: displayName || email,
-          email,
-          avatarUrl: avatar,
-          emailVerified: new Date(),
-        },
-      });
-
-      this.logger.log(`user created: ${newUser.id}`);
-
-      const newAccount = await tx.account.create({
-        data: {
-          type: 'oauth',
-          userId: newUser.id,
-          provider,
-          providerAccountId: id,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        },
-      });
-      this.logger.log(`new account created for ${newAccount.id}`);
-
-      // inviteCode is not empty, join project
-      if (inviteCode) {
-        const invite = await this.teamService.getValidInviteByCode(inviteCode);
-        if (invite) {
-          await this.teamService.assignUserToProject(tx, newUser.id, invite.projectId, invite.role);
-          await this.teamService.deleteInvite(tx, inviteCode);
-        }
-      } else {
-        const project = await this.createProject(tx, 'Unnamed Project', newUser.id);
-        await initialization(tx, project.id);
-      }
-
-      return newUser;
-    });
   }
 
   private async generateRefreshToken(userId: string): Promise<string> {
@@ -310,6 +207,7 @@ export class AuthService {
   }
 
   async createMagicLink(email: string) {
+    this.assertOpenRegistrationAllowed();
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user) {
       throw new EmailAlreadyRegistered();
@@ -329,6 +227,7 @@ export class AuthService {
   }
 
   async resendMargicLink(id: string) {
+    this.assertOpenRegistrationAllowed();
     const data = await this.prisma.register.findUnique({ where: { id } });
     if (!data) {
       throw new InvalidVerificationSession();
@@ -379,6 +278,11 @@ export class AuthService {
 
   async signup(payload: SignupInput): Promise<TokenData> {
     const { code, userName, companyName, password, isInvite } = payload;
+
+    // Non-invite signup redeems a magic-link registration code: that is open registration.
+    if (!isInvite) {
+      this.assertOpenRegistrationAllowed();
+    }
 
     // Validate verification code
     const { email, projectId, role } = await this.validateSignupCode(code, isInvite);
@@ -442,6 +346,22 @@ export class AuthService {
       throw new AccountNotFoundError();
     }
 
+    // Verify the password before any side effect (project creation, invite redemption).
+    // Never accept the submitted password as a new one: users without a stored password
+    // (e.g. created by a removed OAuth provider) must set one through the password-reset flow.
+    const passwordValid = await this.passwordService.validatePassword(password, user.password);
+
+    if (!passwordValid) {
+      throw new PasswordIncorrect();
+    }
+
+    // Seeded/legacy users have no email account record yet; create it on first successful login.
+    if (!user.accounts.some((account) => account.provider === 'email')) {
+      await this.prisma.$transaction(async (tx) => {
+        await this.createAccount(tx, 'email', user.id, 'email', user.email);
+      });
+    }
+
     if (user.projects.length === 0) {
       const project = await this.createProject(this.prisma, 'Unnamed Project', user.id);
       await initialization(this.prisma, project.id);
@@ -449,26 +369,6 @@ export class AuthService {
 
     if (inviteCode) {
       await this.joinProject(inviteCode, user.id);
-    }
-
-    let hashedPassword: string = user.password;
-    if (user.accounts.length === 0) {
-      await this.prisma.$transaction(async (tx) => {
-        await this.createAccount(tx, 'email', user.id, 'email', user.email);
-        hashedPassword = await this.passwordService.hashPassword(password);
-        await tx.user.update({
-          data: {
-            password: hashedPassword,
-          },
-          where: { id: user.id },
-        });
-      });
-    }
-
-    const passwordValid = await this.passwordService.validatePassword(password, hashedPassword);
-
-    if (!passwordValid) {
-      throw new PasswordIncorrect();
     }
 
     return this.login(user.id);
@@ -544,6 +444,9 @@ export class AuthService {
 
   async sendMagicLinkEmail(code: string, email: string) {
     const link = `${this.configService.get('app.homepageUrl')}/auth/registration/${code}`;
+    // No email service yet: print the link so it can be picked up from the server console.
+    // Logged before sending so it still shows when the mail transport is not configured.
+    this.logger.log(`Magic link for ${email}: ${link}`);
     const template = await compileEmailTemplate({
       fileName: 'verifyEmail.mjml',
       data: {

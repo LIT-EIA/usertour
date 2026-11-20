@@ -1180,12 +1180,6 @@ const translations = {
       resetCodeMissing: 'Reset code is missing.',
       genericFailure: 'Uh oh! Something went wrong.',
     },
-    social: {
-      continueWithGoogle: 'Continue with Google',
-      continueWithGithub: 'Continue with Github',
-      signingIn: 'Logging in...',
-      divider: 'Or log in with email',
-    },
     sso: {
       title: 'Single sign-on',
       titleNamed: 'Sign in to {{name}}',

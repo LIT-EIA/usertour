@@ -1,12 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@usertour-packages/card';
-import {
-  SignInSocialProviders,
-  SignInDivider,
-  SignInForm,
-  SignInRoot,
-} from './components/sign-in-form';
+import { SignInForm, SignInRoot } from './components/sign-in-form';
 import { useTranslation } from 'react-i18next';
 
 // Footer component
@@ -18,8 +13,6 @@ const SignInBody = () => {
   return (
     <SignInRoot>
       <CardContent className="grid gap-4">
-        <SignInSocialProviders />
-        <SignInDivider />
         <SignInForm />
         <SignInFooter />
       </CardContent>

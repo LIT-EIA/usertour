@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Controller, Get, Param } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppService } from './app.service';
 import { Public } from './common/decorators/public.decorator';
 
@@ -8,6 +9,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get()
@@ -23,9 +25,9 @@ export class AppController {
 
   @Get('fonts')
   getFonts() {
-    return this.httpService.axiosRef.get(
-      'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyDesOaG7vNtVH8Wun4VB7KoxF2k4XxD_5I',
-    );
+    return this.httpService.axiosRef.get('https://www.googleapis.com/webfonts/v1/webfonts', {
+      params: { key: this.configService.get<string>('googleFonts.apiKey') },
+    });
   }
 
   @Get('api/health')

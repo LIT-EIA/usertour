@@ -60,7 +60,6 @@ export interface Config {
       domain: string;
     };
     email: {
-      enabled: boolean;
       sender: string;
       resendApiKey: string;
     };
@@ -69,18 +68,7 @@ export interface Config {
       expiresIn: string;
       refreshExpiresIn: string;
     };
-    github: {
-      enabled: boolean;
-      clientId: string;
-      clientSecret: string;
-      callbackUrl: string;
-    };
-    google: {
-      enabled: boolean;
-      clientId: string;
-      clientSecret: string;
-      callbackUrl: string;
-    };
+    inviteOnly: boolean;
   };
   stripe: {
     apiKey: string;
@@ -109,5 +97,8 @@ export interface Config {
       loginUrl: string;
       sandboxLoginUrl: string;
     };
+  };
+  googleFonts: {
+    apiKey: string;
   };
 }

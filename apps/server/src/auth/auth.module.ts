@@ -8,9 +8,6 @@ import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { PasswordService } from './password.service';
-import { AuthController } from './auth.controller';
-import { GithubOauthStrategy } from './strategy/github-oauth.strategy';
-import { GoogleOauthStrategy } from './strategy/google-oauth.strategy';
 import { TeamModule } from '@/team/team.module';
 import { BullModule } from '@nestjs/bullmq';
 import {
@@ -51,8 +48,6 @@ import { StripeModule } from '@golevelup/nestjs-stripe';
     JwtStrategy,
     GqlAuthGuard,
     PasswordService,
-    GithubOauthStrategy,
-    GoogleOauthStrategy,
     SendMagicLinkEmailProcessor,
     SendResetPasswordEmailProcessor,
     InitializeProjectProcessor,
@@ -61,7 +56,6 @@ import { StripeModule } from '@golevelup/nestjs-stripe';
       useClass: GqlAuthGuard,
     },
   ],
-  controllers: [AuthController],
   exports: [AuthService],
 })
 export class AuthModule {}

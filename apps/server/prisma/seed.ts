@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();
 
@@ -289,7 +290,9 @@ async function main() {
     data: {
       email: 'lisa@simpson.com',
       name: 'Lisa',
-      password: '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm', // secret42
+      // Must be an argon2 hash: PasswordService verifies with argon2 and login never
+      // replaces a stored password. Change this password right after first login.
+      password: await argon2.hash('secret42'),
     },
   });
 

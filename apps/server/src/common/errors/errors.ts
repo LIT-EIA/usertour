@@ -41,14 +41,6 @@ export class ParamsError extends BaseError {
   };
 }
 
-export class OAuthError extends BaseError {
-  code = 'E0004';
-  messageDict = {
-    en: 'Authorization process failed, please try again',
-    fr: "Le processus d'autorisation a échoué, veuillez réessayer",
-  };
-}
-
 export class AccountNotFoundError extends BaseError {
   code = 'E0005';
   messageDict = {
@@ -166,6 +158,14 @@ export class LicenseDecodeError extends BaseError {
   messageDict = {
     en: 'Failed to decode license payload',
     fr: 'Échec du décodage des données de la licence',
+  };
+}
+
+export class InviteOnlyError extends BaseError {
+  code = 'E0020';
+  messageDict = {
+    en: 'Registration is by invitation only. Ask a project admin to invite you.',
+    fr: 'L’inscription se fait uniquement sur invitation. Demandez à un administrateur de projet de vous inviter.',
   };
 }
 
@@ -327,7 +327,7 @@ const errorMap = {
   E0000: UnknownError,
   E0001: ConnectionError,
   E0003: ParamsError,
-  E0004: OAuthError,
+  // E0004 was OAuthError, retired with third-party sign-in. Do not reuse the code.
   E0005: AccountNotFoundError,
   E0006: PasswordIncorrect,
   E0007: EmailAlreadyRegistered,
@@ -343,6 +343,7 @@ const errorMap = {
   E0017: LicenseExpiredError,
   E0018: LicenseProjectMismatchError,
   E0019: LicenseDecodeError,
+  E0020: InviteOnlyError,
   E1000: InvalidApiKeyError,
   E1001: UserNotFoundError,
   E1002: CompanyNotFoundError,
