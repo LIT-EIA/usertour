@@ -15,6 +15,8 @@ build
 
 # other
 dist
+# stray GraphQL schema written by servers started from the repo root before the path fix
+/src/schema.graphql
 
 # misc
 .DS_Store

@@ -68,7 +68,8 @@
       "**/dist/**",
       "locate.ts",
       "webfonts.ts",
-      "apps/web/bookmarklet/**"
+      "apps/web/bookmarklet/**",
+      "**/schema.graphql"
     ]
   },
   "vcs": {

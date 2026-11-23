@@ -3,8 +3,16 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GqlOptionsFactory } from '@nestjs/graphql';
 import { STATUS_CODES } from 'node:http';
+import { join } from 'node:path';
 import { GraphQLError } from 'graphql';
 import { BaseError } from './common/errors';
+
+/**
+ * The server package root (`apps/server`), from both `src/` (ts-node, Jest) and the flat `dist/`
+ * build. The schema path is resolved from here rather than from the working directory, so starting
+ * the server from the repo root doesn't write a stray `src/schema.graphql` there.
+ */
+const SERVER_ROOT = join(__dirname, '..');
 
 @Injectable()
 export class GqlConfigService implements GqlOptionsFactory {
@@ -14,7 +22,7 @@ export class GqlConfigService implements GqlOptionsFactory {
     const graphqlConfig = this.configService.get('graphql');
     return {
       // schema options
-      autoSchemaFile: graphqlConfig.schemaDestination || './src/schema.graphql',
+      autoSchemaFile: join(SERVER_ROOT, graphqlConfig.schemaDestination || './src/schema.graphql'),
       sortSchema: graphqlConfig.sortSchema,
       buildSchemaOptions: {
         numberScalarMode: 'integer',
