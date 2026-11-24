@@ -3,6 +3,10 @@
 import { Icons } from '@/components/atoms/icons';
 import { useAppContext } from '@/contexts/app-context';
 import { useMemberContext } from '@/contexts/member-context';
+import {
+  PersonNameFields,
+  createPersonNameSchema,
+} from '@/components/molecules/person-name-fields';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertDescription, AlertTitle } from '@usertour-packages/alert';
 import { Button } from '@usertour-packages/button';
@@ -44,32 +48,30 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import type { TFunction } from 'i18next';
+
 interface InviteDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const formSchema = z.object({
-  name: z
-    .string({
-      required_error: 'Please input your Member name.',
-    })
-    .max(20)
-    .min(1),
-  email: z
-    .string({
-      required_error: 'Please input your Member email.',
-    })
-    .email(),
-  role: z.string({
-    required_error: 'Please select your Member role.',
-  }),
-});
+const createFormSchema = (t: TFunction) =>
+  createPersonNameSchema(t).extend({
+    email: z
+      .string({
+        required_error: 'Please input your Member email.',
+      })
+      .email(),
+    role: z.string({
+      required_error: 'Please select your Member role.',
+    }),
+  });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 const defaultValues: Partial<FormValues> = {
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   role: TeamMemberRole.ADMIN,
 };
@@ -83,6 +85,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
   const { members = [] } = useMemberContext();
   const { globalConfig } = useAppContext();
   const navigate = useNavigate();
+  const formSchema = useMemo(() => createFormSchema(t), [t]);
 
   const { subscription } = useGetSubscriptionByProjectIdQuery(project?.id as string) as {
     subscription: Subscription | null;
@@ -125,7 +128,7 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
     try {
       const success = await invoke(
         project?.id as string,
-        formValues.name,
+        { firstName: formValues.firstName, lastName: formValues.lastName },
         formValues.email,
         formValues.role,
       );
@@ -190,21 +193,11 @@ export const MemberInviteDialog = ({ onClose, isOpen }: InviteDialogProps) => {
             <div>
               <div className="space-y-4 py-2 pb-4 pt-4">
                 <div className="space-y-2">
-                  <FormField
+                  <PersonNameFields
                     control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('settings.team.invite.nameLabel')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('settings.team.invite.namePlaceholder')}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    firstNamePlaceholder={t('settings.team.invite.firstNamePlaceholder')}
+                    lastNamePlaceholder={t('settings.team.invite.lastNamePlaceholder')}
+                    isOwnName={false}
                   />
                   <FormField
                     control={form.control}

@@ -5,6 +5,8 @@ export const getUserInfo = gql`
     me {
       id
       name
+      firstName
+      lastName
       avatarUrl
       email
       createdAt
@@ -27,8 +29,8 @@ export const getUserInfo = gql`
 `;
 
 export const updateUser = gql`
-  mutation updateUser($name: String!, $avatarUrl: String) {
-    updateUser(data: { name: $name, avatarUrl: $avatarUrl }) {
+  mutation updateUser($firstName: String!, $lastName: String, $avatarUrl: String) {
+    updateUser(data: { firstName: $firstName, lastName: $lastName, avatarUrl: $avatarUrl }) {
       id
     }
   }

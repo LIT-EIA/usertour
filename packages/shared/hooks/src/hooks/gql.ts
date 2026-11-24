@@ -255,12 +255,12 @@ export const useInviteTeamMemberMutation = () => {
   const [inviteTeamMember, { loading, error }] = useMutation(inviteTeamMemberMutation);
   const invoke = async (
     projectId: string,
-    name: string,
+    { firstName, lastName }: { firstName: string; lastName?: string },
     email: string,
     role: string,
   ): Promise<boolean> => {
     const response = await inviteTeamMember({
-      variables: { projectId, name, email, role },
+      variables: { projectId, firstName, lastName, email, role },
     });
     return !!response.data?.inviteTeamMember;
   };
@@ -328,7 +328,8 @@ export const useLoginMutation = () => {
 export type SignupMutationVariables = {
   code: string;
   password: string;
-  userName: string;
+  firstName: string;
+  lastName?: string;
   companyName?: string;
   isInvite: boolean;
 };

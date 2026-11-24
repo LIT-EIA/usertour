@@ -6,6 +6,8 @@ export type UserProfile = {
   position?: string;
   company?: string;
   name?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   projectId?: string;
   invitationToken?: string;
   isOAuthUser?: boolean;

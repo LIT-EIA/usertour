@@ -7,6 +7,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './models/user.model';
 import { UsersService } from './users.service';
 import { AuthService } from '@/auth/auth.service';
+import { formatFullName } from '@/utils/person-name';
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
@@ -48,6 +49,11 @@ export class UsersResolver {
       await this.authService.addInitializeProjectJob(activeProject.id);
     }
     return userOnProjects;
+  }
+
+  @ResolveField('name', () => String, { nullable: true })
+  name(@Parent() user: User): string | null {
+    return formatFullName(user) || null;
   }
 
   @ResolveField('isOAuthUser')

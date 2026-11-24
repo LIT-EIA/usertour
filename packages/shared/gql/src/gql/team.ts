@@ -29,10 +29,17 @@ export const getInvites = gql`
 `;
 
 export const inviteTeamMember = gql`
-  mutation inviteTeamMember($projectId: String!, $name: String!, $email: String!, $role: Role!) {
+  mutation inviteTeamMember(
+    $projectId: String!
+    $firstName: String!
+    $lastName: String
+    $email: String!
+    $role: Role!
+  ) {
     inviteTeamMember(
       data: {
-        name: $name
+        firstName: $firstName
+        lastName: $lastName
         projectId: $projectId
         email: $email
         role: $role

@@ -15,7 +15,14 @@ export class Invite extends BaseModel {
   expired: boolean;
 
   @Field(() => String, { nullable: false })
-  name: string;
+  firstName: string;
+
+  @Field(() => String, { nullable: false })
+  lastName: string;
+
+  /** Full name for display, resolved from firstName + lastName (see InviteResolver). */
+  @Field(() => String, { nullable: false })
+  name?: string;
 
   @Field(() => String, { nullable: false })
   role: string;

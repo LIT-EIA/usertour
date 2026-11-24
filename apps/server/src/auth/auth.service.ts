@@ -16,6 +16,7 @@ import { PasswordService } from './password.service';
 import { createTransport } from 'nodemailer';
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, UID_COOKIE } from '@/utils/cookie';
 import { omit } from '@/utils/typesafe';
+import { formatFullName, normalizeNamePart } from '@/utils/person-name';
 import ms from 'ms';
 import { AuthConfigItem } from './models/auth.model';
 import {
@@ -249,7 +250,7 @@ export class AuthService {
     if (!user) {
       throw new AccountNotFoundError();
     }
-    await this.sendResetPasswordEmail(sessionId, user.email, user.name);
+    await this.sendResetPasswordEmail(sessionId, user.email, formatFullName(user));
   }
 
   async addSendResetPasswordEmailJob(sessionId: string) {
@@ -277,7 +278,7 @@ export class AuthService {
   }
 
   async signup(payload: SignupInput): Promise<TokenData> {
-    const { code, userName, companyName, password, isInvite } = payload;
+    const { code, firstName, lastName, companyName, password, isInvite } = payload;
 
     // Non-invite signup redeems a magic-link registration code: that is open registration.
     if (!isInvite) {
@@ -293,7 +294,7 @@ export class AuthService {
     try {
       const user = await this.prisma.$transaction(async (tx) => {
         // Create user and account
-        const user = await this.createUser(tx, userName, email, hashedPassword);
+        const user = await this.createUser(tx, { firstName, lastName }, email, hashedPassword);
         await this.createAccount(tx, 'email', user.id, 'email', email);
 
         // Handle project assignment
@@ -478,10 +479,16 @@ export class AuthService {
     });
   }
 
-  async createUser(tx: Prisma.TransactionClient, name: string, email: string, password: string) {
+  async createUser(
+    tx: Prisma.TransactionClient,
+    { firstName, lastName }: Pick<SignupInput, 'firstName' | 'lastName'>,
+    email: string,
+    password: string,
+  ) {
     return await tx.user.create({
       data: {
-        name,
+        firstName: normalizeNamePart(firstName),
+        lastName: normalizeNamePart(lastName),
         email,
         password,
       },

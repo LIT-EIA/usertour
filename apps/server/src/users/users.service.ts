@@ -5,6 +5,7 @@ import { ChangeEmailInput } from './dto/change-email.input';
 import { ChangePasswordInput } from './dto/change-password.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PasswordIncorrect } from '@/common/errors';
+import { normalizeNamePart } from '@/utils/person-name';
 
 @Injectable()
 export class UsersService {
@@ -13,9 +14,14 @@ export class UsersService {
     private passwordService: PasswordService,
   ) {}
 
-  updateUser(userId: string, newUserData: UpdateUserInput) {
+  updateUser(userId: string, { firstName, lastName, avatarUrl }: UpdateUserInput) {
     return this.prisma.user.update({
-      data: newUserData,
+      data: {
+        firstName: normalizeNamePart(firstName),
+        // Omitted lastName leaves it unchanged; an empty one clears it.
+        lastName: lastName === undefined ? undefined : normalizeNamePart(lastName),
+        avatarUrl,
+      },
       where: {
         id: userId,
       },

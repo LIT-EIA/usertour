@@ -3,6 +3,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { ConfigService } from '@nestjs/config';
+import { formatFullName, normalizeNamePart } from '@/utils/person-name';
+import type { InviteTeamMemberInput } from './dto/member.input';
 
 @Injectable()
 export class TeamService {
@@ -136,7 +138,7 @@ export class TeamService {
     senderUserId: string,
     email: string,
     projectId: string,
-    name: string,
+    { firstName, lastName }: Pick<InviteTeamMemberInput, 'firstName' | 'lastName'>,
     role: Role,
   ) {
     if (role === Role.OWNER) {
@@ -159,13 +161,14 @@ export class TeamService {
     const result = await this.prisma.invite.create({
       data: {
         email,
-        name,
+        firstName: firstName.trim(),
+        lastName: normalizeNamePart(lastName) ?? '',
         role,
         projectId,
         userId: sender.id,
       },
     });
-    await this.sendInviteEmail(result.code, email, sender.name);
+    await this.sendInviteEmail(result.code, email, formatFullName(sender));
   }
 
   async sendEmail(data: unknown) {

@@ -29,7 +29,8 @@ Table User {
   emailVerified DateTime
   password String
   avatarUrl String
-  name String
+  firstName String
+  lastName String
   projects UserOnProject [not null]
   codes Code [not null]
   accounts Account [not null]
@@ -54,7 +55,8 @@ Table Invite {
   canceled Boolean [not null, default: false]
   deleted Boolean [not null, default: false]
   email String [not null]
-  name String [not null]
+  firstName String [not null]
+  lastName String [not null, default: '']
   role Role [not null]
   user User [not null]
   userId String [not null]

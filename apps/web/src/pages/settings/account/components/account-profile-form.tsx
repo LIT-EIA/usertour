@@ -2,60 +2,47 @@
 
 import { Icons } from '@/components/atoms/icons';
 import { useAppContext } from '@/contexts/app-context';
+import {
+  PersonNameFields,
+  createPersonNameSchema,
+} from '@/components/molecules/person-name-fields';
+import type { PersonNameFormValues } from '@/components/molecules/person-name-fields';
 import { useMutation } from '@apollo/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@usertour-packages/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@usertour-packages/form';
+import { Form } from '@usertour-packages/form';
 import { updateUser } from '@usertour-packages/gql';
-import { Input } from '@usertour-packages/input';
 import { Separator } from '@usertour-packages/separator';
 import { getErrorMessage } from '@usertour/helpers';
 import { useToast } from '@usertour-packages/use-toast';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import * as z from 'zod';
 
-const accountFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: 'Name must be at least 2 characters.',
-    })
-    .max(30, {
-      message: 'Name must not be longer than 30 characters.',
-    }),
-});
-
-type AccountFormValues = z.infer<typeof accountFormSchema>;
+type AccountFormValues = PersonNameFormValues;
 
 export const AccountProfileForm = () => {
   const { userInfo: user, refetch } = useAppContext();
   const [updateMutation] = useMutation(updateUser);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountFormSchema),
-    defaultValues: { name: user?.name },
-  });
   const { toast } = useToast();
   const { t } = useTranslation();
+  const formSchema = useMemo(() => createPersonNameSchema(t), [t]);
+  const form = useForm<AccountFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { firstName: user?.firstName ?? '', lastName: user?.lastName ?? '' },
+  });
+  const isUnchanged =
+    form.watch('firstName') === (user?.firstName ?? '') &&
+    form.watch('lastName') === (user?.lastName ?? '');
 
   const onSubmit = async (data: AccountFormValues) => {
-    if (!data.name) {
-      return;
-    }
     try {
       setIsLoading(true);
       await updateMutation({
         variables: {
-          name: data.name,
+          firstName: data.firstName,
+          lastName: data.lastName ?? '',
           avatarUrl: '',
         },
       });
@@ -87,25 +74,14 @@ export const AccountProfileForm = () => {
       <Separator />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
+          <PersonNameFields
             control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('settings.account.profile.nameLabel')}</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t('settings.account.profile.namePlaceholder')}
-                    autoComplete="name"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            firstNamePlaceholder={t('settings.account.profile.firstNamePlaceholder')}
+            lastNamePlaceholder={t('settings.account.profile.lastNamePlaceholder')}
+            isOwnName
           />
 
-          <Button type="submit" disabled={form.watch('name') === user?.name}>
+          <Button type="submit" disabled={isUnchanged || isLoading}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             {t('settings.common.save')}
           </Button>

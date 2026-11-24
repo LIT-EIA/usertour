@@ -282,8 +282,8 @@ const translations = {
     account: {
       profile: {
         title: 'Profile',
-        nameLabel: 'Name',
-        namePlaceholder: 'Your name',
+        firstNamePlaceholder: 'Your first name',
+        lastNamePlaceholder: 'Your last name',
         successToast: 'The profile name has been successfully updated',
       },
       email: {
@@ -593,8 +593,8 @@ const translations = {
       },
       invite: {
         title: 'Invite team member',
-        nameLabel: 'Name',
-        namePlaceholder: 'Enter member name',
+        firstNamePlaceholder: "Enter the member's first name",
+        lastNamePlaceholder: "Enter the member's last name",
         emailLabel: 'Email',
         emailPlaceholder: 'Enter member email',
         roleLabel: 'Role',
@@ -1223,8 +1223,8 @@ const translations = {
     },
     signUp: {
       title: 'Set up your Usertour account!',
-      nameLabel: 'Your name',
-      namePlaceholder: 'Enter your full name',
+      firstNamePlaceholder: 'Enter your first name',
+      lastNamePlaceholder: 'Enter your last name',
       emailLabel: 'Email',
       projectNameLabel: 'Project name',
       projectNamePlaceholder: 'Enter your project name',
@@ -1322,6 +1322,12 @@ const translations = {
   },
   common: {
     appTitle: 'Usertour App',
+    personName: {
+      firstNameLabel: 'First name',
+      lastNameLabel: 'Last name (optional)',
+      firstNameRequired: 'Please enter a first name.',
+      tooLong: 'Must be {{max}} characters or fewer.',
+    },
     skipToContent: 'Skip to main content',
     moreActions: 'More actions',
     back: 'Back',

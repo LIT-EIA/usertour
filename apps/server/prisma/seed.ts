@@ -289,7 +289,8 @@ async function main() {
   const user1 = await prisma.user.create({
     data: {
       email: 'lisa@simpson.com',
-      name: 'Lisa',
+      firstName: 'Lisa',
+      lastName: 'Simpson',
       // Must be an argon2 hash: PasswordService verifies with argon2 and login never
       // replaces a stored password. Change this password right after first login.
       password: await argon2.hash('secret42'),

@@ -50,7 +50,8 @@ export const signUp = gql`
   mutation signUp(
     $code: String!
     $password: String!
-    $userName: String!
+    $firstName: String!
+    $lastName: String
     $isInvite: Boolean!
     $companyName: String
   ) {
@@ -58,7 +59,8 @@ export const signUp = gql`
       data: {
         code: $code
         password: $password
-        userName: $userName
+        firstName: $firstName
+        lastName: $lastName
         companyName: $companyName
         isInvite: $isInvite
       }

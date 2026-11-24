@@ -51,7 +51,7 @@ export class TeamResolver {
       user.id,
       data.email,
       data.projectId,
-      data.name,
+      { firstName: data.firstName, lastName: data.lastName },
       data.role as Role,
     );
     return true;

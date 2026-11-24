@@ -615,7 +615,9 @@ type Invite {
   createdAt: DateTime!
   email: String!
   expired: Boolean!
+  firstName: String!
   id: ID!
+  lastName: String!
   name: String!
   project: Project
   projectId: String!
@@ -629,7 +631,8 @@ type Invite {
 
 input InviteTeamMemberInput {
   email: String!
-  name: String!
+  firstName: String!
+  lastName: String
   projectId: String!
   role: Role!
 }
@@ -944,9 +947,10 @@ input SessionQuery {
 input SignupInput {
   code: String!
   companyName: String
+  firstName: String!
   isInvite: Boolean!
+  lastName: String
   password: String!
-  userName: String!
 }
 
 type Step {
@@ -1125,7 +1129,8 @@ input UpdateThemeInput {
 
 input UpdateUserInput {
   avatarUrl: String
-  name: String!
+  firstName: String!
+  lastName: String
 }
 
 type User {
@@ -1134,8 +1139,10 @@ type User {
   """Identifies the date and time when the object was created."""
   createdAt: DateTime!
   email: String!
+  firstName: String
   id: ID!
   isOAuthUser: Boolean
+  lastName: String
   name: String
   projects: [UserOnProject!]!
 

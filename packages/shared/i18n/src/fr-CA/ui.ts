@@ -287,8 +287,8 @@ const translations = {
     account: {
       profile: {
         title: 'Profil',
-        nameLabel: 'Nom',
-        namePlaceholder: 'Votre nom',
+        firstNamePlaceholder: 'Votre prénom',
+        lastNamePlaceholder: 'Votre nom de famille',
         successToast: 'Le nom du profil a été mis à jour avec succès',
       },
       email: {
@@ -603,8 +603,8 @@ const translations = {
       },
       invite: {
         title: "Inviter un membre de l'équipe",
-        nameLabel: 'Nom',
-        namePlaceholder: 'Entrez le nom du membre',
+        firstNamePlaceholder: 'Entrez le prénom du membre',
+        lastNamePlaceholder: 'Entrez le nom de famille du membre',
         emailLabel: 'Courriel',
         emailPlaceholder: 'Entrez le courriel du membre',
         roleLabel: 'Rôle',
@@ -1259,8 +1259,8 @@ const translations = {
     },
     signUp: {
       title: 'Configurez votre compte Usertour!',
-      nameLabel: 'Votre nom',
-      namePlaceholder: 'Entrez votre nom complet',
+      firstNamePlaceholder: 'Entrez votre prénom',
+      lastNamePlaceholder: 'Entrez votre nom de famille',
       emailLabel: 'Courriel',
       projectNameLabel: 'Nom du projet',
       projectNamePlaceholder: 'Entrez le nom de votre projet',
@@ -1362,6 +1362,12 @@ const translations = {
   },
   common: {
     appTitle: 'Usertour',
+    personName: {
+      firstNameLabel: 'Prénom',
+      lastNameLabel: 'Nom de famille (facultatif)',
+      firstNameRequired: 'Veuillez entrer un prénom.',
+      tooLong: 'Doit contenir au plus {{max}} caractères.',
+    },
     skipToContent: 'Passer au contenu principal',
     moreActions: "Plus d'actions",
     back: 'Retour',

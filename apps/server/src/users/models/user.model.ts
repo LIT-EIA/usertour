@@ -17,6 +17,13 @@ export class User extends BaseModel {
   email: string;
 
   @Field(() => String, { nullable: true })
+  firstName?: string;
+
+  @Field(() => String, { nullable: true })
+  lastName?: string;
+
+  /** Full name for display, resolved from firstName + lastName (see UsersResolver). */
+  @Field(() => String, { nullable: true })
   name?: string;
 
   @Field(() => String, { nullable: true })

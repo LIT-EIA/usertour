@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@usertour-packages/button';
 import { getErrorMessage } from '@usertour/helpers';
@@ -22,47 +22,43 @@ import { Link, useParams } from 'react-router-dom';
 import { SpinnerIcon } from '@usertour-packages/icons';
 import { cn } from '@usertour/helpers';
 import { useSignupMutation } from '@usertour-packages/shared-hooks';
+import {
+  PersonNameFields,
+  createPersonNameSchema,
+} from '@/components/molecules/person-name-fields';
 
-// Form validation schema
-const registFormSchemaBase = z.object({
-  userName: z
-    .string({
-      required_error: 'Please input your full name.',
-    })
-    .max(30)
-    .min(4),
-  companyName: z
-    .string({
-      required_error: 'Please input your company name.',
-    })
-    .max(30)
-    .min(4)
-    .optional(),
-  password: z
-    .string({
-      required_error: 'Please input your password.',
-    })
-    .max(20)
-    .min(12, 'Password must be at least 12 characters'),
-  confirmPassword: z.string({
-    required_error: 'Please confirm your password.',
-  }),
-  isAccept: z.boolean(),
-});
+import type { TFunction } from 'i18next';
+
+// Form validation schema (built with `t` so name errors are translated)
+const createRegistFormSchemaBase = (t: TFunction) =>
+  createPersonNameSchema(t).extend({
+    companyName: z
+      .string({
+        required_error: 'Please input your company name.',
+      })
+      .max(30)
+      .min(4)
+      .optional(),
+    password: z
+      .string({
+        required_error: 'Please input your password.',
+      })
+      .max(20)
+      .min(12, 'Password must be at least 12 characters'),
+    confirmPassword: z.string({
+      required_error: 'Please confirm your password.',
+    }),
+    isAccept: z.boolean(),
+  });
 
 const passwordMatchRefine = (data: { password?: string; confirmPassword?: string }) =>
   data.password === data.confirmPassword;
 
-// Full schema with password confirmation validation
-const registFormSchema = registFormSchemaBase.refine(passwordMatchRefine, {
-  message: 'Passwords do not match.',
-  path: ['confirmPassword'],
-});
-
-type RegistFormValues = z.infer<typeof registFormSchema>;
+type RegistFormValues = z.infer<ReturnType<typeof createRegistFormSchemaBase>>;
 
 const defaultValues: Partial<RegistFormValues> = {
-  userName: '',
+  firstName: '',
+  lastName: '',
   isAccept: false,
   companyName: '',
   password: '',
@@ -107,12 +103,17 @@ const RegistrationRoot = ({
   const { registrationCode } = useParams();
   const { t } = useTranslation();
 
-  const formSchema = inviteCode
-    ? registFormSchemaBase.omit({ companyName: true }).refine(passwordMatchRefine, {
-        message: t('auth.errors.passwordsDoNotMatch'),
-        path: ['confirmPassword'],
-      })
-    : registFormSchema;
+  const formSchema = useMemo(() => {
+    const base = createRegistFormSchemaBase(t);
+    const passwordsMatch = {
+      message: t('auth.errors.passwordsDoNotMatch'),
+      path: ['confirmPassword'],
+    };
+    // Invitees join an existing project, so there's no project (company) name to ask for.
+    return inviteCode
+      ? base.omit({ companyName: true }).refine(passwordMatchRefine, passwordsMatch)
+      : base.refine(passwordMatchRefine, passwordsMatch);
+  }, [t, inviteCode]);
 
   const form = useForm<RegistFormValues>({
     resolver: zodResolver(formSchema),
@@ -142,7 +143,8 @@ const RegistrationRoot = ({
     try {
       setIsLoading(true);
       const baseVariables = {
-        userName: others.userName,
+        firstName: others.firstName,
+        lastName: others.lastName,
         password: others.password,
         code,
         isInvite,
@@ -194,22 +196,11 @@ const RegistrationFormFields = () => {
   return (
     <>
       <div className="grid gap-4">
-        <FormField
+        <PersonNameFields
           control={form.control}
-          name="userName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('auth.signUp.nameLabel')}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t('auth.signUp.namePlaceholder')}
-                  autoComplete="name"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          firstNamePlaceholder={t('auth.signUp.firstNamePlaceholder')}
+          lastNamePlaceholder={t('auth.signUp.lastNamePlaceholder')}
+          isOwnName
         />
         {!inviteCode && (
           <FormField
